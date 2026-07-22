@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+    <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
+    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+
+    <uses-permission
+            android:name="android.permission.MANAGE_EXTERNAL_STORAGE"
+            tools:ignore="ScopedStorage" />
+
+    <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" />
+    <uses-permission android:name="com.android.permission.GET_INSTALLED_APPS" />
+    <uses-permission android:name="com.oplus.ocs.permission.third" />
+
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+
+    <uses-permission android:name="android.permission.USE_BIOMETRIC" />
+    <uses-permission android:name="android.permission.USE_FINGERPRINT" />
+
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+
+    <application
+            android:name=".ui.application.MyApplication"
+            android:allowBackup="true"
+            android:icon="@mipmap/ic_launcher"
+            android:label="@string/app_name"
+            android:description="@string/xposeddescription"
+            android:roundIcon="@mipmap/ic_launcher_round"
+            android:supportsRtl="true"
+            android:theme="@style/Theme.Luckyzyx"
+            android:requestLegacyExternalStorage="true"
+            android:fullBackupContent="@xml/appcenter_backup_rule_11"
+            android:dataExtractionRules="@xml/data_extraction_rules"
+            tools:targetApi="s">
+        <activity
+                android:name=".ui.activity.MainActivity"
+                android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="de.robv.android.xposed.category.MODULE_SETTINGS" />
+            </intent-filter>
+        </activity>
+        <activity-alias
+                android:name=".Hide"
+                android:enabled="true"
+                android:exported="true"
+                android:label="@string/app_name"
+                android:targetActivity=".ui.activity.MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity
+                android:name=".ui.activity.AliveActivity"
+                android:excludeFromRecents="true"
+                android:exported="false"
+                android:theme="@android:style/Theme.Translucent" />
+        <activity
+                android:name=".ui.activity.ShortcutActivity"
+                android:excludeFromRecents="true"
+                android:exported="false"
+                android:theme="@android:style/Theme.Translucent" />
+
+        <meta-data
+                android:name="xposedmodule"
+                android:value="true" />
+        <meta-data
+                android:name="xposeddescription"
+                android:value="@string/xposeddescription" />
+        <meta-data
+                android:name="xposedminversion"
+                android:value="93" />
+        <meta-data
+                android:name="xposedscope"
+                android:resource="@array/xposed_scope" />
+
+        <service
+                android:name=".ui.service.ChargingTest"
+                android:exported="true"
+                android:icon="@drawable/ic_baseline_charging_station_24"
+                android:label="@string/charging_test"
+                android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
+            </intent-filter>
+        </service>
+        <service
+                android:name=".ui.service.ProcessManager"
+                android:exported="true"
+                android:icon="@drawable/ic_baseline_settings_24"
+                android:label="@string/process_manager"
+                android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
+            </intent-filter>
+        </service>
+        <service
+                android:name=".ui.service.ShowFPS"
+                android:exported="true"
+                android:icon="@drawable/ic_baseline_settings_24"
+                android:label="@string/display_refresh_rate"
+                android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
+            </intent-filter>
+        </service>
+        <service
+                android:name=".ui.service.HighBrightness"
+                android:exported="true"
+                android:icon="@drawable/baseline_brightness_high_24"
+                android:label="@string/high_brightness_mode"
+                android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
+            </intent-filter>
+        </service>
+        <service
+                android:name=".ui.service.GlobalDC"
+                android:exported="true"
+                android:icon="@drawable/baseline_mode_night_24"
+                android:label="@string/global_dc"
+                android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
+            </intent-filter>
+        </service>
+        <service
+                android:name=".ui.service.TouchSamplingRate"
+                android:exported="true"
+                android:icon="@drawable/baseline_touch_app_24"
+                android:label="@string/increase_touch_sampling_rate"
+                android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
+            </intent-filter>
+        </service>
+        <service
+                android:name=".ui.service.FiveG"
+                android:exported="true"
+                android:icon="@drawable/baseline_5g_24"
+                android:label="@string/fiveg_mode"
+                android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
+            </intent-filter>
+        </service>
+        <service
+                android:name=".ui.service.VeryDarkMode"
+                android:exported="true"
+                android:icon="@drawable/baseline_brightness_low_24"
+                android:label="@string/very_dark_mode"
+                android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
+            </intent-filter>
+        </service>
+        <service
+                android:name=".ui.service.HighPerformanceMode"
+                android:exported="true"
+                android:icon="@drawable/baseline_device_thermostat_24"
+                android:label="@string/high_performance_mode"
+                android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
+            </intent-filter>
+        </service>
+        <service
+                android:name=".ui.service.GoogleService"
+                android:exported="true"
+                android:icon="@drawable/baseline_google_icon_24"
+                android:label="@string/google_service"
+                android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
+            </intent-filter>
+        </service>
+        <service
+                android:name=".ui.service.BypassPowerMode"
+                android:exported="true"
+                android:icon="@drawable/baseline_device_thermostat_24"
+                android:label="@string/bypass_power_mode"
+                android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
+            </intent-filter>
+        </service>
+        <service
+                android:name=".ui.service.RemoteAdb"
+                android:exported="true"
+                android:icon="@drawable/ic_baseline_settings_24"
+                android:label="@string/remote_adb"
+                android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
+            </intent-filter>
+        </service>
+        <service
+                android:name=".ui.service.RunInBackground"
+                android:exported="true"
+                android:icon="@drawable/baseline_videogame_asset_24"
+                android:label="@string/run_in_background"
+                android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
+            </intent-filter>
+        </service>
+
+        <provider
+                android:name="androidx.core.content.FileProvider"
+                android:authorities="${applicationId}.FileProvider"
+                android:exported="false"
+                android:grantUriPermissions="true">
+            <meta-data
+                    android:name="android.support.FILE_PROVIDER_PATHS"
+                    android:resource="@xml/file_paths" />
+        </provider>
+
+    </application>
+
+</manifest>

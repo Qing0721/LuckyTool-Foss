@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingVertical="10dp"
+        android:paddingHorizontal="20dp">
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+        <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/oplusota_product_model_layout"
+                android:hint="ro.product.name"
+                app:hintEnabled="true"
+                app:hintAnimationEnabled="true"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginVertical="5dp"
+                tools:ignore="HardcodedText">
+
+            <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/oplusota_product_model"
+                    android:textSize="14sp"
+                    android:focusable="false"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+                android:hint="ro.build.version.ota"
+                app:hintEnabled="true"
+                app:hintAnimationEnabled="true"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginVertical="5dp"
+                tools:ignore="HardcodedText">
+
+            <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/oplusota_ota_version"
+                    android:textSize="14sp"
+                    android:focusable="false"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/oplusota_realmeui_version_layout"
+                android:hint="ro.build.version.realmeui"
+                app:hintEnabled="true"
+                app:hintAnimationEnabled="true"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginVertical="5dp"
+                tools:ignore="HardcodedText">
+
+            <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/oplusota_realmeui_version"
+                    android:textSize="14sp"
+                    android:focusable="false"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+                android:hint="ro.build.oplus_nv_id"
+                app:hintEnabled="true"
+                app:hintAnimationEnabled="true"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginVertical="5dp"
+                tools:ignore="HardcodedText">
+
+            <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/oplusota_nv_identifier"
+                    android:textSize="14sp"
+                    android:focusable="false"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+                android:hint="guid"
+                app:hintEnabled="true"
+                app:hintAnimationEnabled="true"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginVertical="5dp"
+                tools:ignore="HardcodedText">
+
+            <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/oplusota_guid"
+                    android:textSize="14sp"
+                    android:focusable="false"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/oplusota_copy_tip"
+                android:gravity="center"
+                android:text="@string/oplusota_copy_tip"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+        <com.google.android.material.button.MaterialButton
+                android:id="@+id/oplusota_copyall"
+                android:text="@string/oplusota_copyall"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+    </LinearLayout>
+
+</androidx.core.widget.NestedScrollView>

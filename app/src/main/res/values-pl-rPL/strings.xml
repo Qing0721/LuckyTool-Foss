@@ -1,0 +1,727 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="xposeddescription">Dodaje wiele udogodnień dla ColorOS\nTwórca: luckyzyx</string>
+
+    <string name="nav_function">Funkcje</string>
+    <string name="nav_home">Przegląd</string>
+    <string name="nav_other">Inne</string>
+    <string name="nav_log">Logi</string>
+    <string name="nav_setting">Ustawienia</string>
+    <string name="fragment_source">Kod źródłowy</string>
+
+    <string name="theme_title">Wygląd aplikacji</string>
+    <string name="theme_title_summary">Strona zostanie automatycznie odświeżona</string>
+    <string name="use_dynamic_color">Dynamiczne kolory</string>
+    <string name="use_dynamic_color_summary">Wygląd Material You</string>
+    <string name="dark_theme">Ciemny motyw</string>
+    <string name="follow_system">Zgodny z systemem</string>
+    <string name="dark_theme_off">Always off</string>
+    <string name="dark_theme_on">Always on</string>
+    <string name="language">Język</string>
+    <string name="privacy_agreement">Polityka prywatności</string>
+    <string name="tile_auto_start">Allow built-in tiles to start automatically</string>
+    <string name="tile_auto_start_summary">When the host-side module version number is consistent with the local module version number,and enable this function,The function of opened tiles will be automatically triggered after the screen is unlocked.If the trigger fails,please restart the scope and check Root permissions</string>
+    <string name="read_agreement">Przed rozpoczęciem korzystania z tego modułu należy przeczytać i zaakceptować politykę prywatności</string>
+    <string name="clear_all_data">Wyczyść wszystkie dane</string>
+    <string name="clear_all_data_summary">Usuń wszystkie zmiany w funkcjach modułu</string>
+    <string name="clear_all_data_message">Czy chcesz przywrócić wszystkie zmiany w funckach modułu do stanu domyślnego?</string>
+
+    <string name="other_settings">Inne ustawienia</string>
+    <string name="enable_module_print_logs">Enable module print logs</string>
+    <string name="enable_module_print_logs_summary">This function is only used to print the running log of the module App itself.\nLog files will be obtained when this switch is turned off.</string>
+    <string name="hide_function_page_icon">Ukryj ikony w karcie „Funkcje”</string>
+    <string name="hide_desktop_module_icon">Ukryj ikonę aplikacji</string>
+    <string name="hide_desktop_module_icon_summary">Wymaga wyłączenia „Wymuś aplikacjom pokazywanie ikon launchera” w ustawieniach LSPosed</string>
+
+    <string name="backup_restore_clear">Kopia zapasowa i przywracanie</string>
+    <string name="backup_data">Wykonaj kopię</string>
+    <string name="restore_data">Przywróć kopię</string>
+    <string name="data_backup_complete">Wykonano kopię zapasową!</string>
+    <string name="data_backup_error">Błąd kopii zapasowej!</string>
+    <string name="data_restore_complete">Kopia została przywrócona!</string>
+
+    <string name="about_title">O aplikacji</string>
+    <string name="about_author">Twórca</string>
+    <string name="feedback_download">Opinia i pobieranie</string>
+    <string name="feedback_download_summary">Kanał i grupa na telegramie, repozytorium itp.</string>
+    <string name="coolmarket">Opinie w CoolAPK</string>
+    <string name="module_doc">Dokumentacja modułu</string>
+    <string name="qq_channel">Kanał QQ</string>
+    <string name="telegram_channel">Kanał na Telegramie</string>
+    <string name="telegram_group">Grupa na Telegramie</string>
+    <string name="lsposed_repo">Repozytorium LSPosed</string>
+    <string name="github_repo">Repozytorium GitHub</string>
+    <string name="open_source">Otwarty kod źródłowy</string>
+    <string name="open_source_summary">Kliknij, aby wyświetlić listę wykorzystanych otwartych kodów źródłowych</string>
+
+    <string name="system_not_support">Obecny system nie jest wspierany!</string>
+    <string name="unsupported_xposed">Module not activated detected.\nPlease use LSPosed %1$s and above to check the module scope.\nIf you have completed this step, you can try to click OK to exit and reopen the module.</string>
+    <string name="unsupported_os">Unsupported system</string>
+    <string name="unsupported_os_summary">Because the module only supports ColorOS 12 and above systems, please be sure to take security measures!</string>
+    <string name="no_root">No Root permission</string>
+    <string name="no_root_summary">Root permission is not detected, some functions will not be available!</string>
+
+    <string name="menu_reboot">Menu restartowania</string>
+    <string name="menu_settings">Informacje o autorze</string>
+    <string name="restart_scope">Zastosuj wszystkie zmiany</string>
+    <string name="need_restart_scope">Need to restart scope</string>
+    <string name="need_restart_system">Need to restart system</string>
+    <string name="restart_scope_message">Zmiany dla „Android System” mogą być zastosowane dopiero po restarcie urządzenia.\nUżyj tego, jeśli moduł nie działa!\nUpewnij się, czy rekomendowane aplikacje są zaznaczone w LSPosed!</string>
+    <string name="restart_only_this_page_scope">Zastosuj zmiany dokonane na tej stronie</string>
+    <string name="reboot">Zrestartuj urządzenie</string>
+    <string name="fast_reboot">Szybki restart</string>
+    <string name="menu_versioninfo">Informacje o wersji</string>
+    <string name="scope_version_info">Informacje o aplikacjach objętych kontrolą</string>
+    <string name="show_system_app">Show system APP</string>
+
+    <string name="Android">Związane z systemem</string>
+    <string name="app_label">Nazwa aplikacji</string>
+    <string name="package_name">Nazwa pakietu</string>
+    <string name="version">Wersja</string>
+
+    <string name="ColorOSCorePatchTip">Dla oficjalnego instalatora ColorOS należy włączyć dodatkowe funkcje, aby móc z tych korzystać:\nFunkcje &gt; Aplikacje &gt; Instalowanie aplikacji</string>
+    <string name="corepatch">Główna łatka</string>
+    <string name="corepatch_summary">Remove install limits, supports Android 11-16</string>
+    <string name="downgr">Obniżanie wersji aplikacji</string>
+    <string name="downgr_summary">Umożliwia instalowanie starszych wersji aplikacji na nowszą.</string>
+    <string name="authcreak">Wyłącz weryfikację sygnatur\nmenedżera pakietów</string>
+    <string name="authcreak_summary">Umożliwia instalację aplikacji pomimo braku podpisu.</string>
+    <string name="digestCreak">Wyłącz weryfikację podpisu aplikacji</string>
+    <string name="digestCreak_summary">Umożliwia zaktualizowanie aplikacji, gdy nowa wersja ma inny podpis.</string>
+    <string name="UsePreSig">Używaj podpisu zainstalowanej aplikacji</string>
+    <string name="UsePreSig_summary">Nie jest to bezpieczne, włącz wyłącznie wtedy, gdy musisz!</string>
+    <string name="enhancedMode">Tryb wymuszony</string>
+    <string name="enhancedMode_summary">Może rozwiązać niektóre wewnętrzne sprawdzanie integralności w aplikacji.</string>
+    <string name="usepresig_warn">Uwaga!\nWszystkie pakiety mogą zastąpić zainstalowaną aplikację, co może prowadzić do niebezpiecznych sytuacji.</string>
+    <string name="exactSigCheck">Disable unique signature matching</string>
+    <string name="exactSigCheck_summary">Disable unique signature matching between multiple APKs, allowing each split APK to use a different signature. Only enable when necessary</string>
+    <string name="bypassBlock">Bypass blacklist</string>
+    <string name="bypassBlock_summary">Bypass blacklist on some devices like Nothing Phone</string>
+    <string name="sharedUser">Bypass shared user signature verification</string>
+    <string name="sharedUser_summary">Allows installing apps with different shared user signatures (requires "Disable APK Signature validation" to be enabled)</string>
+    <string name="disableVerificationAgent">Disable install verification agent</string>
+    <string name="disableVerificationAgent_summary">e.g. Google Play Store protection mechanism</string>
+
+    <string name="StatusBar">Pasek stanu</string>
+    <string name="StatusbarEvents">StatusBar Events</string>
+    <string name="statusbar_double_click_lock_screen">Dotknij dwukrotnie pasek stanu, aby zablokować ekran</string>
+    <string name="vibrate_when_opening_the_statusbar">Vibrate when opening the status bar</string>
+    <string name="set_click_statusbar_scroll_to_top_mode">Set the mode for clicking the status bar to return to the top</string>
+    <string name="set_click_statusbar_scroll_to_top_mode_remove_white_list">Remove the whitelist limit</string>
+
+    <string name="StatusBarClock">Zegar</string>
+    <string name="statusbar_clock_mode">Zegar paska stanu</string>
+    <string name="statusbar_clock_show_year">Pokaż rok (yy/…/…)</string>
+    <string name="statusbar_clock_show_month">Pokaż miesiąc (…/MM/…)</string>
+    <string name="statusbar_clock_show_day">Pokaż dzień (…/…/dd)</string>
+    <string name="statusbar_clock_show_week">Pokaż dzień tygodnia (EEE.)</string>
+    <string name="statusbar_clock_show_period">Pokaż AM/PM</string>
+    <string name="statusbar_clock_show_double_hour">Pokaż chińską dwucyfrową godzinę</string>
+    <string name="statusbar_clock_show_second">Pokaż sekundy</string>
+    <string name="statusbar_clock_hide_spaces">Ukryj przerwy</string>
+    <string name="statusbar_clock_text_alignment">Wyrównanie tekstu</string>
+    <string name="statusbar_clock_left_align">Wyrównaj do lewej</string>
+    <string name="statusbar_clock_center_align">Na środku</string>
+    <string name="statusbar_clock_right_align">Wyrównaj do prawej</string>
+    <string name="statusbar_clock_show_doublerow">Wyświetl w dwóch wierszach</string>
+    <string name="statusbar_clock_singlerow_fontsize">Rozmiar czcionki (jeden wiersz)</string>
+    <string name="statusbar_clock_doublerow_fontsize">Rozmiar czcionki (dwa wiersze)</string>
+    <string name="statusbar_clock_custom_format">Format czasu</string>
+    <string name="statusbar_clock_custom_fontsize">Rozmiar czcionki</string>
+    <string name="statusbar_clock_fontsize_summary">Rozmiar 0 = domyślny</string>
+
+    <string name="StatusBarNetWorkSpeed">Prędkościomierz sieci</string>
+    <string name="set_network_speed">Odświeżaj co 1 sekundę</string>
+    <string name="enable_double_row_network_speed">Dwuwierszowa prędkość sieci</string>
+    <string name="set_network_speed_font_size">Rozmiar czcionki</string>
+    <string name="set_network_speed_padding_bottom">Przesunięcie ikony (dół/góra)</string>
+    <string name="statusbar_network_layout">Układ prędkości sieci</string>
+    <string name="statusbar_network_no_second">Usuń wyświetlanie „na sekundę” (../s)</string>
+    <string name="statusbar_network_no_space">Usuń przestrzeń dla prędkości sieci</string>
+    <string name="set_network_speed_double_row_spacing">Set network speed double row spacing</string>
+
+    <string name="StatusBarNotice">Powiadomienia</string>
+    <string name="StatusBarNotice_summary">Ukryj irytujące powiadomienia</string>
+    <string name="RemoveStatusBarNotifications">Remove status bar notifications</string>
+    <string name="remove_statusbar_devmode">Usuń „Opcje programistyczne”</string>
+    <string name="remove_charging_completed">Usuń „Ładowanie ukończone”</string>
+    <string name="remove_statusbar_top_notification">Usuń „Aplikacja wyświetla się nad inną”</string>
+    <string name="remove_statusbar_top_notification_summary">Usuwa powiadomienie „Ta aplikacja jest wyświetlana nad innymi aplikacjami”</string>
+    <string name="remove_vpn_active_notification">Usuń „VPN aktywny”</string>
+    <string name="remove_vpn_active_notification_summary">Ukrywa powiadomienie o aktywnym połączeniu VPN</string>
+    <string name="remove_flashlight_open_notification">Usuń „Latarka włączona”</string>
+    <string name="remove_app_high_battery_consumption_warning">Usuń „Aplikacja zużywa baterię w tle”</string>
+    <string name="remove_app_high_battery_consumption_warning_summary">Ukrywa powiadomienie o wysokim użyciu baterii przez aplikację</string>
+    <string name="remove_high_performance_mode_notifications">Usuń „Tryb wysokiej wydajności jest włączony”</string>
+    <string name="remove_do_not_disturb_mode_notification">Usuń „Tryb Nie przeszkadzać jest włączony”</string>
+    <string name="remove_hotspot_power_consumption_notification">Usuń „Włączono udostępnianie Wi-Fi”</string>
+    <string name="remove_hotspot_power_consumption_notification_summary">Pozostawienie włączonego osobistego hotspotu zwiększy użycie baterii i nagrzeje urządzenie</string>
+    <string name="remove_smart_rapid_charging_notification">Usuń „Inteligentne szybkie ładowanie”</string>
+    <string name="remove_notifications_for_mute_notifications">Usuń powiadomienia dla wyciszonych powiadomień</string>
+    <string name="remove_virus_risk_notification_in_phone_manager">Usuń alerty o zagrożeniu wirusami w menedżerze telefonu</string>
+    <string name="remove_gt_mode_notification">Remove GT mode notification</string>
+    <string name="allow_long_press_notification_modifiable">Allow long press notifications to be modifiable</string>
+    <string name="remove_notification_manager_limit">Remove notification manager limit</string>
+    <string name="remove_small_window_reply_whitelist">Remove small window reply whitelist</string>
+    <string name="set_small_window_reply_blacklist">Set small window reply blacklist</string>
+    <string name="set_small_window_reply_blacklist_message">Fill in the package name that needs to be added to the blacklist, each line can only fill in one package name</string>
+    <string name="custom_notification_background_transparency">Custom notification background transparency</string>
+
+    <string name="StatusBarIcon">Ikony</string>
+    <string name="StatusBarIcon_summary">Usuń ikony z pasku stanu</string>
+    <string name="StatusBarWIFIIcon">Ikona Wi-Fi</string>
+    <string name="remove_wifi_data_inout">Usuń wskaźnik użycia Wi-Fi</string>
+    <string name="StatusBarMobileDataIcon">Ikona danych mobilnych</string>
+    <string name="remove_mobile_data_icon">Usuń ikonę mobilnej sieci</string>
+    <string name="remove_mobile_data_inout">Usuń wskaźnik użycia danych mobilnych</string>
+    <string name="remove_mobile_data_type">Usuń typ danych mobilnych</string>
+    <string name="hide_non_network_card_icon">Ukryj ikonę karty SIM bez sieci</string>
+    <string name="hide_inactive_signal_labels_gen2x2">Hide inactive signal labels Gen2x2</string>
+    <string name="hide_nosim_noservice">Ukryj ikonę karty SIM bez usługi</string>
+    <string name="StatusBarBluetoothIcon">Ikona Bluetooth</string>
+    <string name="hide_icon_when_bluetooth_not_connected">Ukryj ikonę, gdy nie ma połączenia</string>
+    <string name="StatusBarOtherIcon">Inne ikony</string>
+    <string name="remove_high_performance_mode_icon">Usuń ikonę wysokiej wydajności</string>
+    <string name="remove_statusbar_securepayment_icon">Usuń ikonę ochrony płatności</string>
+    <string name="remove_green_dot_privacy_prompt">Usuń zieloną kropkę prywatności</string>
+    <string name="remove_green_capsule_prompt">Usuń zieloną kapsułkę</string>
+    <string name="remove_green_capsule_prompt_summary">Usuń zieloną kapsułkę hotspotu Wi-Fi</string>
+    <string name="StatusBarSmallIconStatus">Dostosuj pozycję elementów</string>
+    <string name="status_bar_icon_vertical_center">Wyśrodkuj elementy paska stanu</string>
+
+    <string name="StatusBarControlCenter">Centrum sterowania</string>
+    <string name="ControlCenter_Clock_Related">Zegar centrum sterowania</string>
+    <string name="control_center_clock_show_second">Pokaż sekundy</string>
+    <string name="statusbar_control_center_clock_colon_style">Control center clock colon style</string>
+    <string name="fix_clock_colon_style">Obniż dwukropek w zegarze</string>
+    <string name="fix_clock_colon_style_summary">Przywróć normalny dwukropek</string>
+    <string name="statusbar_control_center_clock_red_one_mode">Control center red one mode</string>
+    <string name="remove_control_center_clock_red_one">Usuń czerwony kolor z cyfry „1”</string>
+    <string name="remove_control_center_date_comma">Usuń przecinek daty</string>
+    <string name="fix_control_center_date_display">Fix control center date display</string>
+    <string name="fix_control_center_date_display_suammry">Fix the problem that the date cannot be displayed completely</string>
+    <string name="ControlCenterNotificationCenter">Control Center Notification Center</string>
+    <string name="enable_notification_align_both_sides">Wyrównaj szerokość powiadomień</string>
+    <string name="enable_notification_importance_classification">Enable notification importance classification</string>
+    <string name="ControlCenter_UI_Related">Dostosuj centrum sterowania</string>
+    <string name="set_media_player_display_mode">Set media player display mode</string>
+    <string name="set_media_player_display_mode_hide_when_no_meida_player">Hide when no media is playing</string>
+    <string name="force_enable_media_toggle_button">Force enable media toggle button</string>
+    <string name="set_auto_brightness_button_mode">Set auto-brightness button mode</string>
+    <string name="remove_control_center_user_switcher">Usuń ikonę użytkownika</string>
+    <string name="remove_control_center_mydevice">Usuń przycisk „Moje urządzenia”</string>
+    <string name="restore_page_layout_row_count_for_edit_tiles">Restore page layout row count for edit tiles</string>
+    <string name="set_control_center_search_button_mode">Set control center search button mode</string>
+    <string name="remove_control_center_networkwarn">Remove the security warning message at the bottom of the control center</string>
+    <string name="remove_control_center_networkwarn_dialog">Remove dialog</string>
+    <string name="remove_control_center_networkwarn_dialog_and_text">Remove security warning message and dialogs</string>
+    <string name="remove_control_center_networkwarn_summary">After connecting to VPN, A line of text will appear at the bottom of Control Center\nAfter installing the CA certificate, it shows that the network may be monitored</string>
+    <string name="custom_control_center_background_transparency">Custom control center background transparency</string>
+
+    <string name="StatusBarTiles">Przełączniki centrum sterowania</string>
+    <string name="MediaPlayer">Media Player</string>
+    <string name="auto_expand_tile_rows_horizontal">Automatically expand the number of horizontal tile rows</string>
+    <string name="auto_expand_tile_rows_horizontal_summary">When the media player is hidden, two rows of tiles will be displayed in horizontal mode</string>
+    <string name="auto_expand_tile_rows_horizontal_summary_2">Need to turn on the switch of the tile function below</string>
+    <string name="TileLongClickEvent">Długie przytrzymanie</string>
+    <string name="restore_some_tile_long_press_event">Przywróć niektórym przełącznikom długie naciśnięcie</string>
+    <string name="restore_some_tile_long_press_event_summary">Przywraca otwieranie ustawień dla Wi-Fi, Bluetooth, Osobistego hotspotu i innych</string>
+    <string name="long_press_wifi_tile_open_the_page">Przytrzymaj płytkę „Wi-Fi\", aby otworzyć ustawienia</string>
+    <string name="long_press_mobile_data_tile_open_the_page">Przytrzymaj płytkę „Komórkowa transmisja danych”, aby otworzyć ustawienia</string>
+    <string name="long_press_wifi_hotspot_tile_open_the_page">Przytrzymaj płytkę „Osobisty hotspot”, aby otworzyć ustawienia</string>
+    <string name="long_press_bluetooth_tile_open_the_page">Przytrzymaj płytkę „Bluetooth”, aby otworzyć ustawienia</string>
+    <string name="long_press_screenshot_tile_open_the_page">Przytrzymaj płytkę „Zrzut ekranu”, aby otworzyć ustawienia</string>
+    <string name="long_press_dnd_tile_open_the_page">Przytrzymaj płytkę „Nie przeszkadzać”, aby otworzyć ustawienia</string>
+    <string name="TileLayoutRelated">Układ przełączników</string>
+    <string name="fix_tile_align_both_sides">Napraw wyrównanie okrągłych przełączników</string>
+    <string name="fix_tile_align_both_sides_summary">Naprawia błąd obustronnego przesunięcia układu okrągłych przełączników. Problem widoczny, gdy panel centrum sterowania nie jest rozszerzony</string>
+    <string name="control_center_tile_enable">Zmień układ przełączników</string>
+    <string name="tile_unexpanded_columns_vertical">Kolumny (w pionie)</string>
+    <string name="tile_unexpanded_columns_horizontal">Kolumny (w poziomie)</string>
+    <string name="tile_expanded_columns_vertical">Rozszerzone - Kolumny (w pionie)</string>
+    <string name="tile_expanded_columns_horizontal">Rozszerzone - Kolumny (w poziomie)</string>
+    <string name="tile_expanded_rows_vertical">Rozszerzone - Wiersze (w pionie)</string>
+    <string name="tile_columns_horizontal_c13">Kolumny (w poziomie)</string>
+
+    <string name="StatusBarLayout">Układ paska stanu</string>
+    <string name="statusbar_layout_mode">Typ układu</string>
+    <string name="statusbar_layout_clock_center_align">Wyśrodkowany zegar</string>
+    <string name="statusbar_layout_compatible_mode">Tryb kompatybilny z ekranem</string>
+    <string name="statusbar_layout_left_margin">Lewy margines</string>
+    <string name="statusbar_layout_right_margin">Prawy margines</string>
+    <string name="statusbar_layout_margin_tip">Rozmiar 0 = domyślny</string>
+
+    <string name="StatusBarBattery">Bateria</string>
+    <string name="remove_statusbar_battery_percent">Usuń znak % baterii z paska stanu</string>
+    <string name="statusbar_power_font_size">Rozmiar czcionki</string>
+
+    <string name="StatusBarBatteryNotify">Powiadomienie z informacjami o zasilaniu</string>
+    <string name="battery_information_notify_permanent_display">Zawsze pokazuj</string>
+    <string name="battery_information_notify_only_charging">Pokazuj tylko podczas ładowania</string>
+    <string name="battery_information_display_mode">Tryb wyświetlania informacji o baterii</string>
+    <string name="battery_information_display_mode_summary">Wyświetlaj napięcie baterii i inne informacje na pasku stanu</string>
+    <string name="battery_information_show_charge">Pokaż informacje o ładowaniu</string>
+    <string name="battery_information_show_charge_summary">Podczas ładowania napięcie i teoretyczna moc ładowania będą wyświetlane na pasku stanu</string>
+    <string name="battery_information_show_simple_mode">Simple display mode</string>
+    <string name="battery_information_show_dual_voltage">Show dual voltage</string>
+    <string name="battery_information_show_update_time">Pokaż czas aktualizacji</string>
+    <string name="battery_information_show_update_time_summary">Wyświetl czas aktualizacji aktualnych danych na pasku stanu</string>
+    <string name="battery_status_unknown">Nieznany</string>
+    <string name="battery_status_charging">Ładowanie</string>
+    <string name="battery_status_discharging">Rozładowywanie</string>
+    <string name="battery_status_not_charging">Nie ładuje się</string>
+    <string name="battery_status_full">Pełna</string>
+    <string name="battery_temperature">Temp.</string>
+    <string name="battery_voltage">Napięcie</string>
+    <string name="battery_electric_current">Aktualna</string>
+    <string name="battery_charger_voltage">Napięcie</string>
+    <string name="battery_charger_type">Type</string>
+    <string name="battery_power">Zasilanie</string>
+    <string name="battery_technology">Rodzaj</string>
+    <string name="battery_update_time">Czas aktualizacji</string>
+
+    <string name="AodRelated">Aod Related</string>
+    <string name="remove_aod_music_whitelist">Remove aod music whitelist</string>
+    <string name="remove_aod_notification_icon_whitelist">Remove aod notification icon whitelist</string>
+    <string name="restore_aod_notification_icon_color">Restore aod notification icon color</string>
+    <string name="set_aod_style_mode">Set aod style mode</string>
+    <string name="force_enable_screen_off_music_support">Force enable screen-off music support</string>
+    <string name="force_enable_screen_off_music_support_summary">Applicable only to models that do not support screen-off music</string>
+
+    <string name="LockScreen">Lockscreen Related</string>
+    <string name="LockScreenClockComponent">Lock Screen Clock Component</string>
+    <string name="lock_screen_clock_redone_mode">Lock screen clock red one mode</string>
+    <string name="apply_lock_screen_dual_clock_redone">Apply to lock screen dual clock</string>
+    <string name="remove_lock_screen_redone">Usuń czerwony kolor z cyfry „1”</string>
+    <string name="set_lock_screen_centered">Lockscreen clock component centered</string>
+    <string name="set_lock_screen_centered_summary">Dla systemów, w których elementy ekranu blokady nie mogą być wyśrodkowane w ustawieniach</string>
+    <string name="lock_screen_clock_use_user_typeface">Lockscreen clock components use user fonts</string>
+    <string name="LockScreenChargingComponent">Lock Screen Charging Component</string>
+    <string name="set_lock_screen_warp_charging_style">Set warp charging style</string>
+    <string name="set_lock_screen_charging_text_logo_style">Set charging text logo style</string>
+    <string name="force_lock_screen_charging_show_wattage">Force charging components display wattage</string>
+    <string name="lock_screen_charging_use_user_typeface">Charging components use user fonts</string>
+    <string name="set_full_screen_charging_animation_mode">Full screen charging animation mode</string>
+    <string name="LockScreenCarrier">Lock Screen Carrier</string>
+    <string name="remove_statusbar_carriers">Remove statusbar carriers</string>
+    <string name="statusbar_carriers_use_user_typeface">Użyj niestandardowej czcionki w nazwie operatora sieci</string>
+    <string name="LockScreenButton">Przyciski ekranu blokady</string>
+    <string name="remove_top_lock_screen_icon">Usuń ikonę kłódki</string>
+    <string name="remove_lock_screen_bottom_left_button">Usuń lewy dolny skrót</string>
+    <string name="lock_screen_bottom_left_button_replace_with_flashlight">The button in the lower left corner of the lock screen is replaced with a flashlight</string>
+    <string name="lock_screen_switch_flashlight_auto_close_screen">Switch the flashlight to automatically turn off the screen</string>
+    <string name="remove_lock_screen_bottom_right_camera">Usuń prawy dolny skrót</string>
+    <string name="remove_lock_screen_close_notification_button">Usuń przycisk usuwania powiadomień</string>
+    <string name="remove_lock_screen_bottom_sos_button">Usuń przycisk „Alarmowe SOS”</string>
+    <string name="remove_lock_screen_bottom_sos_button_summary">Przycisk znajduje się na ekranie odblokowania</string>
+    <string name="LockScreenEvent">Wydarzenia</string>
+    <string name="remove_72hour_password_verification">Usuń 72-godzinne ograniczenie</string>
+    <string name="remove_72hour_password_verification_summary">Usuń ograniczenie bezpieczeństwa polegające na ograniczeniu możliwości użycia hasła do odblokowania w ciągu 72 godzin od uruchomienia systemu. Skuteczne po ponownym uruchomieniu urządzenia</string>
+
+    <string name="alarmclock_widget_redone_mode">Clock widget red one mode</string>
+    <string name="remove_alarmclock_widget_redone">Usuń czerwony kolor z cyfry „1”</string>
+    <string name="remove_alarmclock_widget_redone_pro">Wymuś usunięcie czerwonego koloru z cyfry „1”</string>
+    <string name="remove_alarmclock_widget_redone_pro_summary">Dostępne, gdy zwykły przełącznik nie jest skuteczny</string>
+
+    <string name="Desktop">Pulpit</string>
+    <string name="AppBadgeRelated">App badge related</string>
+    <string name="remove_the_dot_after_app_update">Usuń oznaczenie (kropkę) uaktualnienia aplikacji</string>
+    <string name="remove_app_shortcut_badge">Remove app shortcut badge</string>
+    <string name="remove_app_work_badge">Remove app work badge</string>
+    <string name="remove_app_clone_badge">Remove app clone badge</string>
+    <string name="launcher_layout_related">Układ pulpitu</string>
+    <string name="launcher_layout_row_colume">Umożliwia zwiększenie liczby wierszy i kolumn układu pulpitu</string>
+    <string name="launcher_layout_enable">Główny przełącznik</string>
+    <string name="launcher_layout_max_rows">Ilość wierszy</string>
+    <string name="launcher_layout_max_columns">Ilość kolumn</string>
+    <string name="RecentTaskListRelated">Lista ostatnich aplikacji</string>
+    <string name="long_press_app_icon_open_app_details">Przytrzymaj ikonę aplikacji, aby otworzyć informacje o aplikacji</string>
+    <string name="remove_recent_task_list_clear_button">Usuń przycisk „Zamknij wszystkie” z listy ostatnich aplikacji</string>
+    <string name="remove_bottom_app_icon_of_recent_task_list">Usuń dolne ikony z listy ostatnich aplikacji</string>
+    <string name="enable_stacked_task_layout">Włącz układ stosu kart</string>
+    <string name="set_task_stacking_level">Ustaw poziom układania</string>
+    <string name="fix_current_task_to_the_top">Pokaż wybraną kartę podglądu na wierzchu</string>
+    <string name="PaginationComponentRelated">Kropkowy wskaźnik stronicowania</string>
+    <string name="remove_pagination_component">Usuń wskaźnik stronicowania pulpitu</string>
+    <string name="remove_folder_pagination_component">Usuń wskaźnik stronicowania folderu</string>
+    <string name="disable_pagination_component_sliding">Wyłącz przesuwanie komponentu stronicowania</string>
+    <string name="FolderLayoutRelated">Układ folderu</string>
+    <string name="remove_folder_preview_background">Remove folder preview background</string>
+    <string name="enable_folder_layout_adjustment">Włącz dostosowywanie układu folderu</string>
+    <string name="set_icon_columns_in_folder">Ilość kolumn</string>
+    <string name="launcher_events">Launcher Events</string>
+
+    <string name="Application">Aplikacje</string>
+
+    <string name="AppStartupRelated">Dostosuj uruchamianie aplikacji</string>
+    <string name="disable_splash_screen">Wyłącz ekran powitalny</string>
+    <string name="disable_splash_screen_summary">Since the splash screen animation has been removed, there will be a 1–2 second gap period when the APP is started.If you mind, please do not turn it on</string>
+
+    <string name="APPRelatedList">Lista aplikacji</string>
+    <string name="enable_zoom_window">Włącz obsługę listy</string>
+    <string name="zoom_window_support_list">Własna lista obsługi okna powiększenia</string>
+    <string name="zoom_window_support_list_summary">Włącz w zależności od Twoich potrzeb, w przeciwnym razie pojawią się nieodwracalne problemy.</string>
+    <string name="multi_app_enable">Włącz listę zastępowania</string>
+    <string name="multi_app_custom_list">Zastąp listę aplikacji, które można sklonować</string>
+    <string name="multi_app_custom_list_summary">Oryginalna lista klonowania aplikacji zostanie zastąpiona</string>
+    <string name="dark_mode_support_list">Własna lista obsługi trybu ciemnego</string>
+
+    <string name="AppInstallationRelated">Instalowanie aplikacji</string>
+    <string name="PackageInstaller_summary">Wymagane stosowanie z główną łatką</string>
+    <string name="skip_apk_scan">Pomiń skanowanie aplikacji</string>
+    <string name="skip_apk_scan_summary">Pomija skanowanie antywirusowe instalowanej aplikacji</string>
+    <string name="allow_downgrade_install">Umożliwiaj obniżenie wersji</string>
+    <string name="allow_downgrade_install_summary">Umożliwia „aktualizację” aplikacji do starszej wersji</string>
+    <string name="disable_apk_signature_verification">Wyłącz weryfikację podpisu</string>
+    <string name="disable_apk_signature_verification_summary">Umożliwia instalację aplikacji z różnymi podpisami</string>
+    <string name="remove_install_ads">Usuń reklamy po instalacji aplikacji</string>
+    <string name="remove_install_ads_summary">Usuwa reklamy pojawiające się po zainstalowaniu aplikacji</string>
+    <string name="auto_click_install_button">Automatically click the install button</string>
+    <string name="auto_click_uninstall_button">Automatically click the uninstall button</string>
+    <string name="replase_aosp_installer">Zastąp menedżer pakietów</string>
+    <string name="replase_aosp_installer_summary">Podmienia instalator aplikacji na ten z AOSP</string>
+    <string name="show_packagename_and_versioncode">Pokaż nazwę pakietu i kod wersji</string>
+    <string name="show_packagename_and_versioncode_summary">Wyświetlaj nazwę pakietu i kod wersji na górze strony instalacji</string>
+
+    <string name="ApplyOtherRestrictions">Inne ograniczenia</string>
+    <string name="remove_adb_install_confirm">Usuń potwierdzenie instalacji ADB</string>
+    <string name="remove_adb_install_confirm_summary">Użyj ADB, aby zainstalować aplikację bez dotykania</string>
+    <string name="unlock_startup_limit">Odblokuj limit autostartu</string>
+    <string name="unlock_startup_limit_summary">Odblokowuje limit samodzielnego uruchamiania aplikacji</string>
+    <string name="unlock_task_locks">Odblokuj liczbę procesów w tle</string>
+    <string name="unlock_default_desktop_limit">Unlock default desktop restrictions</string>
+    <string name="force_all_apps_support_split_screen">Force all apps to support split screen</string>
+    <string name="remove_app_uninstall_button_blacklist">Remove blacklist of app uninstall button</string>
+    <string name="allow_locking_unlocking_of_excluded_activity">Allow locking or unlocking of excluded activities</string>
+
+    <string name="FloatingWindowDialogRelated">Dostosuj pływające i dialogowe okno</string>
+    <string name="disable_duplicate_floating_window">Wyłącz zduplikowane okno</string>
+    <string name="disable_duplicate_floating_window_summary">Nie pokazuj pływającego okna podczas kopiowania tekstu</string>
+    <string name="disable_headphone_high_volume_warning">Wyłącz ostrzeżenie o bezpiecznej głośności</string>
+    <string name="disable_headphone_high_volume_warning_summary">Wyłącz okno dialogowe z ostrzeżeniem, które pojawia się podczas zwiększania głośności, gdy podłączono słuchawki</string>
+    <string name="remove_low_battery_dialog_warning">Usuń ostrzeżenie o niskim poziomie baterii</string>
+    <string name="remove_low_battery_dialog_warning_summary">Usuwa okno dialogowe z ostrzeżeniem o niskim poziomie baterii</string>
+    <string name="remove_warning_dialog_that_app_runs_on_desktop">Usuń ostrzeżenie „Aplikacja wyświetla się nad innymi aplikacjami”</string>
+    <string name="remove_warning_dialog_that_app_runs_on_desktop_summary">Usuwa okno dialogowe z ostrzeżeniem, że aplikacja wyświetla się nad innymi aplikacjami</string>
+    <string name="remove_usb_connect_dialog">Usuń okno połączenia USB</string>
+    <string name="remove_usb_connect_dialog_summary">Tryb przesyłania plików będzie wybierany domyślnie po podłączeniu USB</string>
+    <string name="remove_secure_pay_found_virus_dialog">Usuń okno sprawdzania wirusów dla bezpiecznych płatności</string>
+    <string name="remove_access_device_log_dialog">Remove access device log dialog</string>
+    <string name="custom_volume_dialog_background_transparency">Custom volume dialog background transparency</string>
+    <string name="reduce_power_menu_display_delay">Reduce power menu display delay</string>
+
+    <string name="FingerPrintRelated">Ustawienia odcisku palca</string>
+    <string name="remove_fingerprint_icon_mode">Tryb usuwania ikony</string>
+    <string name="remove_fingerprint_icon">Usuń ikonę</string>
+    <string name="remove_fingerprint_press_animation">Usuń animację</string>
+    <string name="remove_fingerprint_icon_and_press_animation">Usuń ikonę i animację</string>
+    <string name="replace_fingerprint_icon_switch">Zastąp ikonę odcisku palca</string>
+    <string name="replace_fingerprint_icon_switch_summary">Zalecana rozdzielczość obrazu = 216x216</string>
+    <string name="replace_fingerprint_icon_path">Ścieżka ikony odcisku</string>
+
+    <string name="Miscellaneous">Pozostałe funkcje</string>
+    <string name="Miscellaneous_summary">Znajdziesz tutaj funkcje, które ciężko było dopasować do kategorii</string>
+    <string name="show_charging_ripple">Pokaż animację fali podczas ładowania</string>
+    <string name="show_charging_ripple_summary">Widoczne przy podłączaniu do ładowarki</string>
+    <string name="disable_otg_auto_off">Wyłącz auto. wyłączanie OTG</string>
+    <string name="disable_otg_auto_off_summary">Połączenie OTG nie zostanie wyłączone po 10 minutach bezczynności</string>
+    <string name="remove_storage_limit">Usuń ograniczenie dostępu do pamięci</string>
+    <string name="remove_storage_limit_summary">Usuwa ograniczenie „Ten folder nie może być używany”, podczas próby przypisania folderu dla danej aplikacji</string>
+    <string name="media_volume_level">Kroki głośności multimediów</string>
+    <string name="media_volume_level_summary">0 = funkcja wyłączona. Zrestartuj urządzenie, aby zastosować zmiany</string>
+    <string name="minimum_volume_level_can_be_zero">Minimum volume level can be zero</string>
+    <string name="open_screen_power_save">Dodaj stronę „Oszczędzanie energii ekranu”</string>
+    <string name="open_screen_power_save_summary">Ustawienia &gt; Bateria &gt; Więcej ustawień &gt; Oszczędzanie energii ekranu</string>
+    <string name="open_battery_health">Dodaj stronę „Stan baterii”</string>
+    <string name="open_battery_health_summary">Ustawienia &gt; Bateria &gt; Stan baterii</string>
+    <string name="performance_mode_and_standby_optimization">Dodaj stronę „Tryb wydajności” i „Optymalne czuwanie”</string>
+    <string name="performance_mode_and_standby_optimization_summary">Ustawienia &gt; Bateria &gt; Więcej ustawień</string>
+    <string name="allow_untrusted_touch">Zezwól na niezaufane działania dotykowe</string>
+    <string name="disable_dynamic_refresh_rate">Disable dynamic refresh rate</string>
+    <string name="disable_dynamic_refresh_rate_summary">Mainly solve the frame drop problem when the screen is not touched</string>
+    <string name="set_volume_bar_display_position">Set the volume bar display position</string>
+    <string name="force_enable_systemui_blur_feature">Force enable the systemui blur feature</string>
+    <string name="force_enable_systemui_blur_feature_tips">Preconditions: You need to turn on the option to “force enable the blur feature of the systemui”\nFunctional location: Miscellaneous</string>
+
+    <string name="remove_battery_temperature_control">Remove battery temperature control</string>
+    <string name="remove_battery_temperature_control_summary">Remove the limitation that various functions cannot be used,For example: camera, flashlight, hotspot, screen display engine, etc.</string>
+    <string name="BatteryOptimization">Battery Optimization</string>
+    <string name="restore_default_battery_optimization_whitelist">Przywróć domyślną białą listę optymalizacji baterii</string>
+    <string name="disable_customize_battery_optimization_whiteList">Disable custom battery optimization whitelist</string>
+    <string name="disable_customize_battery_optimization_whiteList_summary">If the APP is manually granted the `ignore battery optimization` permission by the user, After enabling this function, the APP will not be automatically added to the battery optimization whitelist</string>
+    <string name="fix_battery_health_data_display">Fix battery health data display</string>
+    <string name="fix_battery_health_data_display_summary">Do not use this feature when the system supports battery health\nThe accuracy of the data cannot be guaranteed</string>
+    <string name="fix_battery_health_data_display_tips">Try rebooting the system</string>
+
+    <string name="settings_status_bar">StatusBar</string>
+    <string name="enable_statusbar_clock_format">Enable status bar clock format</string>
+    <string name="enable_statusbar_clock_format_summary">Enable some systems that do not support the option to modify the status bar clock format</string>
+    <string name="settings_lock_screen">LockScreen</string>
+    <string name="enable_show_never_timeout">Enable screen display never timeout</string>
+    <string name="enable_show_never_timeout_summary">After enabling, you can see more options in the settings</string>
+    <string name="settings_display">Display</string>
+    <string name="force_display_dc_backlight_mode">Forced to display low brightness and no flicker eye protection</string>
+    <string name="force_display_dc_backlight_mode_summary">There is no guarantee that it will work, it is only used to display function options</string>
+    <string name="force_display_video_memc_frame_insertion">Forcibly display video MEMC interpolation frame</string>
+    <string name="video_frame_insertion_support_2K120">Włącz obsługę interpolacji klatek wideo dla 2k-120fps</string>
+    <string name="video_frame_insertion_support_2K120_summary">If your device does not support MEMC, please do not use this function</string>
+    <string name="enable_screen_color_temperature_rgb_palette">Enable screen color temperature RGB palette</string>
+    <string name="enable_screen_color_temperature_rgb_palette_summary">May be overridden by DC function</string>
+    <string name="settings_application">Application</string>
+    <string name="force_display_process_management">Force display of process management</string>
+    <string name="force_display_disabled_apps_manager">Force display of disabled apps manager</string>
+    <string name="settings_phone_preference">About Phone</string>
+    <string name="set_processor_click_page">Set the processor to click to jump to the page</string>
+    <string name="customize_device_sharing_page_parameters">Customize device sharing page parameters</string>
+    <string name="settings_developer_preference">Developer Options</string>
+    <string name="remove_dpi_restart_recovery">Zapobiegaj przywróceniu DPI do oryginalnej wartości po ponownym uruchomieniu urządzenia</string>
+    <string name="remove_dpi_restart_recovery_summary">Po zastosowaniu zmian, znajdź „Najmniejsza szerokość” w „Opcje programisty”, aby ustalić wartość „DP”</string>
+    <string name="settings_other_preference">Other Preferences</string>
+    <string name="remove_top_account_display">Usuń wyświetlanie informacji o koncie na górze</string>
+    <string name="remove_settings_bottom_laboratory">Remove settings bottom laboratory</string>
+    <string name="force_display_bottom_google_settings">Force to show Google at the bottom of the settings</string>
+    <string name="AppDetailsRelated">Dostosuj informacje o aplikacji</string>
+    <string name="show_package_name_in_app_details">Pokaż nazwę pakietu w informacjach o aplikacji</string>
+    <string name="show_last_update_time_in_app_details">Pokaż czas ostatniej aktualizacji</string>
+    <string name="enable_long_press_to_copy_in_app_details">Włącz zaznaczanie i kopiowanie</string>
+    <string name="click_icon_open_market_page">Dotknij ikonę aplikacji, aby otworzyć sklep</string>
+    <string name="allow_disabling_system_apps">Allow disabling system apps</string>
+    <string name="allow_disabling_system_apps_summary">This module is not responsible if the system application cannot be restored due to user operations.</string>
+    <string name="enable_custom_app_language">Enable custom app language</string>
+
+    <string name="CameraWaterMark">WaterMark</string>
+    <string name="remove_watermark_word_limit">Usuń limit długości znaków znaku wodnego</string>
+    <string name="enable_hasselblad_watermark_style">Włącz styl znaku wodnego „Hasselblad”</string>
+    <string name="custom_model_watermark">Custom model watermark</string>
+    <string name="CameraFilter">Filter</string>
+    <string name="enable_master_filter">Enable Master filter</string>
+    <string name="enable_jiangwen_filter">Enable Jiang Wen filter</string>
+    <string name="enable_10_bit_image_support">Włącz obsługę 10-bitowych obrazów</string>
+    <string name="enable_10_bit_image_support_summary">Enabling this feature on some models may cause the photo to turn green</string>
+
+    <string name="GalleryWaterMark">WaterMark</string>
+    <string name="enable_watermark_editing">Enable watermark editing</string>
+    <string name="replace_oneplus_model_watermark">Replace OnePlus model watermark</string>
+    <string name="replace_oneplus_model_watermark_summary">When editing the watermark, [Shot On OnePlus] will be replaced with the customized model</string>
+
+    <string name="remove_root_check">Usuń limit filtrów gier</string>
+    <string name="remove_root_check_summary">Wyłącza wykrywanie roota dla filtrów gier</string>
+    <string name="remove_startup_animation">Wyłącz animację startową</string>
+    <string name="remove_welfare_page">Usuń stronę „Cyfrowa równowaga”</string>
+    <string name="remove_some_vip_limit">Remove some VIP restrictions</string>
+    <string name="remove_some_vip_limit_summary">Unlock network acceleration, game filters, etc.\nPlease test the specific function by yourself</string>
+    <string name="enable_developer_page">Włącz tryb programisty</string>
+    <string name="enable_eva_theme">Włącz motyw EVA</string>
+    <string name="enable_developer_page_summary">Po włączeniu tej funkcji i po restarcie procesów, można przejść do niego za pomocą portalu skrótów</string>
+    <string name="enable_adreno_gpu_controller">Włącz kontroler Adreno GPU</string>
+    <string name="enable_support_competition_mode">Włącz obsługę trybu rywalizacji</string>
+    <string name="remove_competition_mode_sound">Usuń dźwięk trybu rywalizacji</string>
+    <string name="enable_increase_fps_limit_feature">Włącz zwiększenie limitu fps</string>
+    <string name="enable_increase_fps_feature">Włącz zwiększenie fps</string>
+    <string name="enable_optimise_power_feature">Włącz zoptymalizowane zasilanie</string>
+    <string name="enable_gt_mode_feature">Włącz tryb GT</string>
+    <string name="enable_x_mode_feature">Włącz tryb X</string>
+    <string name="enable_super_resolution_feature">Włącz super rozdzielczość</string>
+    <string name="enable_one_plus_characteristic">Włącz funkcje OnePlus</string>
+    <string name="custom_media_player_support">Custom media player support</string>
+    <string name="custom_media_player_support_message">Fill in the package name of the media player to be added,Each line can only fill in one APP</string>
+    <string name="remove_danmaku_notification_whitelist">Remove danmaku notification whitelist</string>
+    <string name="remove_game_voice_changer_whitelist">Remove game voice changer whitelist</string>
+    <string name="remove_game_assistant_temperature_detection">Remove Game Assistant temperature detection</string>
+    <string name="remove_game_assistant_temperature_detection_summary">Mainly solves the problem of excessive temperature in X mode</string>
+
+    <string name="remove_network_limit">Usuń limit danych sieciowych</string>
+    <string name="remove_network_limit_summary">Usuwa ograniczenie, według którego kopia zapasowa/przywracanie nie może korzystać z danych mobilnych</string>
+
+    <string name="unlock_themestore_vip">Odblokuj niektóre funkcje VIP</string>
+    <string name="unlock_themestore_vip_summary">Odblokuj część funkcji i wypróbuj je na własnej skórze</string>
+
+    <string name="Screenshot">Zrzut ekranu</string>
+    <string name="remove_system_screenshot_delay">Usuń opóźnienie</string>
+    <string name="remove_system_screenshot_delay_summary">Być może nie zadziała na pierwszym zrzucie ekranu</string>
+    <string name="remove_screenshot_privacy_limit">Usuń ograniczenie prywatności</string>
+    <string name="remove_screenshot_privacy_limit_summary">Zezwól na wykonywanie zrzutów ekranu w aplikacjach, które na to nie pozwalają. Wyłącz FLAG_SECURE, jeśli to nie zadziała</string>
+    <string name="disable_flag_secure">Wyłącz FLAG_SECURE</string>
+    <string name="disable_flag_secure_summary">Rozwiązuje problemy z niemożliwością wykonywania zrzutów i nagrywania ekranu w aplikacjach.\nWymagany LSPosed 1.8.6+.</string>
+    <string name="remove_page_limit_for_long_screenshots">Remove the page limit for long screenshots</string>
+    <string name="remove_page_limit_for_long_screenshots_summary">Only some scenarios are supported, please test the specific situation by yourself</string>
+    <string name="enable_png_save_format">Enable PNG save format</string>
+
+    <string name="unlock_local_upgrade">Odblokuj lokalne uaktualnienie</string>
+    <string name="unlock_local_upgrade_summary">After clicking, relevant operations will be performed automatically, please wait patiently for a few seconds</string>
+    <string name="restore_ota_update_verity">Resume OTA update verification</string>
+    <string name="restore_ota_update_verity_summary">Current Status: [%1$s]\nTry to use this feature if the OTA update prompts for validation failure or prompts for dm-verity\nDo not ask why the feature is grayed out because the system has update validation enabled by default\nWhen validation is turned off the OTA update fails, so when the feature is turned on it locks out this feature</string>
+
+    <string name="extract_ota_information">Extract OTA information</string>
+    <string name="extract_ota_information_summary">When the new version is obtained, you can click to extract the OTA information</string>
+    <string name="no_ota_data">No OTA Data</string>
+    <string name="extract_ota_source">Extract Source</string>
+
+    <string name="remove_image_save_watermark">Remove image save watermark</string>
+    <string name="remove_video_save_watermark">Remove video save watermark</string>
+
+    <string name="force_display_communication_sharing">Force display of communication sharing</string>
+
+    <string name="AonGesture">AonGesture</string>
+    <string name="force_enable_aon_gestures">Force enable aon gestures</string>
+    <string name="force_enable_aon_gestures_summary">Note: AONService (com.aiunit.aon) needs to be installed, and the camera permission must be granted!</string>
+    <string name="custom_aon_gesture_scroll_page_whitelist">Custom scroll page whitelist</string>
+    <string name="custom_aon_gesture_video_whitelist">Custom video gesture whitelist</string>
+    <string name="custom_aon_gesture_whitelist_tips">Fill in the package name that needs to be added to the whitelist, and only one package name can be filled in each line</string>
+    <string name="enable_volume_key_control_flashlight">Enable the volume keys to control the flashlight</string>
+
+    <string name="FullScreenGestureRelated">Gesty pełnoekranowe</string>
+    <string name="remove_side_slider">Usuń boczny suwak</string>
+    <string name="remove_side_slider_black_background">Usuń czarne tło paska bocznego</string>
+    <string name="remove_rotate_screen_button">Usuń przycisk obracania ekranu</string>
+    <string name="CustomSideSliderIcon">Niestandardowa ikona paska bocznego</string>
+    <string name="replace_side_slider_icon_switch">Zastąp ikonę</string>
+    <string name="replace_side_slider_icon_switch_summary">Szerokość ikony jest zalecana do około 100 pikseli</string>
+    <string name="replace_side_slider_icon_on_left">Zastąp lewą ikonę</string>
+    <string name="replace_side_slider_icon_on_right">Zastąp prawą ikonę</string>
+
+    <string name="remove_verification_code_floating_window">Remove verification code floating window</string>
+
+    <string name="remove_ads_from_weather_page">Remove weather page bottom information flow ads</string>
+    <string name="remove_ads_from_weather_page_summary">By injecting JS into the page m.weathercn.com to achieve the effect of blocking ads, it is suitable for functions that require a browser, such as the weather of the past 15 days that you jump to through the weather app</string>
+    <string name="remove_ads_from_download_dialog">Remove ads from download dialog</string>
+    <string name="remove_ads_at_download_page_bottom">Remove ads at the bottom of download page</string>
+
+    <string name="BreenoTouch">Breeno Touch</string>
+    <string name="remove_app_recommend_card">Remove app recommend card</string>
+
+    <string name="remove_market_splash_page_app_recommend">Remove app recommendations from market splash page</string>
+    <string name="remove_market_update_page_app_recommend">Remove app recommendations from market update page</string>
+    <string name="remove_market_download_page_app_recommend">Remove app recommendations from market download page</string>
+
+    <string name="skip_startup_page">Pomiń stronę początkową</string>
+    <string name="vip_download">Pobierz oryginał</string>
+
+    <string name="remove_pro_license">Usuń detekcję licencji</string>
+
+    <string name="adm_unlock_pro">Unlock Pro</string>
+
+    <string name="fps_title">Odświeżanie ekranu</string>
+    <string name="fps_summary">Koliduje z innymi procesami dynamicznego odświeżania, np. z „dpfs”</string>
+    <string name="brand">Marka</string>
+    <string name="model">Model</string>
+    <string name="product">Produkt</string>
+    <string name="market_name">Nazwa rynkowa</string>
+    <string name="flash">Pamięć flash</string>
+    <string name="build_version">Numer kompilacji</string>
+    <string name="device">Urządzenie</string>
+    <string name="system">Android</string>
+    <string name="fps_tips">Funkcja autostartu zostanie uruchomiona 1 sekundę po wybudzeniu ekranu</string>
+    <string name="restore_default_refresh_rate">Przywróć domyślne odświeżanie</string>
+    <string name="module_isactivated">Aktywowano</string>
+    <string name="module_notactive">Nieaktywny</string>
+    <string name="module_has_updated">Module has been updated</string>
+    <string name="module_is_disabled">Module is disabled</string>
+    <string name="module_version">Wersja modułu: </string>
+    <string name="update_time">Czas aktualizacji</string>
+    <string name="last_update_time">Zaktualizowano:</string>
+    <string name="copy_download_link">Skopiuj link pobierania</string>
+    <string name="fps_autostart">Automatyczny start</string>
+    <string name="fps_no_data">No FPS data, please check Root permission</string>
+    <string name="device_guid">GUID urządzenia</string>
+    <string name="oplusota_copy_tip">Przytrzymaj pole wprowadzania, aby skopiować</string>
+    <string name="oplusota_copyall">Skopiuj wszystko</string>
+
+    <string name="quick_entry">Ukryte funkcje systemowe</string>
+    <string name="quick_entry_summary">Ustawienia AOSP, Kalibrator System UI, Dodatkowe przyciemnianie ekranu</string>
+    <string name="SystemDebuggingRelated">Debugowanie systemu</string>
+    <string name="engineering_mode">Tryb inżynieryjny</string>
+    <string name="charging_test">Test ładowania</string>
+    <string name="developer_option">Opcje programistyczne</string>
+    <string name="system_interface_adjustment">Kalibrator System UI</string>
+    <string name="AOSPSettingsPage">Ustawienia AOSP</string>
+    <string name="HidePageRelated">Ukryte strony</string>
+    <string name="process_manager">Menedżer procesów</string>
+    <string name="very_dark_mode">Dodatkowe przyciemnienie ekranu</string>
+    <string name="battery_health">Stan baterii</string>
+    <string name="battery_optimization">Optymalizacja baterii</string>
+    <string name="camera_algo_page">Algorytmy kamery</string>
+    <string name="browser_concise_mode">Tryb zwięzły przeglądarki</string>
+    <string name="GameAssistantRelated">Asystent gier</string>
+    <string name="game_assistant_page">Strona asystenta gier</string>
+    <string name="game_space_page">Przestrzeń gier</string>
+    <string name="game_assistant_develop_page">Strona programisty Asystenta Gier</string>
+
+    <string name="set_module_shortcuts">Set module shortcuts</string>
+    <string name="set_module_shortcuts_summary">Long press on module icon to show enabled shortcuts</string>
+
+    <string name="remote_adb_debug_title">Zdalne debugowanie ADB</string>
+    <string name="remote_adb_debug_summary">Wyłącz, jeśli nie jest w użyciu</string>
+    <string name="adb_port">Port ADB</string>
+    <string name="enable_remote_adb_debugging">Zdalne debugowanie ADB</string>
+    <string name="adb_debug_port_cannot_null">Port ADB nie może być pusty</string>
+    <string name="adb_tv_tip">Przytrzymaj, aby skopiować</string>
+    <string name="adb_connect_address_format">adb connect %1$s:%2$d</string>
+
+    <string name="log_save_success">Logi zapisano pomyślnie!</string>
+    <string name="log_save_failed">Zapis logów się nie powiódł!</string>
+    <string name="log_data_is_empty">Logi są puste!</string>
+    <string name="log_no_data">Brak problemów</string>
+    <string name="log_filter_title">Wprowadź filtr</string>
+    <string name="log_filter_layout_hint">Taki jak nazwa pakietu, zawartość itp.</string>
+
+    <string name="increase_touch_sampling_rate">Zwiększ częstotliwość próbkowania dotyku</string>
+    <string name="high_brightness_mode">Tryb wysokiej jasności</string>
+    <string name="high_performance_mode">Tryb wysokiej wydajności</string>
+    <string name="global_dc">Globalny DC</string>
+    <string name="fiveg_mode">Przełącznik trybu 5G</string>
+    <string name="display_refresh_rate">Wskaźnik odświeżania ekranu</string>
+    <string name="google_service">Google Service</string>
+
+    <string name="permission_denied_toast">Permission denied, please grant permission manually: %1$s</string>
+    <string name="permission_error_toast">Failed to obtain permission: %1$s</string>
+    <string name="all_files_access_permission">Aby zapewnić normalne korzystanie z modułu, upewnij się, że masz uprawnienia do modułu!</string>
+    <string name="get_installed_apps_permission">Get permissions for installed apps</string>
+
+    <string name="use_user_typeface">Użyj niestandardowej czcionki</string>
+
+    <string name="common_words_enable">Enable</string>
+    <string name="common_words_disable">Disable</string>
+    <string name="common_words_left">Left</string>
+    <string name="common_words_right">Right</string>
+    <string name="common_words_close">Wyłączone</string>
+    <string name="common_words_open">Otwórz</string>
+    <string name="common_words_share">Share</string>
+    <string name="common_words_add">Add</string>
+    <string name="common_words_remove">Remove</string>
+    <string name="common_words_ignore">Ignore</string>
+    <string name="common_words_default">Domyślny</string>
+    <string name="common_words_normal">Normal</string>
+    <string name="common_words_special">Special</string>
+    <string name="common_words_preset">Gotowe ustawienia</string>
+    <string name="common_words_single_line">Jednowierszowy</string>
+    <string name="common_words_double_line">Dwuwierszowy</string>
+    <string name="common_words_customize">Dostosuj</string>
+    <string name="common_words_current_mode">Aktualny tryb</string>
+    <string name="common_words_refresh">Refresh</string>
+    <string name="common_words_save">Save</string>
+    <string name="common_words_filter">Filter</string>
+    <string name="common_words_loading">Loading</string>
+    <string name="common_words_whitelist">Whitelist</string>
+    <string name="common_words_blacklist">Blacklist</string>
+    <string name="common_words_ads">Ads</string>
+
+    <string name="net_connect_error">Nie udało się połączyć z siecią</string>
+    <string name="net_networking_error">Aktualna sieć jest niedostępna</string>
+    <string name="net_url_error">Błąd adresu żądanego zasobu</string>
+    <string name="net_host_error">Nie można odnaleźć określonego serwera</string>
+    <string name="net_connect_timeout_error">Upłynął limit czasu połączenia z serwerem, %s</string>
+    <string name="net_download_error">Wystąpił błąd podczas pobierania</string>
+    <string name="net_no_cache_error">Nie udało się odczytać pamięci podręcznej</string>
+    <string name="net_parse_error">Podczas przetwarzania danych wystąpił wyjątek</string>
+    <string name="request_failure">Żądanie nie powiodło się</string>
+    <string name="net_request_error">Błąd żądanego parametru</string>
+    <string name="net_server_error">Błąd odpowiedzi usługi</string>
+    <string name="net_null_error">Wystąpił nieznany wyjątek</string>
+    <string name="net_error">Nieznany błąd sieci</string>
+    <string name="net_other_error">Nieznany błąd</string>
+    <string name="no_error_message">Brak wiadomości o błędzie</string>
+    <string name="remove_ads_from_weather">Usuń reklamy aplikacji pogodowych</string>
+
+</resources>
