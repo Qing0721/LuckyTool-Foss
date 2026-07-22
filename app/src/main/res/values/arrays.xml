@@ -1,0 +1,249 @@
+<resources>
+    <string-array name="xposed_scope">
+        <item>android</item>
+        <item>com.android.systemui</item>
+        <item>com.oplus.battery</item>
+        <item>com.android.settings</item>
+        <item>com.android.packageinstaller</item>
+        <item>com.android.launcher</item>
+        <item>com.oppo.launcher</item>
+        <item>com.oneplus.camera</item>
+        <item>com.oplus.camera</item>
+        <item>com.coloros.gallery3d</item>
+        <item>com.oplus.safecenter</item>
+        <item>com.coloros.safecenter</item>
+        <item>com.coloros.alarmclock</item>
+        <item>com.oplus.notificationmanager</item>
+        <item>com.coloros.phonemanager</item>
+        <item>com.oplus.aod</item>
+        <item>com.oplus.uiengine</item>
+        <item>com.oplus.keyguard.clock.base</item>
+        <item>com.coloros.securepay</item>
+        <item>com.oplus.securitypermission</item>
+        <item>com.heytap.themestore</item>
+        <item>com.oplus.themestore</item>
+        <item>com.oplus.games</item>
+        <item>com.oplus.cosa</item>
+        <item>com.heytap.cloud</item>
+        <item>com.oplus.screenshot</item>
+        <item>com.oplus.appplatform</item>
+        <item>com.oplus.ota</item>
+        <item>com.oplus.sau</item>
+        <item>com.heytap.pictorial</item>
+        <item>com.android.mms</item>
+        <item>com.android.incallui</item>
+        <item>com.android.phone</item>
+        <item>com.android.contacts</item>
+        <item>com.android.externalstorage</item>
+        <item>com.heytap.browser</item>
+        <item>com.oplus.gesture</item>
+        <item>com.android.permissioncontroller</item>
+        <item>com.coloros.directui</item>
+        <item>com.heytap.quicksearchbox</item>
+        <item>com.heytap.market</item>
+        <item>com.coloros.weather2</item>
+        <item>com.coloros.calendar</item>
+        <item>com.coloros.smartsidebar</item>
+        <item>com.coloros.soundrecorder</item>
+        <item>com.oplus.audiomonitor</item>
+        <item>com.oplus.audio.effectcenter</item>
+        <item>com.oplus.eyeprotect</item>
+        <item>com.oplus.atlas</item>
+        <item>com.heytap.accessory</item>
+        <item>com.oplus.beaconlink</item>
+        <item>com.oplus.wirelesssettings</item>
+        <item>com.android.bluetooth</item>
+        <item>com.android.nfc</item>
+        <item>com.coloros.oshare</item>
+        <item>com.oplus.mediacontroller</item>
+        <item>com.oplus.multiapp</item>
+        <item>com.coloros.filemanager</item>
+        <item>com.oplus.engineermode</item>
+        <item>com.heytap.mydevices</item>
+        <item>com.heytap.health</item>
+        <item>com.heytap.speechassist</item>
+        <item>com.heytap.mcs</item>
+        <item>com.oplus.exsystemservice</item>
+
+        <item>ru.kslabs.ksweb</item>
+        <item>com.dv.adm</item>
+        <item>com.ruet_cse_1503050.ragib.appbackup.pro</item>
+    </string-array>
+
+    <string-array name="dark_theme" translatable="false">
+        <item>@string/dark_theme_off</item>
+        <item>@string/dark_theme_on</item>
+        <item>@string/dark_theme_follow_system</item>
+    </string-array>
+
+    <string-array name="dark_theme_value" translatable="false">
+        <item>MODE_NIGHT_NO</item>
+        <item>MODE_NIGHT_YES</item>
+        <item>MODE_NIGHT_FOLLOW_SYSTEM</item>
+    </string-array>
+
+    <string-array name="statusbar_clock_mode_entries">
+        <item>@string/common_words_default</item>
+        <item>@string/common_words_preset</item>
+        <item>@string/common_words_customize</item>
+    </string-array>
+
+    <string-array name="statusbar_layout_mode_entries">
+        <item>@string/common_words_default</item>
+        <item>@string/statusbar_layout_clock_center_align</item>
+    </string-array>
+
+    <string-array name="statusbar_clock_text_alignment_entries">
+        <item>@string/statusbar_clock_left_align</item>
+        <item>@string/statusbar_clock_center_align</item>
+        <item>@string/statusbar_clock_right_align</item>
+    </string-array>
+
+    <string-array name="statusbar_network_layout_entries">
+        <item>@string/common_words_default</item>
+        <item>@string/common_words_single_line</item>
+        <item>@string/common_words_double_line</item>
+    </string-array>
+
+    <string-array name="statusbar_battery_information_notify_entries">
+        <item>@string/common_words_close</item>
+        <item>@string/battery_information_notify_permanent_display</item>
+        <item>@string/battery_information_notify_only_charging</item>
+    </string-array>
+
+    <string-array name="remove_fingerprint_icon_mode_entries">
+        <item>@string/common_words_close</item>
+        <item>@string/remove_fingerprint_icon</item>
+        <item>@string/remove_fingerprint_press_animation</item>
+        <item>@string/remove_fingerprint_icon_and_press_animation</item>
+    </string-array>
+
+    <string-array name="statusbar_control_center_clock_red_one_mode_entries">
+        <item>@string/common_words_default</item>
+        <item>@string/common_words_enable</item>
+        <item>@string/common_words_disable</item>
+    </string-array>
+
+    <string-array name="set_app_update_dot_display_mode_entries">
+        <item>@string/common_words_default</item>
+        <item>@string/common_words_enable</item>
+        <item>@string/common_words_disable</item>
+    </string-array>
+
+    <string-array name="statusbar_control_center_clock_colon_style_entries">
+        <item>@string/common_words_default</item>
+        <item>@string/common_words_normal</item>
+        <item>@string/common_words_special</item>
+    </string-array>
+
+    <string-array name="statusbar_control_center_date_fix_lunar_horizontal_entries">
+        <item>@string/common_words_default</item>
+        <item>文字滚动模式</item>
+        <item>布局偏移模式</item>
+    </string-array>
+
+    <string-array name="statusbar_control_center_networkwarn_entries">
+        <item>@string/common_words_default</item>
+        <item>@string/remove_control_center_networkwarn_dialog</item>
+        <item>@string/remove_control_center_networkwarn_dialog_and_text</item>
+    </string-array>
+
+    <string-array name="statusbar_control_center_auto_brightness_mode_entries">
+        <item>@string/common_words_default</item>
+        <item>@string/common_words_enable</item>
+        <item>@string/common_words_disable</item>
+    </string-array>
+
+    <string-array name="set_aod_style_mode_entries">
+        <item>@string/common_words_default</item>
+        <item>@string/common_words_enable</item>
+        <item>@string/common_words_disable</item>
+    </string-array>
+
+    <string-array name="set_processor_click_page_entries">
+        <item>@string/common_words_default</item>
+        <item>8+ Gen 1</item>
+        <item>8+ Gen 2</item>
+        <item>@string/common_words_customize</item>
+    </string-array>
+
+    <string-array name="set_random_text_display_mode_entries">
+        <item>@string/common_words_default</item>
+        <item>@string/common_words_customize_file</item>
+        <item>@string/common_words_customize_api</item>
+    </string-array>
+
+    <string-array name="set_aod_typeface_mode_entries">
+        <item>@string/common_words_default</item>
+        <item>@string/common_words_enable</item>
+        <item>@string/common_words_disable</item>
+    </string-array>
+
+    <string-array name="set_multi_app_support_mode_entries">
+        <item>@string/common_words_default</item>
+        <item>@string/common_words_customize</item>
+    </string-array>
+
+    <string-array name="set_wlan_sla_whitelist_mode_entries">
+        <item>@string/common_words_default</item>
+        <item>@string/common_words_enable</item>
+        <item>@string/common_words_disable</item>
+    </string-array>
+
+    <string-array name="voltage_display_mode_entries">
+        <item>@string/common_words_default</item>
+        <item>@string/voltage_display_mode_mv</item>
+        <item>@string/voltage_display_mode_decimal</item>
+        <item>@string/battery_information_show_dual_voltage</item>
+    </string-array>
+
+    <string-array name="set_full_screen_charging_animation_mode_entries">
+        <item>@string/common_words_default</item>
+        <item>@string/common_words_enable</item>
+        <item>@string/common_words_disable</item>
+    </string-array>
+
+    <string-array name="lock_screen_custom_clock_component_style_entries">
+        <item>@string/common_words_default</item>
+        <item>OPPO/Realme</item>
+        <item>OnePlus</item>
+    </string-array>
+
+    <string-array name="set_lock_screen_warp_charging_style_entries">
+        <item>@string/common_words_default</item>
+        <item>@string/common_words_enable</item>
+        <item>@string/common_words_disable</item>
+    </string-array>
+
+    <string-array name="set_lock_screen_charging_text_logo_style_entries">
+        <item>@string/common_words_default</item>
+        <item>@string/common_words_enable</item>
+        <item>@string/common_words_disable</item>
+    </string-array>
+
+    <string-array name="set_control_center_search_button_mode_entries">
+        <item>@string/common_words_default</item>
+        <item>@string/common_words_enable</item>
+        <item>@string/common_words_disable</item>
+    </string-array>
+
+    <string-array name="set_media_player_display_mode_entries">
+        <item>@string/common_words_default</item>
+        <item>@string/common_words_enable</item>
+        <item>@string/common_words_disable</item>
+        <item>@string/set_media_player_display_mode_hide_when_no_meida_player</item>
+    </string-array>
+
+    <string-array name="set_volume_bar_display_position_entries">
+        <item>@string/common_words_default</item>
+        <item>@string/common_words_left</item>
+        <item>@string/common_words_right</item>
+    </string-array>
+
+    <string-array name="set_click_statusbar_scroll_to_top_mode_entries">
+        <item>@string/common_words_default</item>
+        <item>@string/common_words_disable</item>
+        <item>@string/set_click_statusbar_scroll_to_top_mode_remove_white_list</item>
+    </string-array>
+
+</resources>

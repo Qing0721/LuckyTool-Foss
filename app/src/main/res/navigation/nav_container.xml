@@ -1,0 +1,839 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_container"
+    app:startDestination="@id/nav_home">
+
+    <fragment
+        android:id="@+id/nav_home"
+        android:name="com.fosstool.app.ui.fragment.HomeFragment"
+        android:label="@string/app_name"
+        tools:layout="@layout/fragment_home">
+        <action
+            android:id="@+id/action_nav_home_to_forceFpsFragment"
+            app:destination="@id/forceFpsFragment"
+            app:enterAnim="@anim/fragment_enter"
+            app:exitAnim="@anim/fragment_exit"
+            app:popEnterAnim="@anim/fragment_enter_pop"
+            app:popExitAnim="@anim/fragment_exit_pop" />
+    </fragment>
+    <fragment
+        android:id="@+id/nav_other"
+        android:name="com.fosstool.app.ui.fragment.OtherFragment"
+        android:label="@string/nav_other"
+        tools:layout="@layout/fragment_other">
+        <action
+            android:id="@+id/action_nav_other_to_systemQuickEntry"
+            app:destination="@id/systemQuickEntry"
+            app:enterAnim="@anim/fragment_enter"
+            app:exitAnim="@anim/fragment_exit"
+            app:popEnterAnim="@anim/fragment_enter_pop"
+            app:popExitAnim="@anim/fragment_exit_pop" />
+        <action
+            android:id="@+id/action_nav_other_to_batteryInfo"
+            app:destination="@id/batteryInfoFragment"
+            app:enterAnim="@anim/fragment_enter"
+            app:exitAnim="@anim/fragment_exit"
+            app:popEnterAnim="@anim/fragment_enter_pop"
+            app:popExitAnim="@anim/fragment_exit_pop" />
+        <action
+            android:id="@+id/action_nav_other_to_forceFps"
+            app:destination="@id/forceFpsFragment"
+            app:enterAnim="@anim/fragment_enter"
+            app:exitAnim="@anim/fragment_exit"
+            app:popEnterAnim="@anim/fragment_enter_pop"
+            app:popExitAnim="@anim/fragment_exit_pop" />
+    </fragment>
+    <fragment
+        android:id="@+id/nav_function"
+        android:name="com.fosstool.app.ui.fragment.XposedFragment"
+        android:label="@string/nav_function">
+        <action
+            android:id="@+id/action_nav_xposed_to_android"
+            app:destination="@id/android"
+            app:enterAnim="@anim/fragment_enter"
+            app:exitAnim="@anim/fragment_exit"
+            app:popEnterAnim="@anim/fragment_enter_pop"
+            app:popExitAnim="@anim/fragment_exit_pop" />
+        <action
+            android:id="@+id/action_nav_xposed_to_statusBar"
+            app:destination="@id/statusBar"
+            app:enterAnim="@anim/fragment_enter"
+            app:exitAnim="@anim/fragment_exit"
+            app:popEnterAnim="@anim/fragment_enter_pop"
+            app:popExitAnim="@anim/fragment_exit_pop" />
+        <action
+            android:id="@+id/action_nav_xposed_to_miscellaneous"
+            app:destination="@id/miscellaneous"
+            app:enterAnim="@anim/fragment_enter"
+            app:exitAnim="@anim/fragment_exit"
+            app:popEnterAnim="@anim/fragment_enter_pop"
+            app:popExitAnim="@anim/fragment_exit_pop" />
+        <action
+            android:id="@+id/action_nav_xposed_to_application"
+            app:destination="@id/application"
+            app:enterAnim="@anim/fragment_enter"
+            app:exitAnim="@anim/fragment_exit"
+            app:popEnterAnim="@anim/fragment_enter_pop"
+            app:popExitAnim="@anim/fragment_exit_pop" />
+        <action
+            android:id="@+id/action_nav_xposed_to_launcher"
+            app:destination="@id/launcher"
+            app:enterAnim="@anim/fragment_enter"
+            app:exitAnim="@anim/fragment_exit"
+            app:popEnterAnim="@anim/fragment_enter_pop"
+            app:popExitAnim="@anim/fragment_exit_pop" />
+        <action
+            android:id="@+id/action_nav_xposed_to_lockScreen"
+            app:destination="@id/lockScreen"
+            app:enterAnim="@anim/fragment_enter"
+            app:exitAnim="@anim/fragment_exit"
+            app:popEnterAnim="@anim/fragment_enter_pop"
+            app:popExitAnim="@anim/fragment_exit_pop" />
+        <action
+            android:id="@+id/action_nav_xposed_to_screenshot"
+            app:destination="@id/screenshot"
+            app:enterAnim="@anim/fragment_enter"
+            app:exitAnim="@anim/fragment_exit"
+            app:popEnterAnim="@anim/fragment_enter_pop"
+            app:popExitAnim="@anim/fragment_exit_pop" />
+        <action
+            android:id="@+id/action_nav_xposed_to_themeStore"
+            app:destination="@id/themeStore"
+            app:enterAnim="@anim/fragment_enter"
+            app:exitAnim="@anim/fragment_exit"
+            app:popEnterAnim="@anim/fragment_enter_pop"
+            app:popExitAnim="@anim/fragment_exit_pop" />
+        <action
+            android:id="@+id/action_nav_xposed_to_alphaBackupPro"
+            app:destination="@id/alphaBackupPro"
+            app:enterAnim="@anim/fragment_enter"
+            app:exitAnim="@anim/fragment_exit"
+            app:popEnterAnim="@anim/fragment_enter_pop"
+            app:popExitAnim="@anim/fragment_exit_pop" />
+        <action
+            android:id="@+id/action_nav_xposed_to_camera"
+            app:destination="@id/camera"
+            app:enterAnim="@anim/fragment_enter"
+            app:exitAnim="@anim/fragment_exit"
+            app:popEnterAnim="@anim/fragment_enter_pop"
+            app:popExitAnim="@anim/fragment_exit_pop" />
+        <action
+            android:id="@+id/action_nav_xposed_to_oplusGames"
+            app:destination="@id/oplusGames"
+            app:enterAnim="@anim/fragment_enter"
+            app:exitAnim="@anim/fragment_exit"
+            app:popEnterAnim="@anim/fragment_enter_pop"
+            app:popExitAnim="@anim/fragment_exit_pop" />
+        <action
+            android:id="@+id/action_nav_xposed_to_cloudService"
+            app:destination="@id/cloudService"
+            app:enterAnim="@anim/fragment_enter"
+            app:exitAnim="@anim/fragment_exit"
+            app:popEnterAnim="@anim/fragment_enter_pop"
+            app:popExitAnim="@anim/fragment_exit_pop" />
+        <action
+            android:id="@+id/action_nav_function_to_oplusOta"
+            app:destination="@id/oplusOta"
+            app:enterAnim="@anim/fragment_enter"
+            app:exitAnim="@anim/fragment_exit"
+            app:popEnterAnim="@anim/fragment_enter_pop"
+            app:popExitAnim="@anim/fragment_exit_pop" />
+        <action
+            android:id="@+id/action_nav_function_to_battery"
+            app:destination="@id/battery"
+            app:enterAnim="@anim/fragment_enter"
+            app:exitAnim="@anim/fragment_exit"
+            app:popEnterAnim="@anim/fragment_enter_pop"
+            app:popExitAnim="@anim/fragment_exit_pop" />
+        <action
+            android:id="@+id/action_nav_function_to_settings"
+            app:destination="@id/settings"
+            app:enterAnim="@anim/fragment_enter"
+            app:exitAnim="@anim/fragment_exit"
+            app:popEnterAnim="@anim/fragment_enter_pop"
+            app:popExitAnim="@anim/fragment_exit_pop" />
+        <action
+            android:id="@+id/action_nav_function_to_ksWeb"
+            app:destination="@id/ksWeb"
+            app:enterAnim="@anim/fragment_enter"
+            app:exitAnim="@anim/fragment_exit"
+            app:popEnterAnim="@anim/fragment_enter_pop"
+            app:popExitAnim="@anim/fragment_exit_pop" />
+        <action
+            android:id="@+id/action_nav_function_to_aod"
+            app:destination="@id/aod"
+            app:enterAnim="@anim/fragment_enter"
+            app:exitAnim="@anim/fragment_exit"
+            app:popEnterAnim="@anim/fragment_enter_pop"
+            app:popExitAnim="@anim/fragment_exit_pop" />
+        <action
+            android:id="@+id/action_nav_function_to_oplusPictorial"
+            app:destination="@id/oplusPictorial"
+            app:enterAnim="@anim/fragment_enter"
+            app:exitAnim="@anim/fragment_exit"
+            app:popEnterAnim="@anim/fragment_enter_pop"
+            app:popExitAnim="@anim/fragment_exit_pop" />
+        <action
+            android:id="@+id/action_nav_function_to_oplusMMS"
+            app:destination="@id/oplusMMS"
+            app:enterAnim="@anim/fragment_enter"
+            app:exitAnim="@anim/fragment_exit"
+            app:popEnterAnim="@anim/fragment_enter_pop"
+            app:popExitAnim="@anim/fragment_exit_pop" />
+        <action
+            android:id="@+id/action_nav_function_to_oplusBrowser"
+            app:destination="@id/oplusBrowser"
+            app:enterAnim="@anim/fragment_enter"
+            app:exitAnim="@anim/fragment_exit"
+            app:popEnterAnim="@anim/fragment_enter_pop"
+            app:popExitAnim="@anim/fragment_exit_pop" />
+        <action
+            android:id="@+id/action_nav_function_to_oplusGesture"
+            app:destination="@id/oplusGesture"
+            app:enterAnim="@anim/fragment_enter"
+            app:exitAnim="@anim/fragment_exit"
+            app:popEnterAnim="@anim/fragment_enter_pop"
+            app:popExitAnim="@anim/fragment_exit_pop" />
+        <action
+            android:id="@+id/action_nav_function_to_ADM"
+            app:destination="@id/ADM"
+            app:enterAnim="@anim/fragment_enter"
+            app:exitAnim="@anim/fragment_exit"
+            app:popEnterAnim="@anim/fragment_enter_pop"
+            app:popExitAnim="@anim/fragment_exit_pop" />
+        <action
+            android:id="@+id/action_nav_function_to_oplusWeather"
+            app:destination="@id/oplusWeather"
+            app:enterAnim="@anim/fragment_enter"
+            app:exitAnim="@anim/fragment_exit"
+            app:popEnterAnim="@anim/fragment_enter_pop"
+            app:popExitAnim="@anim/fragment_exit_pop" />
+        <action
+            android:id="@+id/action_nav_function_to_oplusGallery"
+            app:destination="@id/oplusGallery"
+            app:enterAnim="@anim/fragment_enter"
+            app:exitAnim="@anim/fragment_exit"
+            app:popEnterAnim="@anim/fragment_enter_pop"
+            app:popExitAnim="@anim/fragment_exit_pop" />
+        <action
+            android:id="@+id/action_nav_function_to_oplusBreenoTouch"
+            app:destination="@id/oplusBreenoTouch"
+            app:enterAnim="@anim/fragment_enter"
+            app:exitAnim="@anim/fragment_exit"
+            app:popEnterAnim="@anim/fragment_enter_pop"
+            app:popExitAnim="@anim/fragment_exit_pop" />
+        <action
+            android:id="@+id/action_nav_function_to_oplusSearchBox"
+            app:destination="@id/oplusSearchBox"
+            app:enterAnim="@anim/fragment_enter"
+            app:exitAnim="@anim/fragment_exit"
+            app:popEnterAnim="@anim/fragment_enter_pop"
+            app:popExitAnim="@anim/fragment_exit_pop" />
+        <action
+            android:id="@+id/action_nav_function_to_oplusMarket"
+            app:destination="@id/oplusMarket"
+            app:enterAnim="@anim/fragment_enter"
+            app:exitAnim="@anim/fragment_exit"
+            app:popEnterAnim="@anim/fragment_enter_pop"
+            app:popExitAnim="@anim/fragment_exit_pop" />
+        <action
+            android:id="@+id/action_nav_function_to_oplusAlarmClock"
+            app:destination="@id/oplusAlarmClock"
+            app:enterAnim="@anim/fragment_enter"
+            app:exitAnim="@anim/fragment_exit"
+            app:popEnterAnim="@anim/fragment_enter_pop"
+            app:popExitAnim="@anim/fragment_exit_pop" />
+        <action
+            android:id="@+id/action_nav_function_to_oplusBeaconLink"
+            app:destination="@id/oplusBeaconLink"
+            app:enterAnim="@anim/fragment_enter"
+            app:exitAnim="@anim/fragment_exit"
+            app:popEnterAnim="@anim/fragment_enter_pop"
+            app:popExitAnim="@anim/fragment_exit_pop" />
+        <action
+            android:id="@+id/action_nav_function_to_oplusCalendar"
+            app:destination="@id/oplusCalendar"
+            app:enterAnim="@anim/fragment_enter"
+            app:exitAnim="@anim/fragment_exit"
+            app:popEnterAnim="@anim/fragment_enter_pop"
+            app:popExitAnim="@anim/fragment_exit_pop" />
+        <action
+            android:id="@+id/action_nav_function_to_oplusEngineerMode"
+            app:destination="@id/oplusEngineerMode"
+            app:enterAnim="@anim/fragment_enter"
+            app:exitAnim="@anim/fragment_exit"
+            app:popEnterAnim="@anim/fragment_enter_pop"
+            app:popExitAnim="@anim/fragment_exit_pop" />
+        <action
+            android:id="@+id/action_nav_function_to_oplusEyeProtect"
+            app:destination="@id/oplusEyeProtect"
+            app:enterAnim="@anim/fragment_enter"
+            app:exitAnim="@anim/fragment_exit"
+            app:popEnterAnim="@anim/fragment_enter_pop"
+            app:popExitAnim="@anim/fragment_exit_pop" />
+        <action
+            android:id="@+id/action_nav_function_to_oplusFileManager"
+            app:destination="@id/oplusFileManager"
+            app:enterAnim="@anim/fragment_enter"
+            app:exitAnim="@anim/fragment_exit"
+            app:popEnterAnim="@anim/fragment_enter_pop"
+            app:popExitAnim="@anim/fragment_exit_pop" />
+        <action
+            android:id="@+id/action_nav_function_to_oplusHealth"
+            app:destination="@id/oplusHealth"
+            app:enterAnim="@anim/fragment_enter"
+            app:exitAnim="@anim/fragment_exit"
+            app:popEnterAnim="@anim/fragment_enter_pop"
+            app:popExitAnim="@anim/fragment_exit_pop" />
+        <action
+            android:id="@+id/action_nav_function_to_oplusLinker"
+            app:destination="@id/oplusLinker"
+            app:enterAnim="@anim/fragment_enter"
+            app:exitAnim="@anim/fragment_exit"
+            app:popEnterAnim="@anim/fragment_enter_pop"
+            app:popExitAnim="@anim/fragment_exit_pop" />
+        <action
+            android:id="@+id/action_nav_function_to_oplusMcs"
+            app:destination="@id/oplusMcs"
+            app:enterAnim="@anim/fragment_enter"
+            app:exitAnim="@anim/fragment_exit"
+            app:popEnterAnim="@anim/fragment_enter_pop"
+            app:popExitAnim="@anim/fragment_exit_pop" />
+        <action
+            android:id="@+id/action_nav_function_to_oplusMyDevices"
+            app:destination="@id/oplusMyDevices"
+            app:enterAnim="@anim/fragment_enter"
+            app:exitAnim="@anim/fragment_exit"
+            app:popEnterAnim="@anim/fragment_enter_pop"
+            app:popExitAnim="@anim/fragment_exit_pop" />
+        <action
+            android:id="@+id/action_nav_function_to_oplusNfc"
+            app:destination="@id/oplusNfc"
+            app:enterAnim="@anim/fragment_enter"
+            app:exitAnim="@anim/fragment_exit"
+            app:popEnterAnim="@anim/fragment_enter_pop"
+            app:popExitAnim="@anim/fragment_exit_pop" />
+        <action
+            android:id="@+id/action_nav_function_to_oplusOShare"
+            app:destination="@id/oplusOShare"
+            app:enterAnim="@anim/fragment_enter"
+            app:exitAnim="@anim/fragment_exit"
+            app:popEnterAnim="@anim/fragment_enter_pop"
+            app:popExitAnim="@anim/fragment_exit_pop" />
+        <action
+            android:id="@+id/action_nav_function_to_oplusPermissionController"
+            app:destination="@id/oplusPermissionController"
+            app:enterAnim="@anim/fragment_enter"
+            app:exitAnim="@anim/fragment_exit"
+            app:popEnterAnim="@anim/fragment_enter_pop"
+            app:popExitAnim="@anim/fragment_exit_pop" />
+        <action
+            android:id="@+id/action_nav_function_to_oplusPhoneManager"
+            app:destination="@id/oplusPhoneManager"
+            app:enterAnim="@anim/fragment_enter"
+            app:exitAnim="@anim/fragment_exit"
+            app:popEnterAnim="@anim/fragment_enter_pop"
+            app:popExitAnim="@anim/fragment_exit_pop" />
+        <action
+            android:id="@+id/action_nav_function_to_oplusSecuritypPermission"
+            app:destination="@id/oplusSecuritypPermission"
+            app:enterAnim="@anim/fragment_enter"
+            app:exitAnim="@anim/fragment_exit"
+            app:popEnterAnim="@anim/fragment_enter_pop"
+            app:popExitAnim="@anim/fragment_exit_pop" />
+        <action
+            android:id="@+id/action_nav_function_to_oplusSmartSidebar"
+            app:destination="@id/oplusSmartSidebar"
+            app:enterAnim="@anim/fragment_enter"
+            app:exitAnim="@anim/fragment_exit"
+            app:popEnterAnim="@anim/fragment_enter_pop"
+            app:popExitAnim="@anim/fragment_exit_pop" />
+        <action
+            android:id="@+id/action_nav_function_to_oplusSoundRecorder"
+            app:destination="@id/oplusSoundRecorder"
+            app:enterAnim="@anim/fragment_enter"
+            app:exitAnim="@anim/fragment_exit"
+            app:popEnterAnim="@anim/fragment_enter_pop"
+            app:popExitAnim="@anim/fragment_exit_pop" />
+        <action
+            android:id="@+id/action_nav_function_to_oplusSpeechAssist"
+            app:destination="@id/oplusSpeechAssist"
+            app:enterAnim="@anim/fragment_enter"
+            app:exitAnim="@anim/fragment_exit"
+            app:popEnterAnim="@anim/fragment_enter_pop"
+            app:popExitAnim="@anim/fragment_exit_pop" />
+        <action
+            android:id="@+id/action_nav_function_to_oplusTeleService"
+            app:destination="@id/oplusTeleService"
+            app:enterAnim="@anim/fragment_enter"
+            app:exitAnim="@anim/fragment_exit"
+            app:popEnterAnim="@anim/fragment_enter_pop"
+            app:popExitAnim="@anim/fragment_exit_pop" />
+        <action
+            android:id="@+id/action_nav_function_to_oplusWirelessSettings"
+            app:destination="@id/oplusWirelessSettings"
+            app:enterAnim="@anim/fragment_enter"
+            app:exitAnim="@anim/fragment_exit"
+            app:popEnterAnim="@anim/fragment_enter_pop"
+            app:popExitAnim="@anim/fragment_exit_pop" />
+        <action
+            android:id="@+id/action_nav_function_to_hideAppIntent"
+            app:destination="@id/hideAppIntentFragment"
+            app:enterAnim="@anim/fragment_enter"
+            app:exitAnim="@anim/fragment_exit"
+            app:popEnterAnim="@anim/fragment_enter_pop"
+            app:popExitAnim="@anim/fragment_exit_pop" />
+        <action
+            android:id="@+id/action_nav_function_to_memcConfig"
+            app:destination="@id/memcConfigFragment"
+            app:enterAnim="@anim/fragment_enter"
+            app:exitAnim="@anim/fragment_exit"
+            app:popEnterAnim="@anim/fragment_enter_pop"
+            app:popExitAnim="@anim/fragment_exit_pop" />
+        <action
+            android:id="@+id/action_nav_function_to_batteryInfo"
+            app:destination="@id/batteryInfoFragment"
+            app:enterAnim="@anim/fragment_enter"
+            app:exitAnim="@anim/fragment_exit"
+            app:popEnterAnim="@anim/fragment_enter_pop"
+            app:popExitAnim="@anim/fragment_exit_pop" />
+    </fragment>
+    <fragment
+        android:id="@+id/nav_log"
+        android:name="com.fosstool.app.ui.fragment.LoggerFragment"
+        android:label="@string/nav_log" />
+    <fragment
+        android:id="@+id/nav_setting"
+        android:name="com.fosstool.app.ui.fragment.SettingsFragment"
+        android:label="@string/nav_setting">
+        <action
+            android:id="@+id/action_nav_setting_to_sourceFragment"
+            app:destination="@id/sourceFragment"
+            app:enterAnim="@anim/fragment_enter"
+            app:exitAnim="@anim/fragment_exit"
+            app:popEnterAnim="@anim/fragment_enter_pop"
+            app:popExitAnim="@anim/fragment_exit_pop" />
+    </fragment>
+    <fragment
+        android:id="@+id/sourceFragment"
+        android:name="com.fosstool.app.ui.fragment.SourceFragment"
+        android:label="{title_label}" />
+
+    <fragment
+        android:id="@+id/android"
+        android:name="com.fosstool.app.ui.fragment.Android"
+        android:label="{title_label}" />
+    <fragment
+        android:id="@+id/statusBarNotice"
+        android:name="com.fosstool.app.ui.fragment.StatusBarNotify"
+        android:label="{title_label}">
+        <action
+            android:id="@+id/action_statusBarNotice_to_statusBarNotifyRemoval"
+            app:destination="@id/statusBarNotifyRemoval"
+            app:enterAnim="@anim/fragment_enter"
+            app:exitAnim="@anim/fragment_exit"
+            app:popEnterAnim="@anim/fragment_enter_pop"
+            app:popExitAnim="@anim/fragment_exit_pop" />
+    </fragment>
+    <fragment
+        android:id="@+id/statusBarIcon"
+        android:name="com.fosstool.app.ui.fragment.StatusBarIcon"
+        android:label="{title_label}" />
+    <fragment
+        android:id="@+id/statusBarControlCenter"
+        android:name="com.fosstool.app.ui.fragment.StatusBarControlCenter"
+        android:label="{title_label}" />
+    <fragment
+        android:id="@+id/statusBarClock"
+        android:name="com.fosstool.app.ui.fragment.StatusBarClock"
+        android:label="{title_label}" />
+    <fragment
+        android:id="@+id/launcher"
+        android:name="com.fosstool.app.ui.fragment.Launcher"
+        android:label="{title_label}" />
+    <fragment
+        android:id="@+id/lockScreen"
+        android:name="com.fosstool.app.ui.fragment.LockScreen"
+        android:label="{title_label}" />
+    <fragment
+        android:id="@+id/screenshot"
+        android:name="com.fosstool.app.ui.fragment.Screenshot"
+        android:label="{title_label}" />
+    <fragment
+        android:id="@+id/application"
+        android:name="com.fosstool.app.ui.fragment.Application"
+        android:label="{title_label}">
+        <action
+            android:id="@+id/action_application_to_multiFragment"
+            app:destination="@id/multiAppFragment"
+            app:enterAnim="@anim/fragment_enter"
+            app:exitAnim="@anim/fragment_exit"
+            app:popEnterAnim="@anim/fragment_enter_pop"
+            app:popExitAnim="@anim/fragment_exit_pop" />
+        <action
+            android:id="@+id/action_application_to_zoomWindowFragment"
+            app:destination="@id/zoomWindowFragment"
+            app:enterAnim="@anim/fragment_enter"
+            app:exitAnim="@anim/fragment_exit"
+            app:popEnterAnim="@anim/fragment_enter_pop"
+            app:popExitAnim="@anim/fragment_exit_pop" />
+        <action
+            android:id="@+id/action_application_to_darkModeFragment"
+            app:destination="@id/darkModeFragment"
+            app:enterAnim="@anim/fragment_enter"
+            app:exitAnim="@anim/fragment_exit"
+            app:popEnterAnim="@anim/fragment_enter_pop"
+            app:popExitAnim="@anim/fragment_exit_pop" />
+        <action
+            android:id="@+id/action_application_to_corePatch"
+            app:destination="@id/corePatchFragment"
+            app:enterAnim="@anim/fragment_enter"
+            app:exitAnim="@anim/fragment_exit"
+            app:popEnterAnim="@anim/fragment_enter_pop"
+            app:popExitAnim="@anim/fragment_exit_pop" />
+        <action
+            android:id="@+id/action_application_to_hideAppIntent"
+            app:destination="@id/hideAppIntentFragment"
+            app:enterAnim="@anim/fragment_enter"
+            app:exitAnim="@anim/fragment_exit"
+            app:popEnterAnim="@anim/fragment_enter_pop"
+            app:popExitAnim="@anim/fragment_exit_pop" />
+    </fragment>
+    <fragment
+        android:id="@+id/camera"
+        android:name="com.fosstool.app.ui.fragment.Camera"
+        android:label="{title_label}" />
+    <fragment
+        android:id="@+id/oplusGames"
+        android:name="com.fosstool.app.ui.fragment.OplusGames"
+        android:label="{title_label}" />
+    <fragment
+        android:id="@+id/cloudService"
+        android:name="com.fosstool.app.ui.fragment.CloudService"
+        android:label="{title_label}" />
+    <fragment
+        android:id="@+id/themeStore"
+        android:name="com.fosstool.app.ui.fragment.ThemeStore"
+        android:label="{title_label}" />
+    <fragment
+        android:id="@+id/multiAppFragment"
+        android:name="com.fosstool.app.ui.fragment.MultiAppFragment"
+        android:label="{title_label}"
+        tools:layout="@layout/fragment_applist_function_layout" />
+    <fragment
+        android:id="@+id/statusBar"
+        android:name="com.fosstool.app.ui.fragment.StatusBar"
+        android:label="{title_label}">
+        <action
+            android:id="@+id/action_statusBar_to_statusBarNotice"
+            app:destination="@id/statusBarNotice"
+            app:enterAnim="@anim/fragment_enter"
+            app:exitAnim="@anim/fragment_exit"
+            app:popEnterAnim="@anim/fragment_enter_pop"
+            app:popExitAnim="@anim/fragment_exit_pop" />
+        <action
+            android:id="@+id/action_statusBar_to_statusBarControlCenter"
+            app:destination="@id/statusBarControlCenter"
+            app:enterAnim="@anim/fragment_enter"
+            app:exitAnim="@anim/fragment_exit"
+            app:popEnterAnim="@anim/fragment_enter_pop"
+            app:popExitAnim="@anim/fragment_exit_pop" />
+        <action
+            android:id="@+id/action_statusBar_to_statusBarClock"
+            app:destination="@id/statusBarClock"
+            app:enterAnim="@anim/fragment_enter"
+            app:exitAnim="@anim/fragment_exit"
+            app:popEnterAnim="@anim/fragment_enter_pop"
+            app:popExitAnim="@anim/fragment_exit_pop" />
+        <action
+            android:id="@+id/action_statusBar_to_statusBarIcon"
+            app:destination="@id/statusBarIcon"
+            app:enterAnim="@anim/fragment_enter"
+            app:exitAnim="@anim/fragment_exit"
+            app:popEnterAnim="@anim/fragment_enter_pop"
+            app:popExitAnim="@anim/fragment_exit_pop" />
+        <action
+            android:id="@+id/action_statusBar_to_statusBarNetWorkSpeed"
+            app:destination="@id/statusBarNetWorkSpeed"
+            app:enterAnim="@anim/fragment_enter"
+            app:exitAnim="@anim/fragment_exit"
+            app:popEnterAnim="@anim/fragment_enter_pop"
+            app:popExitAnim="@anim/fragment_exit_pop" />
+        <action
+            android:id="@+id/action_statusBar_to_statusBarLayout"
+            app:destination="@id/statusBarLayout"
+            app:enterAnim="@anim/fragment_enter"
+            app:exitAnim="@anim/fragment_exit"
+            app:popEnterAnim="@anim/fragment_enter_pop"
+            app:popExitAnim="@anim/fragment_exit_pop" />
+        <action
+            android:id="@+id/action_statusBar_to_statusBarBattery"
+            app:destination="@id/statusBarBattery"
+            app:enterAnim="@anim/fragment_enter"
+            app:exitAnim="@anim/fragment_exit"
+            app:popEnterAnim="@anim/fragment_enter_pop"
+            app:popExitAnim="@anim/fragment_exit_pop" />
+        <action
+            android:id="@+id/action_statusBar_to_statusBarTiles"
+            app:destination="@id/statusBarTiles"
+            app:enterAnim="@anim/fragment_enter"
+            app:exitAnim="@anim/fragment_exit"
+            app:popEnterAnim="@anim/fragment_enter_pop"
+            app:popExitAnim="@anim/fragment_exit_pop" />
+    </fragment>
+    <fragment
+        android:id="@+id/miscellaneous"
+        android:name="com.fosstool.app.ui.fragment.Miscellaneous"
+        android:label="{title_label}">
+        <action
+            android:id="@+id/action_miscellaneous_to_dialogRelated"
+            app:destination="@id/dialogRelated"
+            app:enterAnim="@anim/fragment_enter"
+            app:exitAnim="@anim/fragment_exit"
+            app:popEnterAnim="@anim/fragment_enter_pop"
+            app:popExitAnim="@anim/fragment_exit_pop" />
+        <action
+            android:id="@+id/action_miscellaneous_to_fingerPrintRelated"
+            app:destination="@id/fingerPrintRelated"
+            app:enterAnim="@anim/fragment_enter"
+            app:exitAnim="@anim/fragment_exit"
+            app:popEnterAnim="@anim/fragment_enter_pop"
+            app:popExitAnim="@anim/fragment_exit_pop" />
+        <action
+            android:id="@+id/action_miscellaneous_to_soundRelated"
+            app:destination="@id/soundRelated"
+            app:enterAnim="@anim/fragment_enter"
+            app:exitAnim="@anim/fragment_exit"
+            app:popEnterAnim="@anim/fragment_enter_pop"
+            app:popExitAnim="@anim/fragment_exit_pop" />
+    </fragment>
+    <fragment
+        android:id="@+id/alphaBackupPro"
+        android:name="com.fosstool.app.ui.fragment.AlphaBackupPro"
+        android:label="{title_label}" />
+    <fragment
+        android:id="@+id/systemQuickEntry"
+        android:name="com.fosstool.app.ui.fragment.SystemQuickEntry"
+        android:label="{title_label}" />
+    <fragment
+        android:id="@+id/statusBarNetWorkSpeed"
+        android:name="com.fosstool.app.ui.fragment.StatusBarNetWorkSpeed"
+        android:label="{title_label}" />
+    <fragment
+        android:id="@+id/dialogRelated"
+        android:name="com.fosstool.app.ui.fragment.DialogRelated"
+        android:label="{title_label}" />
+    <fragment
+        android:id="@+id/oplusOta"
+        android:name="com.fosstool.app.ui.fragment.OplusOta"
+        android:label="{title_label}">
+        <action
+            android:id="@+id/action_oplusOta_to_extractOTAFragment"
+            app:destination="@id/extractOTAFragment"
+            app:enterAnim="@anim/fragment_enter"
+            app:exitAnim="@anim/fragment_exit"
+            app:popEnterAnim="@anim/fragment_enter_pop"
+            app:popExitAnim="@anim/fragment_exit_pop" />
+    </fragment>
+    <fragment
+        android:id="@+id/zoomWindowFragment"
+        android:name="com.fosstool.app.ui.fragment.ZoomWindowFragment"
+        android:label="{title_label}" />
+    <fragment
+        android:id="@+id/darkModeFragment"
+        android:name="com.fosstool.app.ui.fragment.DarkModeFragment"
+        android:label="{title_label}" />
+    <fragment
+        android:id="@+id/fingerPrintRelated"
+        android:name="com.fosstool.app.ui.fragment.FingerPrintRelated"
+        android:label="{title_label}" />
+    <fragment
+        android:id="@+id/statusBarLayout"
+        android:name="com.fosstool.app.ui.fragment.StatusBarLayout"
+        android:label="{title_label}" />
+    <fragment
+        android:id="@+id/battery"
+        android:name="com.fosstool.app.ui.fragment.Battery"
+        android:label="{title_label}" />
+    <fragment
+        android:id="@+id/settings"
+        android:name="com.fosstool.app.ui.fragment.Settings"
+        android:label="{title_label}" />
+    <fragment
+        android:id="@+id/statusBarBattery"
+        android:name="com.fosstool.app.ui.fragment.StatusBarBattery"
+        android:label="{title_label}" />
+    <fragment
+        android:id="@+id/ksWeb"
+        android:name="com.fosstool.app.ui.fragment.KsWeb"
+        android:label="{title_label}" />
+    <fragment
+        android:id="@+id/statusBarTiles"
+        android:name="com.fosstool.app.ui.fragment.StatusBarTiles"
+        android:label="{title_label}" />
+    <fragment
+        android:id="@+id/forceFpsFragment"
+        android:name="com.fosstool.app.ui.fragment.ForceFpsFragment"
+        android:label="{title_label}" />
+    <fragment
+        android:id="@+id/statusBarNotifyRemoval"
+        android:name="com.fosstool.app.ui.fragment.StatusBarNotifyRemoval"
+        android:label="{title_label}" />
+    <fragment
+        android:id="@+id/extractOTAFragment"
+        android:name="com.fosstool.app.ui.fragment.ExtractOTAFragment"
+        android:label="{title_label}" />
+    <fragment
+        android:id="@+id/aod"
+        android:name="com.fosstool.app.ui.fragment.Aod"
+        android:label="{title_label}" />
+    <fragment
+        android:id="@+id/oplusPictorial"
+        android:name="com.fosstool.app.ui.fragment.OplusPictorial"
+        android:label="{title_label}" />
+    <fragment
+        android:id="@+id/oplusMMS"
+        android:name="com.fosstool.app.ui.fragment.OplusMMS"
+        android:label="{title_label}" />
+    <fragment
+        android:id="@+id/oplusBrowser"
+        android:name="com.fosstool.app.ui.fragment.OplusBrowser"
+        android:label="{title_label}" />
+    <fragment
+        android:id="@+id/oplusGesture"
+        android:name="com.fosstool.app.ui.fragment.OplusGesture"
+        android:label="{title_label}" />
+    <fragment
+        android:id="@+id/ADM"
+        android:name="com.fosstool.app.ui.fragment.ADM"
+        android:label="{title_label}" />
+    <fragment
+        android:id="@+id/oplusGallery"
+        android:name="com.fosstool.app.ui.fragment.OplusGallery"
+        android:label="{title_label}" />
+    <fragment
+        android:id="@+id/oplusBreenoTouch"
+        android:name="com.fosstool.app.ui.fragment.OplusBreenoTouch"
+        android:label="{title_label}" />
+    <fragment
+        android:id="@+id/oplusSearchBox"
+        android:name="com.fosstool.app.ui.fragment.OplusSearchBox"
+        android:label="{title_label}" />
+    <fragment
+        android:id="@+id/oplusMarket"
+        android:name="com.fosstool.app.ui.fragment.OplusMarket"
+        android:label="{title_label}" />
+    <fragment
+        android:id="@+id/oplusWeather"
+        android:name="com.fosstool.app.ui.fragment.OplusWeather"
+        android:label="{title_label}" />
+
+    <fragment
+        android:id="@+id/oplusAlarmClock"
+        android:name="com.fosstool.app.ui.fragment.OplusAlarmClock"
+        android:label="{title_label}" />
+    <fragment
+        android:id="@+id/oplusBeaconLink"
+        android:name="com.fosstool.app.ui.fragment.OplusBeaconLink"
+        android:label="{title_label}" />
+    <fragment
+        android:id="@+id/oplusCalendar"
+        android:name="com.fosstool.app.ui.fragment.OplusCalendar"
+        android:label="{title_label}" />
+    <fragment
+        android:id="@+id/oplusEngineerMode"
+        android:name="com.fosstool.app.ui.fragment.OplusEngineerMode"
+        android:label="{title_label}" />
+    <fragment
+        android:id="@+id/oplusEyeProtect"
+        android:name="com.fosstool.app.ui.fragment.OplusEyeProtect"
+        android:label="{title_label}" />
+    <fragment
+        android:id="@+id/oplusFileManager"
+        android:name="com.fosstool.app.ui.fragment.OplusFileManager"
+        android:label="{title_label}" />
+    <fragment
+        android:id="@+id/oplusHealth"
+        android:name="com.fosstool.app.ui.fragment.OplusHealth"
+        android:label="{title_label}" />
+    <fragment
+        android:id="@+id/oplusLinker"
+        android:name="com.fosstool.app.ui.fragment.OplusLinker"
+        android:label="{title_label}" />
+    <fragment
+        android:id="@+id/oplusMcs"
+        android:name="com.fosstool.app.ui.fragment.OplusMcs"
+        android:label="{title_label}" />
+    <fragment
+        android:id="@+id/oplusMyDevices"
+        android:name="com.fosstool.app.ui.fragment.OplusMyDevices"
+        android:label="{title_label}" />
+    <fragment
+        android:id="@+id/oplusNfc"
+        android:name="com.fosstool.app.ui.fragment.OplusNfc"
+        android:label="{title_label}" />
+    <fragment
+        android:id="@+id/oplusOShare"
+        android:name="com.fosstool.app.ui.fragment.OplusOShare"
+        android:label="{title_label}" />
+    <fragment
+        android:id="@+id/oplusPermissionController"
+        android:name="com.fosstool.app.ui.fragment.OplusPermissionControllerUI"
+        android:label="{title_label}" />
+    <fragment
+        android:id="@+id/oplusPhoneManager"
+        android:name="com.fosstool.app.ui.fragment.OplusPhoneManagerUI"
+        android:label="{title_label}" />
+    <fragment
+        android:id="@+id/oplusSecuritypPermission"
+        android:name="com.fosstool.app.ui.fragment.OplusSecuritypPermission"
+        android:label="{title_label}" />
+    <fragment
+        android:id="@+id/oplusSmartSidebar"
+        android:name="com.fosstool.app.ui.fragment.OplusSmartSidebar"
+        android:label="{title_label}" />
+    <fragment
+        android:id="@+id/oplusSoundRecorder"
+        android:name="com.fosstool.app.ui.fragment.OplusSoundRecorder"
+        android:label="{title_label}" />
+    <fragment
+        android:id="@+id/oplusSpeechAssist"
+        android:name="com.fosstool.app.ui.fragment.OplusSpeechAssist"
+        android:label="{title_label}" />
+    <fragment
+        android:id="@+id/oplusTeleService"
+        android:name="com.fosstool.app.ui.fragment.OplusTeleService"
+        android:label="{title_label}" />
+    <fragment
+        android:id="@+id/oplusWirelessSettings"
+        android:name="com.fosstool.app.ui.fragment.OplusWirelessSettings"
+        android:label="{title_label}" />
+
+    <fragment
+        android:id="@+id/soundRelated"
+        android:name="com.fosstool.app.ui.fragment.SoundRelated"
+        android:label="{title_label}" />
+
+    <fragment
+        android:id="@+id/hideAppIntentFragment"
+        android:name="com.fosstool.app.ui.fragment.HideAppIntentFragment"
+        android:label="{title_label}" />
+
+    <fragment
+        android:id="@+id/memcConfigFragment"
+        android:name="com.fosstool.app.ui.fragment.MemcConfigFragment"
+        android:label="{title_label}" />
+
+    <fragment
+        android:id="@+id/batteryInfoFragment"
+        android:name="com.fosstool.app.ui.fragment.BatteryInfoFragment"
+        android:label="{title_label}" />
+
+    <fragment
+        android:id="@+id/corePatchFragment"
+        android:name="com.fosstool.app.ui.fragment.CorePatchFragment"
+        android:label="{title_label}" />
+
+</navigation>
