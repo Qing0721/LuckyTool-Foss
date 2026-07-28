@@ -1,8 +1,11 @@
 ﻿package com.fosstool.app.hook.utils
 
+import android.provider.Settings
 import android.util.ArrayMap
 import com.highcapable.yukihookapi.hook.entity.YukiBaseHooker
 import com.highcapable.yukihookapi.hook.factory.method
+import com.highcapable.yukihookapi.hook.log.YLog
+import com.highcapable.yukihookapi.hook.type.android.ArrayMapClass
 import com.highcapable.yukihookapi.hook.type.java.BooleanType
 import com.highcapable.yukihookapi.hook.type.java.IntType
 import com.highcapable.yukihookapi.hook.type.java.LongType
@@ -11,6 +14,8 @@ import com.fosstool.app.utils.ModulePrefs
 import com.fosstool.app.utils.SDK
 import com.fosstool.app.utils.getOSVersionCode
 import com.fosstool.app.utils.safeOf
+
+private const val LOG_TAG = "SystemPropertiesOverrideEngine"
 
 class SystemPropertiesOverrideEngineHooker(
     private val mode: Mode = Mode.BOTH,
@@ -32,6 +37,8 @@ class SystemPropertiesOverrideEngineHooker(
         val sdkMax: Int = 0,
         val osEq: Int? = null,
         val sdkEq: Int? = null,
+
+        val extraCondition: (() -> Boolean)? = null,
     )
 
     private data class MultiRule(
@@ -83,8 +90,25 @@ class SystemPropertiesOverrideEngineHooker(
         Rule("enable_super_volume_mode_for_calls", "oplus.software.audio.super_volume_call_earpiece", true, osMin = 27),
         Rule("enable_app_specific_media_volume", "oplus.software.multi_app.volume.adjust.support", true, osMin = 27),
         Rule("disable_preload_splash", "oplus.software.wms.disable_preload_splash", true, sdkMin = 33),
-        Rule("enable_screen_color_temperature_rgb_ball", "oplus.software.display.rgb_ball_support", true, osMin = 27),
-        Rule("enable_screen_color_temperature_rgb_space", "oplus.software.display.color_space_support", true, osMin = 30, sdkMin = 33),
+
+        Rule(
+            "enable_screen_color_temperature_rgb_ball",
+            "oplus.software.display.rgb_ball_support",
+            true,
+            osMin = 27,
+            extraCondition = {
+                Settings.System.getUriFor("oplus_settings_switch_color_mode") != null
+            },
+        ),
+        Rule(
+            "enable_screen_color_temperature_rgb_space",
+            "oplus.software.display.color_space_support",
+            true,
+            osMin = 30,
+            extraCondition = {
+                Settings.System.getUriFor("color_space_adjustment") != null
+            },
+        ),
         Rule("enable_dedicated_ram_for_games", "oplus.software.game_bounce_support", true),
         Rule("enable_smart_switching_screen_resolutions", "oplus.software.display.resolution_switch_disableauto_support", false),
         Rule("enable_video_memc_frame_insertion", "oplus.software.display.pixelworks_enable", true),
@@ -115,7 +139,7 @@ class SystemPropertiesOverrideEngineHooker(
         Rule("force_display_five_g_switch", "ro.oplus.radio.hide_nr_switch", -1),
         Rule("enable_record_calls_on_third_party_apps", "ro.oplus.audio.voip_record_white_app_support", true, osEq = 30),
         Rule("disable_dm_verity_verification", "ro.boot.veritymode", "enforcing"),
-        Rule("remove_gms_usage_restrictions", "remote_provisioning.hostname", ""),
+
         Rule("force_enable_feiniu_cloud_nas_option", "ro.oplus.feiniunas.support", true),
         Rule("enable_video_memc_frame_insertion", "ro.oplus.display.memc_video_refreshrate", true),
     )
@@ -167,9 +191,11 @@ class SystemPropertiesOverrideEngineHooker(
             "ro.boot.veritymode" to "enforcing",
             "ro.boot.vbmeta.device_state" to "locked",
         )),
+
         MultiRule("enable_video_memc_frame_insertion", listOf(
+            "ro.oplus.display.memc_video_refreshrate" to true,
             "vendor.display.show_memc_tomast" to true,
-        ), osMin = 31),
+        )),
         MultiRule("force_enable_32_bit_support", listOf(
             "persist.sys.oplus_support_app32_status" to "1",
             "ro.vendor.oplus.app32_boost_support" to "1",
@@ -240,68 +266,71 @@ class SystemPropertiesOverrideEngineHooker(
             "cn.google.services",
             "com.google.android.feature.services_updater",
         )
-        runCatching {
-            "com.android.server.SystemConfig".toClass().apply {
-                method {
-                    name = "getAvailableFeatures"
-                    emptyParam()
-                }.hook {
-                    after {
-                        val map = result as? ArrayMap<*, *> ?: return@after
-                        @Suppress("UNCHECKED_CAST")
-                        (map as ArrayMap<Any?, Any?>).removeAll(removeKeys)
-                    }
-                }
+        val cls = "com.android.server.SystemConfig".toClassOrNull()
+        if (cls == null) {
+            YLog.error("$LOG_TAG: com.android.server.SystemConfig not found in $packageName")
+            return
+        }
+        cls.method {
+
+            name = "getAvailableFeatures"
+            returnType = ArrayMapClass
+        }.ignored().hookAll {
+            after {
+                val map = result as? ArrayMap<*, *> ?: return@after
+                @Suppress("UNCHECKED_CAST")
+                (map as ArrayMap<Any?, Any?>).removeAll(removeKeys)
             }
         }
     }
 
     private fun hookFeatureConfig(featureMap: Map<String, Boolean>) {
-        runCatching {
-            "com.oplus.content.OplusFeatureConfigManager".toClass().apply {
-                method {
-                    name = "hasFeature"
-                    param(StringClass)
-                    returnType = BooleanType
-                }.hook {
-                    before {
-                        val key = args().first().string()
-                        if (key.isNotEmpty()) {
-                            featureMap[key]?.let { result = it }
-                        }
+        val manager = "com.oplus.content.OplusFeatureConfigManager".toClassOrNull()
+        if (manager == null) {
+            YLog.error("$LOG_TAG: com.oplus.content.OplusFeatureConfigManager not found in $packageName")
+        } else {
+            manager.method {
+                name = "hasFeature"
+                param(StringClass)
+                returnType = BooleanType
+            }.ignored().hook {
+                before {
+                    val key = args().first().string()
+                    if (key.isNotEmpty()) {
+                        featureMap[key]?.let { result = it }
                     }
                 }
             }
         }
-        if (packageName == "android") {
-            runCatching {
-                "com.android.server.content.OplusFeatureConfigManagerService".toClass().apply {
-                    method {
-                        name = "hasFeature"
-                        param(StringClass)
-                        returnType = BooleanType
-                    }.hook {
-                        before {
-                            val key = args().first().string()
-                            if (key.isNotEmpty()) {
-                                featureMap[key]?.let { result = it }
-                            }
-                        }
-                    }
-                    runCatching {
-                        method {
-                            name = "hasFeatureMap"
-                            param(StringClass, IntType)
-                            returnType = BooleanType
-                        }.hook {
-                            before {
-                                val key = args().first().string()
-                                if (key.isNotEmpty()) {
-                                    featureMap[key]?.let { result = it }
-                                }
-                            }
-                        }
-                    }
+
+        if (packageName != "android") return
+        val service = "com.android.server.content.OplusFeatureConfigManagerService".toClassOrNull()
+        if (service == null) {
+            YLog.error("$LOG_TAG: OplusFeatureConfigManagerService not found in android")
+            return
+        }
+        service.method {
+            name = "hasFeature"
+            param(StringClass)
+            returnType = BooleanType
+        }.ignored().hook {
+            before {
+                val key = args().first().string()
+                if (key.isNotEmpty()) {
+                    featureMap[key]?.let { result = it }
+                }
+            }
+        }
+
+        service.method {
+            name = "hasFeatureMap"
+            param(StringClass, IntType)
+            returnType = BooleanType
+        }.ignored().hook {
+            before {
+                val key = args().first().string()
+                if (key.isNotEmpty()) {
+                    featureMap[key]?.let { result = it }
                 }
             }
         }
@@ -313,88 +342,67 @@ class SystemPropertiesOverrideEngineHooker(
             "com.oplus.wrapper.os.SystemProperties",
         )
         for (clsName in classes) {
-            runCatching {
-                clsName.toClass().apply {
-                    method {
-                        name = "get"
-                        param(StringClass, StringClass)
-                        returnType = StringClass
-                    }.hook {
-                        after {
-                            val key = args().first().string()
-                            val v = propMap[key] ?: return@after
-                            result = when (v) {
-                                is Boolean -> v.toString()
-                                is String -> v
-                                is Int -> v.toString()
-                                is Long -> v.toString()
-                                else -> v.toString()
-                            }
-                        }
+            val cls = clsName.toClassOrNull()
+            if (cls == null) {
+                YLog.error("$LOG_TAG: $clsName not found in $packageName")
+                continue
+            }
+            cls.method {
+                name = "get"
+                returnType = StringClass
+            }.ignored().hookAll {
+                before {
+                    val key = args.getOrNull(0) as? String ?: return@before
+                    if (key.isEmpty()) return@before
+                    val v = propMap[key] ?: return@before
+
+                    result = when (v) {
+                        is Boolean -> v.toString()
+                        is String -> v
+                        else -> v.toString()
                     }
-                    method {
-                        name = "get"
-                        param(StringClass)
-                        returnType = StringClass
-                    }.hook {
-                        after {
-                            val key = args().first().string()
-                            val v = propMap[key] ?: return@after
-                            result = when (v) {
-                                is Boolean -> v.toString()
-                                is String -> v
-                                is Int -> v.toString()
-                                is Long -> v.toString()
-                                else -> v.toString()
-                            }
-                        }
+                }
+            }
+            cls.method {
+                name = "getBoolean"
+                returnType = BooleanType
+            }.ignored().hookAll {
+                before {
+                    val key = args.getOrNull(0) as? String ?: return@before
+                    if (key.isEmpty()) return@before
+                    val v = propMap[key] ?: return@before
+                    when (v) {
+                        is Boolean -> result = v
+                        "1", "true" -> result = true
+                        "0", "false" -> result = false
                     }
-                    method {
-                        name = "getBoolean"
-                        param(StringClass, BooleanType)
-                        returnType = BooleanType
-                    }.hook {
-                        after {
-                            val key = args().first().string()
-                            val v = propMap[key] ?: return@after
-                            when (v) {
-                                is Boolean -> result = v
-                                "1", "true" -> result = true
-                                "0", "false" -> result = false
-                            }
-                        }
+                }
+            }
+            cls.method {
+                name = "getInt"
+                returnType = IntType
+            }.ignored().hookAll {
+                before {
+                    val key = args.getOrNull(0) as? String ?: return@before
+                    if (key.isEmpty()) return@before
+                    val v = propMap[key] ?: return@before
+                    when (v) {
+                        is Int -> result = v
+                        is Long -> result = v.toInt()
                     }
-                    runCatching {
-                        method {
-                            name = "getInt"
-                            param(StringClass, IntType)
-                            returnType = IntType
-                        }.hook {
-                            after {
-                                val key = args().first().string()
-                                val v = propMap[key] ?: return@after
-                                when (v) {
-                                    is Int -> result = v
-                                    is Long -> result = v.toInt()
-                                }
-                            }
-                        }
-                    }
-                    runCatching {
-                        method {
-                            name = "getLong"
-                            param(StringClass, LongType)
-                            returnType = LongType
-                        }.hook {
-                            after {
-                                val key = args().first().string()
-                                val v = propMap[key] ?: return@after
-                                when (v) {
-                                    is Long -> result = v
-                                    is Int -> result = v.toLong()
-                                }
-                            }
-                        }
+                }
+            }
+            cls.method {
+                name = "getLong"
+                returnType = LongType
+            }.ignored().hookAll {
+                before {
+                    val key = args.getOrNull(0) as? String ?: return@before
+                    if (key.isEmpty()) return@before
+                    val v = propMap[key] ?: return@before
+                    when (v) {
+                        is Long -> result = v
+                        is Int -> result = v.toLong()
                     }
                 }
             }
@@ -418,6 +426,7 @@ class SystemPropertiesOverrideEngineHooker(
             if (r.sdkMax > 0 && sdk >= r.sdkMax) return
             if (r.osEq != null && os != r.osEq) return
             if (r.sdkEq != null && sdk != r.sdkEq) return
+            if (r.extraCondition?.let { safeOf(false) { it() } } == false) return
             val b = r.value as? Boolean ?: return
             map[r.propKey] = b
         }
@@ -469,6 +478,7 @@ class SystemPropertiesOverrideEngineHooker(
             if (r.sdkMax > 0 && sdk >= r.sdkMax) return
             if (r.osEq != null && os != r.osEq) return
             if (r.sdkEq != null && sdk != r.sdkEq) return
+            if (r.extraCondition?.let { safeOf(false) { it() } } == false) return
             map[r.propKey] = r.value
         }
         fun applyMultiRule(mr: MultiRule) {
@@ -518,7 +528,8 @@ class SystemPropertiesOverrideEngineHooker(
             val host2 = stringPref("custom_remote_provisioning_hostname", "")
             if (host2.isNotEmpty()) map["remote_provisioning.hostname"] = host2
         }
-        if (includeRegionDefaults) {
+
+        if (includeRegionDefaults || packageName == "com.heytap.mcs") {
             val region = stringPref("custom_system_message_region_defaults", "")
             if (region.isNotEmpty()) map["ro.vendor.oplus.regionmark"] = region
         }

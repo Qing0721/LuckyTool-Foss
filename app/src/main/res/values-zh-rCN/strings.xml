@@ -160,7 +160,6 @@
     <string name="remove_do_not_disturb_mode_notification">移除免打扰模式通知</string>
     <string name="remove_hotspot_power_consumption_notification">移除个人热点耗电通知</string>
     <string name="remove_hotspot_power_consumption_notification_summary">通知: 长时间开启个人热点会增加耗电与发热</string>
-    <string name="remove_smart_rapid_charging_notification">移除“了解智能快速充电”通知</string>
     <string name="remove_notifications_for_mute_notifications">移除通知勿扰通知</string>
     <string name="remove_virus_risk_notification_in_phone_manager">移除手机管家发现病毒风险通知</string>
     <string name="remove_gt_mode_notification">移除 GT 模式通知</string>
@@ -329,7 +328,6 @@
 
     <string name="Desktop">桌面相关</string>
     <string name="AppBadgeRelated">应用徽章相关</string>
-    <string name="remove_the_dot_after_app_update">移除 APP 更新后圆点</string>
     <string name="remove_app_shortcut_badge">移除应用快捷方式徽章</string>
     <string name="remove_app_work_badge">移除应用工作空间徽章</string>
     <string name="remove_app_clone_badge">移除应用分身徽章</string>
@@ -342,9 +340,6 @@
     <string name="long_press_app_icon_open_app_details">长按应用图标打开应用详情</string>
     <string name="remove_recent_task_list_clear_button">移除最近任务列表清除按钮</string>
     <string name="remove_bottom_app_icon_of_recent_task_list">移除最近任务列表底部 APP 图标</string>
-    <string name="enable_stacked_task_layout">启用堆叠任务布局</string>
-    <string name="set_task_stacking_level">设置任务堆叠等级</string>
-    <string name="fix_current_task_to_the_top">修复当前任务置顶</string>
     <string name="PaginationComponentRelated">分页组件相关</string>
     <string name="remove_pagination_component">移除分页组件</string>
     <string name="remove_folder_pagination_component">移除文件夹分页组件</string>
@@ -404,10 +399,6 @@
     <string name="remove_install_ads_summary">切记关闭设置-安全应用推荐</string>
     <string name="auto_click_install_button">自动点击安装按钮</string>
     <string name="auto_click_uninstall_button">自动点击卸载按钮</string>
-    <string name="replase_aosp_installer">替换AOSP安装器</string>
-    <string name="replase_aosp_installer_summary">替换为AOSP原生安装器</string>
-    <string name="show_packagename_and_versioncode">显示包名和版本号</string>
-    <string name="show_packagename_and_versioncode_summary">在安装页面顶部显示包名和版本号</string>
 
     <string name="ApplyOtherRestrictions">其他限制</string>
     <string name="remove_adb_install_confirm">移除ADB安装确认</string>
@@ -434,7 +425,6 @@
     <string name="remove_secure_pay_found_virus_dialog">移除支付保护发现病毒对话框</string>
     <string name="remove_access_device_log_dialog">移除访问设备日志对话框</string>
     <string name="custom_volume_dialog_background_transparency">自定义音量对话框背景透明度</string>
-    <string name="reduce_power_menu_display_delay">减少电源菜单显示延迟</string>
 
     <string name="FingerPrintRelated">指纹相关</string>
     <string name="remove_fingerprint_icon_mode">移除指纹图标模式</string>
@@ -463,10 +453,6 @@
     <string name="performance_mode_and_standby_optimization">性能模式和待机优化</string>
     <string name="performance_mode_and_standby_optimization_summary">设置 - 电池 - 更多设置</string>
     <string name="allow_untrusted_touch">允许不受信任的触摸</string>
-    <string name="disable_dynamic_refresh_rate">禁用动态刷新率</string>
-    <string name="disable_dynamic_refresh_rate_summary">主要解决屏幕无触摸时的掉帧问题\n(注意：这将会同时禁用拥有硬件级别 LTPO 屏幕设备的动态刷新率功能)</string>
-    <string name="remove_launcher_high_tempreature_protection">移除桌面高温保护</string>
-    <string name="remove_launcher_high_tempreature_protection_summary">禁用桌面在高温环境下限制图标点击与交互的保护机制</string>
     <string name="set_volume_bar_display_position">设置音量条显示位置</string>
     <string name="force_enable_systemui_blur_feature">强制启用系统界面模糊特性</string>
     <string name="force_enable_systemui_blur_feature_tips">前提条件：需要开启选项“强制启用系统模糊特性”\n功能位置：杂项</string>
@@ -477,9 +463,6 @@
     <string name="restore_default_battery_optimization_whitelist">恢复默认电池优化白名单</string>
     <string name="disable_customize_battery_optimization_whiteList">禁用自定义电池优化白名单</string>
     <string name="disable_customize_battery_optimization_whiteList_summary">若APP被用户手动授予`忽略电池优化`权限, 开启此功能后, 该APP将不会自动添加进电池优化白名单</string>
-    <string name="fix_battery_health_data_display">修复电池健康数据显示</string>
-    <string name="fix_battery_health_data_display_summary">当系统支持电池健康时不要使用此功能\n无法保证数据的准确性</string>
-    <string name="fix_battery_health_data_display_tips">尝试重启系统</string>
 
     <string name="settings_status_bar">状态栏</string>
     <string name="enable_statusbar_clock_format">启用状态栏时钟格式</string>
@@ -488,13 +471,10 @@
     <string name="enable_show_never_timeout">启用息屏永不超时</string>
     <string name="enable_show_never_timeout_summary">启用后即可在设置中看到更多可选项</string>
     <string name="settings_display">显示</string>
-    <string name="force_display_dc_backlight_mode">强制显示低亮无频闪护眼</string>
     <string name="force_display_dc_backlight_mode_summary">无法保证一定有效，仅用于显示功能选项</string>
     <string name="force_display_video_memc_frame_insertion">强制显示视频动态插帧MEMC</string>
     <string name="video_frame_insertion_support_2K120">视频插帧支持 2K120</string>
     <string name="video_frame_insertion_support_2K120_summary">若你的设备不支持 MEMC，请勿使用此功能</string>
-    <string name="enable_screen_color_temperature_rgb_palette">启用屏幕色温 RGB 调色板</string>
-    <string name="enable_screen_color_temperature_rgb_palette_summary">可能会被DC功能覆盖</string>
     <string name="settings_application">应用</string>
     <string name="force_display_process_management">强制显示进程管理</string>
     <string name="force_display_disabled_apps_manager">强制显示已停用应用管理器</string>
@@ -603,10 +583,6 @@
     <string name="unlock_themestore_vip_summary">解锁部分功能, 可自行尝试</string>
 
     <string name="Screenshot">截屏相关</string>
-    <string name="remove_system_screenshot_delay">移除系统截屏延迟</string>
-    <string name="remove_system_screenshot_delay_summary">首次截屏可能会不生效</string>
-    <string name="remove_screenshot_privacy_limit">移除截屏隐私限制</string>
-    <string name="remove_screenshot_privacy_limit_summary">移除涉及隐私无法截屏的限制, 若此项不生效可开启“禁用FLAG_SECURE”</string>
     <string name="disable_flag_secure">禁用FLAG_SECURE</string>
     <string name="disable_flag_secure_summary">解决大部分APP无法截图、屏幕共享或录制的限制\n需要 LSPosed 1.8.6+</string>
     <string name="remove_page_limit_for_long_screenshots">移除长截图页数限制</string>
@@ -616,7 +592,10 @@
     <string name="unlock_local_upgrade">解锁本地安装</string>
     <string name="unlock_local_upgrade_summary">点击后将自动执行相关操作，请耐心等待几秒</string>
     <string name="restore_ota_update_verity">恢复 OTA 更新验证</string>
-    <string name="restore_ota_update_verity_summary">当前状态：%1$s\n如果 OTA 更新提示验证失败或者提示 dm-verity，可以尝试使用此功能\n不要询问为什么功能显示灰色，因为系统默认启用更新验证\n当验证关闭后就会导致 OTA 更新失败，所以当功能开启后就会锁定此功能</string>
+    <string name="restore_ota_update_verity_summary">当前状态：%1$s
+如果 OTA 更新提示验证失败或者提示 dm-verity，可以尝试使用此功能
+不要询问为什么功能显示灰色，因为系统默认启用更新验证
+当验证关闭后就会导致 OTA 更新失败，所以当功能开启后就会锁定此功能</string>
 
     <string name="extract_ota_information">提取 OTA 信息</string>
     <string name="extract_ota_information_summary">当获取到新版本时，可以点击进行提取 OTA 信息</string>
@@ -632,7 +611,6 @@
     <string name="force_enable_aon_gestures">强制启用隔空手势</string>
     <string name="force_enable_aon_gestures_summary">注意：需要安装 AONService (com.aiunit.aon)，并且授予摄像头权限！</string>
     <string name="custom_aon_gesture_scroll_page_whitelist">自定义滑动页面白名单</string>
-    <string name="custom_aon_gesture_video_whitelist">自定义视频手势白名单</string>
     <string name="custom_aon_gesture_whitelist_tips">填写需要添加到白名单中的包名，每行只能填写一个包名</string>
     <string name="enable_volume_key_control_flashlight">启用音量键控制手电筒</string>
 
@@ -648,8 +626,6 @@
 
     <string name="remove_verification_code_floating_window">移除验证码悬浮窗</string>
 
-    <string name="remove_ads_from_weather_page">移除天气页面底部信息流广告</string>
-    <string name="remove_ads_from_weather_page_summary">通过在页面 m.weathercn.com 注入 JS 来实现屏蔽广告的效果，适用于通过天气 APP 跳转到的近 15 日天气等需要浏览器的功能</string>
     <string name="remove_ads_from_download_dialog">移除下载对话框广告</string>
     <string name="remove_ads_at_download_page_bottom">移除下载页面底部广告</string>
 
@@ -892,6 +868,7 @@
     <string name="remote_adb">远程ADB调试</string>
     <string name="run_in_background">后台挂机</string>
     <string name="enable_third_party_call_recording">启用三方应用通话录音</string>
+    <string name="expand_voip_recorder_whitelist">扩展 VoIP 通话录音白名单</string>
     <string name="force_enable_xiaobu_call">强制启用小布通话</string>
     <string name="force_display_5g_switch">强制显示 5G 开关</string>
     <string name="force_display_volte_hd_call">强制显示 VoLTE 高清通话</string>

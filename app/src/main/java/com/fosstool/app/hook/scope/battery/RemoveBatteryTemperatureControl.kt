@@ -1,11 +1,17 @@
 package com.fosstool.app.hook.scope.battery
 
 import android.os.Looper
-import com.highcapable.yukihookapi.hook.entity.YukiBaseHooker
-import com.highcapable.yukihookapi.hook.factory.constructor
-import com.highcapable.yukihookapi.hook.factory.method
 import com.fosstool.app.utils.DexkitUtils
 import com.fosstool.app.utils.DexkitUtils.checkDataList
+import com.fosstool.app.utils.DexkitUtils.firstOrNullSafe
+import com.highcapable.yukihookapi.hook.entity.YukiBaseHooker
+import com.highcapable.yukihookapi.hook.factory.method
+import com.highcapable.yukihookapi.hook.factory.toClassOrNull
+import com.highcapable.yukihookapi.hook.type.android.ContentResolverClass
+import com.highcapable.yukihookapi.hook.type.android.ContextClass
+import com.highcapable.yukihookapi.hook.type.android.HandlerClass
+import com.highcapable.yukihookapi.hook.type.java.BooleanType
+import com.highcapable.yukihookapi.hook.type.java.UnitType
 
 object RemoveBatteryTemperatureControl : YukiBaseHooker() {
     override fun onHook() {
@@ -13,83 +19,71 @@ object RemoveBatteryTemperatureControl : YukiBaseHooker() {
             runCatching {
                 dexKitBridge.findClass {
                     matcher {
+                        fields { addForType(ContextClass.name) }
+                        methods { add { name = "handleMessage" } }
                         usingStrings("ThermalControl", "Handler")
                     }
                 }.apply {
-                    checkDataList("RemoveBatteryTemperatureControl ThermalControlHandler")
-                    if (isNotEmpty()) {
-                        runCatching {
-                            first().name.toClass().method {
-                                name = "handleMessage"
-                                paramCount = 1
-                            }.hookAll {
-                                before { intercept() }
-                            }
-                        }
-                    }
+                    checkDataList("RemoveBatteryTemperatureControl find ThermalControlHandler")
+                    firstOrNullSafe()?.name?.toClassOrNull(appClassLoader)
+                        ?.method { name = "handleMessage" }
+                        ?.ignored()
+                        ?.hook { intercept() }
                 }
             }
 
             runCatching {
                 dexKitBridge.findClass {
-                    matcher {
-                        usingStrings("ThermalControllerCenter")
-                    }
+                    matcher { usingStrings("ThermalControllerCenter") }
                 }.apply {
-                    checkDataList("RemoveBatteryTemperatureControl ThermalControllerCenter")
-                    if (isNotEmpty()) {
-                        runCatching {
-                            first().name.toClass().constructor {
-                                param(Looper::class.java)
-                            }.hook {
-                                before { intercept() }
+                    checkDataList("RemoveBatteryTemperatureControl find ThermalControllerCenter")
+
+                    firstOrNullSafe()?.name?.toClassOrNull(appClassLoader)
+                        ?.method { param(Looper::class.java) }
+                        ?.ignored()
+                        ?.hookAll { intercept() }
+                }
+            }
+
+            runCatching {
+                val monitor = dexKitBridge.findClass {
+                    matcher { usingStrings("ThermalControlMonitor") }
+                }.checkDataList("RemoveBatteryTemperatureControl find ThermalControlMonitor")
+                if (monitor.isNotEmpty()) {
+
+                    dexKitBridge.findMethod {
+                        searchInClass(monitor)
+                        matcher {
+                            paramCount(0)
+                            returnType(UnitType.name)
+                            usingFields {
+                                add { type = BooleanType.name }
+                                add { type = HandlerClass.name }
+                                add { type = ContentResolverClass.name }
+                                add { type = "android.database.ContentObserver" }
                             }
+                            addInvoke {
+                                paramCount(0)
+                                returnType(UnitType.name)
+                            }
+                        }
+                    }.apply {
+                        checkDataList("RemoveBatteryTemperatureControl find startMonitor")
+                        firstOrNullSafe()?.let { member ->
+                            member.className.toClassOrNull(appClassLoader)
+                                ?.method { name = member.methodName; emptyParam() }
+                                ?.ignored()
+                                ?.hook { intercept() }
                         }
                     }
                 }
             }
 
             runCatching {
-                dexKitBridge.findClass {
-                    matcher {
-                        usingStrings("ThermalControlMonitor")
-                    }
-                }.apply {
-                    checkDataList("RemoveBatteryTemperatureControl ThermalControlMonitor")
-                    if (isNotEmpty()) {
-                        runCatching {
-                            first().name.toClass().method {
-                                name = "startMonitor"
-                                paramCount = 4
-                            }.hookAll {
-                                before { intercept() }
-                            }
-                        }
-                    }
-                }
-            }
-
-            runCatching {
-                dexKitBridge.findMethod {
-                    searchPackages("com.oplus.thermalcontrol")
-                    matcher {
-                        paramTypes(Looper::class.java.name)
-                        paramCount(1)
-                    }
-                }.apply {
-                    checkDataList("RemoveBatteryTemperatureControl ThermalControlUtils(Looper)", false)
-                    forEach { member ->
-                        if (member.className != "com.oplus.thermalcontrol.ThermalControlUtils") return@forEach
-                        runCatching {
-                            member.className.toClass().method {
-                                name = member.methodName
-                                paramCount = 1
-                            }.hookAll {
-                                before { intercept() }
-                            }
-                        }
-                    }
-                }
+                "com.oplus.thermalcontrol.ThermalControlUtils".toClassOrNull(appClassLoader)
+                    ?.method { param(Looper::class.java) }
+                    ?.ignored()
+                    ?.hook { intercept() }
             }
         }
     }

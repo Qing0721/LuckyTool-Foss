@@ -1,11 +1,14 @@
-package com.fosstool.app.hook.scope.screenshot
+﻿package com.fosstool.app.hook.scope.screenshot
 
 import com.highcapable.yukihookapi.hook.entity.YukiBaseHooker
-import com.highcapable.yukihookapi.hook.factory.method
+import com.highcapable.yukihookapi.hook.factory.toClassOrNull
 import com.highcapable.yukihookapi.hook.type.java.BooleanType
 import com.highcapable.yukihookapi.hook.type.java.IntType
 import com.fosstool.app.utils.DexkitUtils
 import com.fosstool.app.utils.DexkitUtils.checkDataList
+import com.fosstool.app.utils.DexkitUtils.firstOrNullSafe
+import de.robv.android.xposed.XC_MethodReplacement
+import de.robv.android.xposed.XposedBridge
 
 object CustomizeLongScreenshotMaxCapturedPages : YukiBaseHooker() {
     override fun onHook() {
@@ -25,17 +28,19 @@ object CustomizeLongScreenshotMaxCapturedPages : YukiBaseHooker() {
                 }
             }.apply {
                 checkDataList("CustomizeLongScreenshotMaxCapturedPages")
-                first().name.toClass().apply {
-                    method {
-                        param { it[1] == IntType }
-                        paramCount = 2
-                        returnType = BooleanType
-                    }.hook { replaceToFalse() }
-                    method {
-                        param { it[1] == IntType && it[2] == IntType }
-                        paramCount = 3
-                        returnType = IntType
-                    }.hook { replaceTo(-1) }
+                val cls = (firstOrNullSafe()?.name ?: return@apply).toClassOrNull(appClassLoader) ?: return@apply
+                for (m in cls.declaredMethods) {
+                    when {
+                        m.parameterCount == 2 &&
+                            m.parameterTypes[1] == Int::class.javaPrimitiveType &&
+                            m.returnType == Boolean::class.javaPrimitiveType ->
+                            runCatching { XposedBridge.hookMethod(m, XC_MethodReplacement.returnConstant(false)) }
+                        m.parameterCount == 3 &&
+                            m.parameterTypes[1] == Int::class.javaPrimitiveType &&
+                            m.parameterTypes[2] == Int::class.javaPrimitiveType &&
+                            m.returnType == Int::class.javaPrimitiveType ->
+                            runCatching { XposedBridge.hookMethod(m, XC_MethodReplacement.returnConstant(-1)) }
+                    }
                 }
             }
         }

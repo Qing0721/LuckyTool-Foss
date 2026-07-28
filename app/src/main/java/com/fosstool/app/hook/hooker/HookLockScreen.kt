@@ -27,7 +27,7 @@ import com.fosstool.app.utils.SDK
 object HookLockScreen : YukiBaseHooker() {
     override fun onHook() {
 
-        loadHooker(LockScreenClock)
+        loadHooker(LockScreenClock())
 
         loadHooker(LockScreenComponent)
 
@@ -46,7 +46,7 @@ object HookLockScreen : YukiBaseHooker() {
         }
 
         if (prefs(ModulePrefs).getBoolean("remove_lock_screen_close_notification_button", false)) {
-            if (SDK < A13) loadHooker(RemoveLockScreenCloseNotificationButton)
+            if ((OplusBuildUtlils().getOSVersionCode ?: 0) < 33) loadHooker(RemoveLockScreenCloseNotificationButton)
         }
 
         if (prefs(ModulePrefs).getBoolean("remove_aod_music_whitelist", false)) {
@@ -65,7 +65,8 @@ object HookLockScreen : YukiBaseHooker() {
         if (prefs(ModulePrefs).getBoolean("auto_wake_up_face_unlock_notification", false)) {
             loadHooker(AutoWakeUpFaceUnlockNotification)
         }
-        if (prefs(ModulePrefs).getBoolean("force_display_clock_style_options", false)) {
+
+        if (prefs(ModulePrefs).getBoolean("force_display_clock_style_options", false) && SDK == A13) {
             loadHooker(ForceDisplayClockStyleOptions)
         }
         if (prefs(ModulePrefs).getBoolean("lock_screen_show_real_charging_technology", false)) {

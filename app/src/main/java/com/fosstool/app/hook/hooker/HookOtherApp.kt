@@ -6,7 +6,7 @@ import com.fosstool.app.hook.scope.otherapp.HookADM
 import com.fosstool.app.hook.scope.otherapp.HookAlphaBackupPro
 import com.fosstool.app.hook.scope.otherapp.HookKsWeb
 
-object HookOtherApp : YukiBaseHooker() {
+class HookOtherApp : YukiBaseHooker() {
     override fun onHook() {
         if (packageName == "com.ruet_cse_1503050.ragib.appbackup.pro") loadHooker(HookAlphaBackupPro)
 

@@ -3,13 +3,14 @@ package com.fosstool.app.hook.scope.systemui
 import android.view.View
 import android.view.ViewGroup
 import com.highcapable.yukihookapi.hook.entity.YukiBaseHooker
-import com.highcapable.yukihookapi.hook.factory.field
 import com.highcapable.yukihookapi.hook.factory.method
+import com.highcapable.yukihookapi.hook.factory.toClassOrNull
 import com.fosstool.app.utils.A13
 import com.fosstool.app.utils.A14
 import com.fosstool.app.utils.ModulePrefs
 import com.fosstool.app.utils.SDK
 import com.fosstool.app.utils.getScreenOrientation
+import java.lang.reflect.Field
 
 object ControlCenterTiles : YukiBaseHooker() {
     var callback: ((key: String, value: String) -> Unit)? = null
@@ -42,51 +43,54 @@ object ControlCenterTiles : YukiBaseHooker() {
                 }
             }
 
-            "com.android.systemui.qs.QuickQSPanel".toClass().apply {
-                method { name = "getNumQuickTiles" }.hook {
+            "com.android.systemui.qs.QuickQSPanel"
+                .toClassOrNull(appClassLoader)
+                ?.method { name = "getNumQuickTiles" }?.ignored()?.hook {
                     replaceTo(columnUnexpandedVerticalC13)
                 }
-            }
 
-            "com.android.systemui.qs.TileLayout".toClass().apply {
-                method { name = "updateMaxRows" }.hook {
-                    before {
-                        getScreenOrientation(instance<ViewGroup>()) {
-                            val mRows = field { name = "mRows" }.get(instance).int()
-                            val newRows = if (it) {
-                                rowExpandedVerticalC13
-                            } else {
-                                if (autoExpandTile) {
-                                    when (mediaMode) {
-                                        "2" -> 2
-                                        "3" -> {
-                                            if (MediaPlayerPanel.getMediaData() == null) 2
-                                            else return@getScreenOrientation
+            "com.android.systemui.qs.TileLayout"
+                .toClassOrNull(appClassLoader)?.let { c ->
+                    c.method { name = "updateMaxRows" }.ignored().hook {
+                        before {
+                            val view = instance as? ViewGroup ?: return@before
+                            getScreenOrientation(view) {
+                                val mRows = c.findField("mRows")?.get(instance) as? Int ?: return@getScreenOrientation
+                                val newRows = if (it) {
+                                    rowExpandedVerticalC13
+                                } else {
+                                    if (autoExpandTile) {
+                                        when (mediaMode) {
+                                            "2" -> 2
+                                            "3" -> {
+                                                if (MediaPlayerPanel.getMediaData() == null) 2
+                                                else return@getScreenOrientation
+                                            }
+
+                                            else -> return@getScreenOrientation
                                         }
-
-                                        else -> return@getScreenOrientation
-                                    }
-                                } else return@getScreenOrientation
+                                    } else return@getScreenOrientation
+                                }
+                                c.findField("mRows")?.set(instance, newRows)
+                                result = mRows != newRows
                             }
-                            field { name = "mRows" }.get(instance).set(newRows)
-                            result = mRows != newRows
                         }
                     }
-                }
-                method { name = "updateColumns" }.hook {
-                    before {
-                        instance<ViewGroup>().apply {
-                            getScreenOrientation(this) {
-                                val mColumns = field { name = "mColumns" }.get(instance).int()
+                    c.method { name = "updateColumns" }.ignored().hook {
+                        before {
+                            val view = instance as? ViewGroup ?: return@before
+                            getScreenOrientation(view) {
+                                val mColumns =
+                                    c.findField("mColumns")?.get(instance) as? Int
+                                        ?: return@getScreenOrientation
                                 val newColumns = if (it) columnExpandedVerticalC13
                                 else columnHorizontal
-                                field { name = "mColumns" }.get(instance).set(newColumns)
+                                c.findField("mColumns")?.set(instance, newColumns)
                                 result = mColumns != newColumns
                             }
                         }
                     }
                 }
-            }
         }
     }
 
@@ -101,32 +105,44 @@ object ControlCenterTiles : YukiBaseHooker() {
             val columnExpandedHorizontal =
                 prefs(ModulePrefs).getInt("tile_expanded_columns_horizontal", 6)
 
-            "com.android.systemui.qs.QuickQSPanel".toClass().apply {
-                method { name = "getNumQuickTiles" }.hook {
+            "com.android.systemui.qs.QuickQSPanel"
+                .toClassOrNull(appClassLoader)
+                ?.method { name = "getNumQuickTiles" }?.ignored()?.hook {
                     before {
-                        getScreenOrientation(instance<View>()) {
+                        val view = instance as? View ?: return@before
+                        getScreenOrientation(view) {
                             result = if (it) columnUnexpandedVertical
                             else columnUnexpandedHorizontal
                         }
                     }
                 }
-            }
 
-            "com.android.systemui.qs.TileLayout".toClass().apply {
-                method { name = "updateColumns" }.hook {
-                    before {
-                        instance<ViewGroup>().apply {
-                            getScreenOrientation(this) {
-                                val mColumns = field { name = "mColumns" }.get(instance).int()
+            "com.android.systemui.qs.TileLayout"
+                .toClassOrNull(appClassLoader)?.let { c ->
+                    c.method { name = "updateColumns" }.ignored().hook {
+                        before {
+                            val view = instance as? ViewGroup ?: return@before
+                            getScreenOrientation(view) {
+                                val mColumns =
+                                    c.findField("mColumns")?.get(instance) as? Int
+                                        ?: return@getScreenOrientation
                                 val newColumns = if (it) columnExpandedVertical
                                 else columnExpandedHorizontal
-                                field { name = "mColumns" }.get(instance).set(newColumns)
+                                c.findField("mColumns")?.set(instance, newColumns)
                                 result = mColumns != newColumns
                             }
                         }
                     }
                 }
-            }
         }
+    }
+
+    private fun Class<*>.findField(name: String): Field? {
+        var cls: Class<*>? = this
+        while (cls != null) {
+            runCatching { return cls.getDeclaredField(name).also { it.isAccessible = true } }
+            cls = cls.superclass
+        }
+        return null
     }
 }

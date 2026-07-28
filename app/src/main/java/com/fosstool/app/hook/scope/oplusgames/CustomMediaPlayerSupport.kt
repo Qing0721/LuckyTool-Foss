@@ -5,6 +5,7 @@ import com.highcapable.yukihookapi.hook.factory.method
 import com.highcapable.yukihookapi.hook.type.java.ListClass
 import com.fosstool.app.utils.ModulePrefs
 import com.fosstool.app.utils.replaceSpace
+import com.highcapable.yukihookapi.hook.factory.toClassOrNull
 
 object CustomMediaPlayerSupport : YukiBaseHooker() {
     override fun onHook() {
@@ -17,9 +18,8 @@ object CustomMediaPlayerSupport : YukiBaseHooker() {
         )
         for (cn in classNames) {
             runCatching {
-                cn.toClass().apply {
+                cn.toClassOrNull(appClassLoader)?.apply {
                     method {
-                        modifiers { isStatic }
                         emptyParam()
                         returnType = ListClass
                     }.hook {

@@ -16,12 +16,12 @@ object AutoJumpAccessibilitySettings : YukiBaseHooker() {
         try {
             className.toClass().apply {
                 method { name = "onCreate"; paramCount = 1 }.hook {
-                    after {
-                        val activity = instance<Activity>() ?: return@after
-                        val referrer = activity.referrer ?: return@after
-                        val host = referrer.host ?: return@after
-                        val intent = activity.intent ?: return@after
-                        if (intent.action != "android.settings.ACCESSIBILITY_SETTINGS") return@after
+                    before {
+                        val activity = instance<Activity>() ?: return@before
+                        val referrer = activity.referrer ?: return@before
+                        val host = referrer.host ?: return@before
+                        val intent = activity.intent ?: return@before
+                        if (intent.action != "android.settings.ACCESSIBILITY_SETTINGS") return@before
 
                         jumpToAccessibilityService(activity, host)
                     }
@@ -38,17 +38,40 @@ object AutoJumpAccessibilitySettings : YukiBaseHooker() {
         } catch (_: Throwable) {
             return
         }
+
         val helper = runCatching {
-            helperClass.getConstructor(Activity::class.java).newInstance(activity)
+            val ctor2 = helperClass.declaredConstructors.firstOrNull {
+                it.parameterCount == 2 && it.parameterTypes[0].isAssignableFrom(activity.javaClass) &&
+                    !it.parameterTypes[1].isPrimitive
+            }
+            if (ctor2 != null) {
+                ctor2.isAccessible = true
+                return@runCatching ctor2.newInstance(activity, null)
+            }
+            val ctor1 = helperClass.declaredConstructors.firstOrNull {
+                it.parameterCount == 1 && it.parameterTypes[0].isAssignableFrom(activity.javaClass)
+            } ?: return@runCatching null
+            ctor1.isAccessible = true
+            ctor1.newInstance(activity)
         }.getOrNull() ?: return
         val map = runCatching {
-            helperClass.getMethod("loadAccessibilityInfos").invoke(helper) as? Map<*, *>
+            var c: Class<*>? = helperClass
+            var m: java.lang.reflect.Method? = null
+            while (c != null && m == null) {
+                m = c.declaredMethods.firstOrNull {
+                    it.name == "loadAccessibilityInfos" && it.parameterCount == 0
+                }
+                c = c.superclass
+            }
+            m?.isAccessible = true
+            m?.invoke(helper) as? Map<*, *>
         }.getOrNull() ?: return
 
         var matchedBundle: Bundle? = null
         for ((key, value) in map) {
             val keyStr = key as? String ?: continue
-            if (keyStr.startsWith(host, ignoreCase = true)) {
+
+            if (keyStr.startsWith(host)) {
                 matchedBundle = value as? Bundle
                 break
             }

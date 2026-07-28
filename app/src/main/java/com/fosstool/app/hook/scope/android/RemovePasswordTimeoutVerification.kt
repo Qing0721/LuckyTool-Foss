@@ -8,9 +8,11 @@ object RemovePasswordTimeoutVerification : YukiBaseHooker() {
     override fun onHook() {
         val isEnable = prefs(ModulePrefs).getBoolean("remove_72hour_password_verification", false)
 
-        "com.android.server.locksettings.LockSettingsStrongAuth".toClass().apply {
-            method { name = "rescheduleStrongAuthTimeoutAlarm";paramCount = 2 }.hook {
-                if (isEnable) intercept()
+        runCatching {
+            "com.android.server.locksettings.LockSettingsStrongAuth".toClass().apply {
+                method { name = "rescheduleStrongAuthTimeoutAlarm";paramCount = 2 }.ignored().hook {
+                    if (isEnable) intercept()
+                }
             }
         }
     }

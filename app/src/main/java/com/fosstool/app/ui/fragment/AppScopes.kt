@@ -34,6 +34,10 @@ class OplusAlarmClock : BaseScopePreferenceFeagment() {
                 entryValues = arrayOf("0", "1", "2")
                 setDefaultValue("0")
                 isIconSpaceReserved = false
+                setOnPreferenceChangeListener { _, newValue ->
+                    ctx.dataChannel("com.coloros.alarmclock").put(key, newValue)
+                    true
+                }
             })
         }
     }
@@ -417,6 +421,12 @@ class OplusSoundRecorder : BaseScopePreferenceFeagment() {
             add(SwitchPreference(ctx).apply {
                 title = ctx.getString(R.string.enable_third_party_call_recording)
                 key = "enable_record_calls_on_third_party_apps"
+                setDefaultValue(false)
+                isIconSpaceReserved = false
+            })
+            add(SwitchPreference(ctx).apply {
+                title = ctx.getString(R.string.expand_voip_recorder_whitelist)
+                key = "expand_voip_recorder_whitelist"
                 setDefaultValue(false)
                 isIconSpaceReserved = false
             })

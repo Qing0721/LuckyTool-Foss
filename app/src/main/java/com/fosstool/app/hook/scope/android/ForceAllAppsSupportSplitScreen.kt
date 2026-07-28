@@ -1,42 +1,59 @@
 package com.fosstool.app.hook.scope.android
 
 import com.highcapable.yukihookapi.hook.entity.YukiBaseHooker
-import com.highcapable.yukihookapi.hook.factory.current
 import com.highcapable.yukihookapi.hook.factory.method
-import com.fosstool.app.utils.A13
+import com.highcapable.yukihookapi.hook.factory.toClassOrNull
+import com.highcapable.yukihookapi.hook.log.YLog
+import com.highcapable.yukihookapi.hook.type.java.StringClass
 import com.fosstool.app.utils.ModulePrefs
-import com.fosstool.app.utils.SDK
+import de.robv.android.xposed.XposedHelpers
 
-@Suppress("UNUSED_VARIABLE")
 object ForceAllAppsSupportSplitScreen : YukiBaseHooker() {
     override fun onHook() {
         var isEnable = prefs(ModulePrefs).getBoolean("force_all_apps_support_split_screen", false)
         dataChannel.wait<Boolean>("force_all_apps_support_split_screen") { isEnable = it }
-        if (SDK < A13) return
 
-        "com.android.server.wm.OplusSplitScreenManagerService".toClass().apply {
-            method { name = "isInBlackList" }.hook {
-                if (isEnable) replaceToFalse()
+        val mgr = "com.android.server.wm.OplusSplitScreenManagerService"
+            .toClassOrNull(appClassLoader)
+        if (mgr == null) {
+            YLog.error("ForceAllAppsSupportSplitScreen: OplusSplitScreenManagerService not found")
+            return
+        }
+
+        mgr.method {
+            name = "supportsSplitScreenByVendorPolicy"
+            paramCount(3..4)
+            param { it.size >= 2 && it[0] == StringClass && it[1] == StringClass }
+        }.ignored().hookAll {
+            before {
+                if (!isEnable) return@before
+                val pkgName = args(0).any() as? String ?: ""
+                val activityName = args(1).any() as? String ?: ""
+                if (pkgName.isBlank()) return@before
+
+                val isSafe = runCatching {
+                    XposedHelpers.callMethod(instance, "isSafeSenterUI", activityName) as? Boolean
+                }.getOrNull() ?: false
+                if (isSafe) return@before
+
+                val paramCount = runCatching { method.parameterCount }.getOrDefault(-1)
+                if (paramCount != 4) return@before
+
+                val userId = args().last().any() as? Int ?: 0
+                val hidden = runCatching {
+                    XposedHelpers.callMethod(
+                        instance, "isHidenPackage", pkgName, userId
+                    ) as? Boolean
+                }.getOrNull() ?: false
+                if (!hidden) result = true
             }
-            method { name = "supportsSplitScreenByVendorPolicy";paramCount = 3 }.hook {
-                before {
-                    if (!isEnable) return@before
-                    val packageName = args().first().string()
-                    val activityName = args(1).string()
-                    val candidate = args().last().boolean()
-                    val isSafeSenterUI = method {
-                        name = "isSafeSenterUI";paramCount = 1
-                    }.get(instance).invoke<Boolean>(activityName)
-                    val appReader = "com.android.server.wm.OplusSplitScreenAppReader".toClass()
-                    val getInstance = appReader.method { name = "getInstance" }.get().call()
-                    val isInForbidActivityList = getInstance?.current()?.method {
-                        name = "isInForbidActivityList";paramCount = 1
-                    }?.invoke<Boolean>(activityName)
-                    if (isSafeSenterUI == true) resultFalse()
-                    else if (isInForbidActivityList == true) resultFalse()
-                    else resultTrue()
-                }
-            }
+        }
+
+        mgr.method { name = "isInForbidActivityList" }.ignored().hook {
+            before { if (isEnable) resultFalse() }
+        }
+        mgr.method { name = "supportsSplitScreenWindowingMode" }.ignored().hook {
+            before { if (isEnable) resultTrue() }
         }
     }
 }

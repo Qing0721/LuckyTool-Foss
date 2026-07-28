@@ -1,14 +1,15 @@
-package com.fosstool.app.hook.scope.android
+﻿package com.fosstool.app.hook.scope.android
 
+import com.highcapable.yukihookapi.hook.bean.VariousClass
 import com.highcapable.yukihookapi.hook.entity.YukiBaseHooker
 import com.highcapable.yukihookapi.hook.factory.method
 import com.highcapable.yukihookapi.hook.factory.toClassOrNull
 import com.highcapable.yukihookapi.hook.log.YLog
-import kotlinx.serialization.json.Json
 import com.fosstool.app.data.MemcConfigActivity
 import com.fosstool.app.data.MemcConfigPackage
 import com.fosstool.app.utils.ModulePrefs
 import com.fosstool.app.utils.getOSVersionCode
+import kotlinx.serialization.json.Json
 
 object HookOplusMemcHelper : YukiBaseHooker() {
 
@@ -31,33 +32,35 @@ object HookOplusMemcHelper : YukiBaseHooker() {
         val configPackages = prefs(ModulePrefs).getStringSet("memc_config_package_list", emptySet())
         val configActivitys = prefs(ModulePrefs).getStringSet("memc_config_activity_list", emptySet())
 
-        val clazz = "com.android.server.display.memc.OplusMemcHelper".toClassOrNull()
-            ?: "com.android.server.display.feature.vrr.memc.OplusMemcHelper".toClassOrNull()
+        val clazz = VariousClass(
+            "com.android.server.display.memc.OplusMemcHelper",
+            "com.android.server.display.feature.vrr.memc.OplusMemcHelper",
+        ).toClassOrNull(appClassLoader)
         if (clazz == null) {
             YLog.error("HookOplusMemcHelper: OplusMemcHelper not found", tag = "LuckyTool")
             return
         }
 
         try {
-            clazz.apply {
-                method { name = "init" }.hook {
-                    after { populateCaches(configPackages, configActivitys) }
+            clazz.method { name = "init" }.ignored().hook {
+                after {
+                    populateCaches(configPackages, configActivitys)
                 }
-                method { name = "getConfigAppList" }.hook {
-                    after { if (packNames.isNotEmpty()) result = packNames }
-                }
-                method { name = "getAppScreenRateMap" }.hook {
-                    after { if (packRateMap.isNotEmpty()) result = packRateMap }
-                }
-                method { name = "getSdr2hdrCommandMap" }.hook {
-                    after { if (packTypeMap.isNotEmpty()) result = packTypeMap }
-                }
-                method { name = "getConfigActivityList" }.hook {
-                    after { if (activities.isNotEmpty()) result = activities }
-                }
-                method { name = "getMemcCommandMap" }.hook {
-                    after { if (activityTypeMap.isNotEmpty()) result = activityTypeMap }
-                }
+            }
+            clazz.method { name = "getConfigAppList" }.ignored().hook {
+                after { if (packNames.isNotEmpty()) result = packNames }
+            }
+            clazz.method { name = "getAppScreenRateMap" }.ignored().hook {
+                after { if (packRateMap.isNotEmpty()) result = packRateMap }
+            }
+            clazz.method { name = "getSdr2hdrCommandMap" }.ignored().hook {
+                after { if (packTypeMap.isNotEmpty()) result = packTypeMap }
+            }
+            clazz.method { name = "getConfigActivityList" }.ignored().hook {
+                after { if (activities.isNotEmpty()) result = activities }
+            }
+            clazz.method { name = "getMemcCommandMap" }.ignored().hook {
+                after { if (activityTypeMap.isNotEmpty()) result = activityTypeMap }
             }
         } catch (e: Throwable) {
             YLog.error("HookOplusMemcHelper: hook failed", e, tag = "LuckyTool")

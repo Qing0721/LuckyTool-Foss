@@ -1,65 +1,46 @@
 package com.fosstool.app.hook.scope.otherapp
 
-import android.app.AlarmManager
-import android.app.NotificationManager
-import android.content.ClipboardManager
-import android.content.SharedPreferences
-import com.highcapable.yukihookapi.hook.entity.YukiBaseHooker
-import com.highcapable.yukihookapi.hook.factory.field
-import com.highcapable.yukihookapi.hook.factory.method
-import com.highcapable.yukihookapi.hook.type.android.ActivityClass
-import com.highcapable.yukihookapi.hook.type.android.HandlerClass
-import com.highcapable.yukihookapi.hook.type.android.MediaPlayerClass
-import com.highcapable.yukihookapi.hook.type.android.PendingIntentClass
-import com.highcapable.yukihookapi.hook.type.android.SharedPreferencesClass
-import com.highcapable.yukihookapi.hook.type.android.TypefaceClass
-import com.highcapable.yukihookapi.hook.type.java.BooleanType
-import com.highcapable.yukihookapi.hook.type.java.HashMapClass
-import com.highcapable.yukihookapi.hook.type.java.UnitType
-import com.fosstool.app.utils.DexkitUtils
-import com.fosstool.app.utils.DexkitUtils.checkDataList
+import android.app.Activity
 import com.fosstool.app.utils.ModulePrefs
+import com.highcapable.yukihookapi.hook.entity.YukiBaseHooker
+import com.highcapable.yukihookapi.hook.factory.toClassOrNull
+import de.robv.android.xposed.XC_MethodHook
+import de.robv.android.xposed.XposedBridge
+import java.lang.reflect.Method
 
 object HookADM : YukiBaseHooker() {
     override fun onHook() {
         val isPro = prefs(ModulePrefs).getBoolean("adm_unlock_pro", false)
         if (!isPro) return
-        DexkitUtils.create(appInfo.sourceDir) { dexKitBridge ->
-            dexKitBridge.findClass {
-                searchPackages("com.dv.get")
-                matcher {
-                    fields {
-                        addForType(SharedPreferencesClass.name)
-                        addForType(SharedPreferences.Editor::class.java.name)
-                        addForType(HandlerClass.name)
-                        addForType(HashMapClass.name)
-                        addForType(TypefaceClass.name)
-                        addForType(ClipboardManager::class.java.name)
-                        addForType(AlarmManager::class.java.name)
-                        addForType(NotificationManager::class.java.name)
-                        addForType(MediaPlayerClass.name)
-                        addForType(PendingIntentClass.name)
-                    }
-                    usingStrings("firebase.test.lab")
+
+        val main = "com.dv.get.Main".toClassOrNull(appClassLoader) ?: return
+        val onCreate = main.findMethod("onCreate") ?: return
+        runCatching {
+            XposedBridge.hookMethod(onCreate, object : XC_MethodHook() {
+                override fun afterHookedMethod(param: MethodHookParam) {
+                    val activity = param.thisObject as? Activity ?: return
+                    unlockProPrefs(activity)
                 }
-            }.apply {
-                checkDataList("HookADM")
-                first().name.toClass().apply {
-                    method {
-                        modifiers { isStatic }
-                        param(ActivityClass)
-                        returnType = UnitType
-                    }.hookAll {
-                        after {
-                            field {
-                                name = "n"
-                                modifiers { isStatic }
-                                type(BooleanType)
-                            }.get().setTrue()
-                        }
-                    }
-                }
-            }
+            })
         }
+    }
+
+    private fun unlockProPrefs(activity: Activity) {
+        runCatching {
+            val name = activity.packageName + "_preferences"
+            activity.getSharedPreferences(name, 0).edit()
+                .putBoolean("EVENT_DISA", false)
+                .putBoolean("hua_voices", false)
+                .commit()
+        }
+    }
+
+    private fun Class<*>.findMethod(name: String): Method? {
+        var c: Class<*>? = this
+        while (c != null && c != Any::class.java) {
+            c.declaredMethods.firstOrNull { it.name == name }?.let { return it.apply { isAccessible = true } }
+            c = c.superclass
+        }
+        return null
     }
 }

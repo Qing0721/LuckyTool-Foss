@@ -18,6 +18,7 @@ import com.fosstool.app.hook.scope.settings.ForceDisplayAutoLaunchJumpOption
 import com.fosstool.app.hook.scope.settings.ForceDisplayBottomGoogleSettings
 import com.fosstool.app.hook.scope.settings.ForceDisplayContentRecommend
 import com.fosstool.app.hook.scope.settings.ForceDisplayDisabledAppsManager
+import com.fosstool.app.hook.scope.settings.ForceDisplayGoogleAutoFill
 import com.fosstool.app.hook.scope.settings.ForceDisplayPasswordManagementSetting
 import com.fosstool.app.hook.scope.settings.ForceDisplayProcessManagement
 import com.fosstool.app.hook.scope.settings.ForceDisplaySettingsFeatureFlags
@@ -30,13 +31,17 @@ import com.fosstool.app.hook.scope.settings.RemoveDpiRestartRecovery
 import com.fosstool.app.hook.scope.settings.RemoveSettingsBottomLaboratory
 import com.fosstool.app.hook.scope.settings.RemoveTopAccountDisplay
 import com.fosstool.app.hook.utils.OplusBuildUtlils
+import com.fosstool.app.hook.utils.SystemPropertiesOverrideEngineHooker
+import com.fosstool.app.hook.utils.SystemPropertiesOverrideEngineHooker.Mode
 import com.fosstool.app.utils.A13
 import com.fosstool.app.utils.ModulePrefs
 import com.fosstool.app.utils.SDK
 
-
 object HookSettings : YukiBaseHooker() {
     override fun onHook() {
+
+        loadHooker(SystemPropertiesOverrideEngineHooker(mode = Mode.BOTH))
+
         loadHooker(HookSettingsFeature)
 
         loadHooker(HookAppDetails)
@@ -86,16 +91,15 @@ object HookSettings : YukiBaseHooker() {
         if (prefs(ModulePrefs).getBoolean("enable_custom_app_language", false) && SDK >= 34) {
             loadHooker(EnableCustomAppLanguage)
         }
-        if (prefs(ModulePrefs).getBoolean("enable_app_specific_media_volume", false) &&
-            (OplusBuildUtlils().getOSVersionCode ?: 0) >= 27
-        ) {
+
+        if (prefs(ModulePrefs).getBoolean("enable_app_specific_media_volume", false)) {
             loadHooker(AppSpecificMediaVolume)
         }
         if (prefs(ModulePrefs).getString("set_processor_click_page", "0") == "3") {
             loadHooker(ProcessorDetailPreference)
         }
         if (prefs(ModulePrefs).getBoolean("remove_device_name_change_limit", false) &&
-            (OplusBuildUtlils().getOSVersionCode ?: 0) >= 30
+            (try { OplusBuildUtlils().getOSVersionCode } catch (_: Throwable) { null } ?: 0) >= 30
         ) {
             loadHooker(RemoveDeviceNameChangeLimit)
         }
@@ -109,6 +113,9 @@ object HookSettings : YukiBaseHooker() {
         ) {
             loadHooker(ForceDisplayAutoLaunchJumpOption)
         }
+        if (prefs(ModulePrefs).getBoolean("enable_google_auto_fill", false)) {
+            loadHooker(ForceDisplayGoogleAutoFill)
+        }
         if (prefs(ModulePrefs).getBoolean("force_display_password_management_settings", false)) {
             loadHooker(ForceDisplayPasswordManagementSetting)
         }
@@ -119,12 +126,12 @@ object HookSettings : YukiBaseHooker() {
             loadHooker(ForceDisplaySettingsFeatureFlags)
         }
         if (prefs(ModulePrefs).getBoolean("enable_swipe_up_navigation_gesture", false) &&
-            (OplusBuildUtlils().getOSVersionCode ?: 0) >= 30
+            (try { OplusBuildUtlils().getOSVersionCode } catch (_: Throwable) { null } ?: 0) >= 30
         ) {
             loadHooker(EnableSwipeUpNavigationGesture)
         }
         if (prefs(ModulePrefs).getBoolean("disable_otg_auto_off", false) &&
-            (OplusBuildUtlils().getOSVersionCode ?: 0) >= 30
+            (try { OplusBuildUtlils().getOSVersionCode } catch (_: Throwable) { null } ?: 0) >= 30
         ) {
             loadHooker(DisableOTGAutoOffSettings)
         }
@@ -137,12 +144,6 @@ object HookSettings : YukiBaseHooker() {
         ) {
             loadHooker(EnableMultiAppQuickJump)
         }
-
-
-
-
-
-
 
     }
 }

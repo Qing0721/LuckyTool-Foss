@@ -6,18 +6,19 @@ import android.os.Handler
 import android.util.TypedValue
 import android.view.Gravity
 import android.widget.TextView
-import com.highcapable.yukihookapi.hook.bean.VariousClass
-import com.highcapable.yukihookapi.hook.entity.YukiBaseHooker
-import com.highcapable.yukihookapi.hook.factory.constructor
-import com.highcapable.yukihookapi.hook.factory.field
-import com.highcapable.yukihookapi.hook.factory.method
-import com.highcapable.yukihookapi.hook.type.java.CharSequenceClass
 import com.fosstool.app.hook.utils.sysui.LunarHelperUtils
 import com.fosstool.app.utils.A11
 import com.fosstool.app.utils.ModulePrefs
 import com.fosstool.app.utils.SDK
 import com.fosstool.app.utils.formatDate
 import com.fosstool.app.utils.is24
+import com.highcapable.yukihookapi.hook.bean.VariousClass
+import com.highcapable.yukihookapi.hook.entity.YukiBaseHooker
+import com.highcapable.yukihookapi.hook.factory.method
+import com.highcapable.yukihookapi.hook.factory.toClassOrNull
+import de.robv.android.xposed.XC_MethodHook
+import de.robv.android.xposed.XposedBridge
+import java.lang.reflect.Field
 import java.lang.reflect.Method
 import java.util.Calendar
 import java.util.Date
@@ -87,52 +88,82 @@ object StatusBarClock : YukiBaseHooker() {
         dataChannel.wait<Boolean>("statusbar_clock_hide_spaces") { isHideSpace = it }
         var context: Context? = null
 
-        "com.android.systemui.statusbar.policy.Clock".toClass().apply {
-            constructor { paramCount = 3 }.hook {
-                after {
-                    context = args(0).cast<Context>()
-                    val clockView = instance<TextView>()
-                    if (clockView.resources.getResourceEntryName(clockView.id) != "clock") return@after
-                    val d: Method = clockView.javaClass.superclass.getDeclaredMethod("updateClock")
-                    val r = Runnable {
-                        d.isAccessible = true
-                        d.invoke(clockView)
-                    }
-
-                    class T : TimerTask() {
-                        override fun run() {
-                            Handler(clockView.context.mainLooper).post(r)
+        val clockCls = VariousClass(
+            "com.android.systemui.statusbar.policy.Clock",
+            "com.oplus.systemui.statusbar.policy.Clock",
+            "com.oplusos.systemui.statusbar.policy.Clock",
+        ).toClassOrNull(appClassLoader)
+        clockCls?.declaredConstructors?.firstOrNull { it.parameterCount == 3 }?.let { ctor ->
+            runCatching {
+                XposedBridge.hookMethod(ctor, object : XC_MethodHook() {
+                    override fun afterHookedMethod(param: MethodHookParam) {
+                        context = param.args.getOrNull(0) as? Context
+                        val clockView = param.thisObject as? TextView ?: return
+                        val resName = runCatching {
+                            clockView.resources.getResourceEntryName(clockView.id)
+                        }.getOrNull()
+                        if (resName != null && resName != "clock" && !resName.contains("clock")) return
+                        val d: Method = runCatching {
+                            clockView.javaClass.superclass.getDeclaredMethod("updateClock")
+                        }.getOrElse {
+                            clockView.javaClass.getDeclaredMethod("updateClock")
                         }
+                        val r = Runnable {
+                            d.isAccessible = true
+                            d.invoke(clockView)
+                        }
+
+                        class T : TimerTask() {
+                            override fun run() {
+                                Handler(clockView.context.mainLooper).post(r)
+                            }
+                        }
+                        Timer().scheduleAtFixedRate(T(), 1000 - System.currentTimeMillis() % 1000, 1000)
                     }
-                    Timer().scheduleAtFixedRate(T(), 1000 - System.currentTimeMillis() % 1000, 1000)
-                }
+                })
             }
-            method { name = "getSmallTime";returnType = CharSequenceClass }.hook {
-                after {
-                    instance<TextView>().apply {
-                        if (resources.getResourceEntryName(id) != "clock") return@after
-                        initView()
-                    }
-                    val mCalendar = field { name = "mCalendar" }.get(instance).cast<Calendar>()
-                    nowTime = mCalendar?.time
-                    if (clockMode == "1") result = getDate(context!!) + newline + getTime(context!!)
-                    else if (clockMode == "2") {
-                        initLunar(context!!)
-                        result = formatDate(getFormat(customFormat, nowTime!!, nowLunar), nowTime!!)
-                    }
+        }
+        clockCls?.method { name = "getSmallTime" }?.ignored()?.hook {
+            after {
+                val tv = instance as? TextView ?: return@after
+                val resName = runCatching {
+                    tv.resources.getResourceEntryName(tv.id)
+                }.getOrNull()
+                if (resName != null && resName != "clock" && !resName.contains("clock")) return@after
+                tv.initView()
+                val mCalendar = clockCls.findField("mCalendar")?.get(instance) as? Calendar
+                nowTime = mCalendar?.time ?: Date()
+                val ctx = context ?: tv.context
+                if (clockMode == "1") result = getDate(ctx) + newline + getTime(ctx)
+                else if (clockMode == "2") {
+                    initLunar(ctx)
+                    val t = nowTime ?: return@after
+                    result = formatDate(getFormat(customFormat, t, nowLunar), t)
                 }
             }
         }
 
         VariousClass(
             "com.oplusos.systemui.statusbar.widget.StatClock",
-            "com.oplus.systemui.statusbar.widget.StatClock"
-        ).toClass().apply {
-            method {
-                if (SDK == A11) name = "onConfigChanged"
-                if (SDK > A11) name = "onConfigurationChanged"
-            }.hook { intercept() }
-
+            "com.oplus.systemui.statusbar.widget.StatClock",
+        ).toClassOrNull(appClassLoader)?.let { cls ->
+            val configMethodName = if (SDK == A11) "onConfigChanged" else "onConfigurationChanged"
+            cls.method { name = configMethodName }.ignored().hook { intercept() }
+            cls.method { name = "getSmallTime" }.ignored().hook {
+                after {
+                    val tv = instance as? TextView ?: return@after
+                    tv.initView()
+                    val mCalendar = cls.findField("mCalendar")?.get(instance) as? Calendar
+                    nowTime = mCalendar?.time ?: Date()
+                    val ctx = context ?: tv.context
+                    if (clockMode == "1") result = getDate(ctx) + newline + getTime(ctx)
+                    else if (clockMode == "2") {
+                        initLunar(ctx)
+                        val t = nowTime ?: return@after
+                        result = formatDate(getFormat(customFormat, t, nowLunar), t)
+                    }
+                }
+            }
         }
     }
 
@@ -354,5 +385,14 @@ object StatusBarClock : YukiBaseHooker() {
         val locale = context.resources.configuration.locales[0]
         val language = locale.language
         return language.endsWith("zh")
+    }
+
+    private fun Class<*>.findField(name: String): Field? {
+        var c: Class<*>? = this
+        while (c != null && c != Any::class.java) {
+            c.declaredFields.firstOrNull { it.name == name }?.let { return it.apply { isAccessible = true } }
+            c = c.superclass
+        }
+        return null
     }
 }

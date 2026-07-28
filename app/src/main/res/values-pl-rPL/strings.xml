@@ -157,7 +157,6 @@
     <string name="remove_do_not_disturb_mode_notification">Usuń „Tryb Nie przeszkadzać jest włączony”</string>
     <string name="remove_hotspot_power_consumption_notification">Usuń „Włączono udostępnianie Wi-Fi”</string>
     <string name="remove_hotspot_power_consumption_notification_summary">Pozostawienie włączonego osobistego hotspotu zwiększy użycie baterii i nagrzeje urządzenie</string>
-    <string name="remove_smart_rapid_charging_notification">Usuń „Inteligentne szybkie ładowanie”</string>
     <string name="remove_notifications_for_mute_notifications">Usuń powiadomienia dla wyciszonych powiadomień</string>
     <string name="remove_virus_risk_notification_in_phone_manager">Usuń alerty o zagrożeniu wirusami w menedżerze telefonu</string>
     <string name="remove_gt_mode_notification">Remove GT mode notification</string>
@@ -326,7 +325,6 @@
 
     <string name="Desktop">Pulpit</string>
     <string name="AppBadgeRelated">App badge related</string>
-    <string name="remove_the_dot_after_app_update">Usuń oznaczenie (kropkę) uaktualnienia aplikacji</string>
     <string name="remove_app_shortcut_badge">Remove app shortcut badge</string>
     <string name="remove_app_work_badge">Remove app work badge</string>
     <string name="remove_app_clone_badge">Remove app clone badge</string>
@@ -339,9 +337,6 @@
     <string name="long_press_app_icon_open_app_details">Przytrzymaj ikonę aplikacji, aby otworzyć informacje o aplikacji</string>
     <string name="remove_recent_task_list_clear_button">Usuń przycisk „Zamknij wszystkie” z listy ostatnich aplikacji</string>
     <string name="remove_bottom_app_icon_of_recent_task_list">Usuń dolne ikony z listy ostatnich aplikacji</string>
-    <string name="enable_stacked_task_layout">Włącz układ stosu kart</string>
-    <string name="set_task_stacking_level">Ustaw poziom układania</string>
-    <string name="fix_current_task_to_the_top">Pokaż wybraną kartę podglądu na wierzchu</string>
     <string name="PaginationComponentRelated">Kropkowy wskaźnik stronicowania</string>
     <string name="remove_pagination_component">Usuń wskaźnik stronicowania pulpitu</string>
     <string name="remove_folder_pagination_component">Usuń wskaźnik stronicowania folderu</string>
@@ -379,10 +374,6 @@
     <string name="remove_install_ads_summary">Usuwa reklamy pojawiające się po zainstalowaniu aplikacji</string>
     <string name="auto_click_install_button">Automatically click the install button</string>
     <string name="auto_click_uninstall_button">Automatically click the uninstall button</string>
-    <string name="replase_aosp_installer">Zastąp menedżer pakietów</string>
-    <string name="replase_aosp_installer_summary">Podmienia instalator aplikacji na ten z AOSP</string>
-    <string name="show_packagename_and_versioncode">Pokaż nazwę pakietu i kod wersji</string>
-    <string name="show_packagename_and_versioncode_summary">Wyświetlaj nazwę pakietu i kod wersji na górze strony instalacji</string>
 
     <string name="ApplyOtherRestrictions">Inne ograniczenia</string>
     <string name="remove_adb_install_confirm">Usuń potwierdzenie instalacji ADB</string>
@@ -409,7 +400,6 @@
     <string name="remove_secure_pay_found_virus_dialog">Usuń okno sprawdzania wirusów dla bezpiecznych płatności</string>
     <string name="remove_access_device_log_dialog">Remove access device log dialog</string>
     <string name="custom_volume_dialog_background_transparency">Custom volume dialog background transparency</string>
-    <string name="reduce_power_menu_display_delay">Reduce power menu display delay</string>
 
     <string name="FingerPrintRelated">Ustawienia odcisku palca</string>
     <string name="remove_fingerprint_icon_mode">Tryb usuwania ikony</string>
@@ -438,8 +428,6 @@
     <string name="performance_mode_and_standby_optimization">Dodaj stronę „Tryb wydajności” i „Optymalne czuwanie”</string>
     <string name="performance_mode_and_standby_optimization_summary">Ustawienia &gt; Bateria &gt; Więcej ustawień</string>
     <string name="allow_untrusted_touch">Zezwól na niezaufane działania dotykowe</string>
-    <string name="disable_dynamic_refresh_rate">Disable dynamic refresh rate</string>
-    <string name="disable_dynamic_refresh_rate_summary">Mainly solve the frame drop problem when the screen is not touched</string>
     <string name="set_volume_bar_display_position">Set the volume bar display position</string>
     <string name="force_enable_systemui_blur_feature">Force enable the systemui blur feature</string>
     <string name="force_enable_systemui_blur_feature_tips">Preconditions: You need to turn on the option to “force enable the blur feature of the systemui”\nFunctional location: Miscellaneous</string>
@@ -450,9 +438,6 @@
     <string name="restore_default_battery_optimization_whitelist">Przywróć domyślną białą listę optymalizacji baterii</string>
     <string name="disable_customize_battery_optimization_whiteList">Disable custom battery optimization whitelist</string>
     <string name="disable_customize_battery_optimization_whiteList_summary">If the APP is manually granted the `ignore battery optimization` permission by the user, After enabling this function, the APP will not be automatically added to the battery optimization whitelist</string>
-    <string name="fix_battery_health_data_display">Fix battery health data display</string>
-    <string name="fix_battery_health_data_display_summary">Do not use this feature when the system supports battery health\nThe accuracy of the data cannot be guaranteed</string>
-    <string name="fix_battery_health_data_display_tips">Try rebooting the system</string>
 
     <string name="settings_status_bar">StatusBar</string>
     <string name="enable_statusbar_clock_format">Enable status bar clock format</string>
@@ -461,13 +446,10 @@
     <string name="enable_show_never_timeout">Enable screen display never timeout</string>
     <string name="enable_show_never_timeout_summary">After enabling, you can see more options in the settings</string>
     <string name="settings_display">Display</string>
-    <string name="force_display_dc_backlight_mode">Forced to display low brightness and no flicker eye protection</string>
     <string name="force_display_dc_backlight_mode_summary">There is no guarantee that it will work, it is only used to display function options</string>
     <string name="force_display_video_memc_frame_insertion">Forcibly display video MEMC interpolation frame</string>
     <string name="video_frame_insertion_support_2K120">Włącz obsługę interpolacji klatek wideo dla 2k-120fps</string>
     <string name="video_frame_insertion_support_2K120_summary">If your device does not support MEMC, please do not use this function</string>
-    <string name="enable_screen_color_temperature_rgb_palette">Enable screen color temperature RGB palette</string>
-    <string name="enable_screen_color_temperature_rgb_palette_summary">May be overridden by DC function</string>
     <string name="settings_application">Application</string>
     <string name="force_display_process_management">Force display of process management</string>
     <string name="force_display_disabled_apps_manager">Force display of disabled apps manager</string>
@@ -538,10 +520,6 @@
     <string name="unlock_themestore_vip_summary">Odblokuj część funkcji i wypróbuj je na własnej skórze</string>
 
     <string name="Screenshot">Zrzut ekranu</string>
-    <string name="remove_system_screenshot_delay">Usuń opóźnienie</string>
-    <string name="remove_system_screenshot_delay_summary">Być może nie zadziała na pierwszym zrzucie ekranu</string>
-    <string name="remove_screenshot_privacy_limit">Usuń ograniczenie prywatności</string>
-    <string name="remove_screenshot_privacy_limit_summary">Zezwól na wykonywanie zrzutów ekranu w aplikacjach, które na to nie pozwalają. Wyłącz FLAG_SECURE, jeśli to nie zadziała</string>
     <string name="disable_flag_secure">Wyłącz FLAG_SECURE</string>
     <string name="disable_flag_secure_summary">Rozwiązuje problemy z niemożliwością wykonywania zrzutów i nagrywania ekranu w aplikacjach.\nWymagany LSPosed 1.8.6+.</string>
     <string name="remove_page_limit_for_long_screenshots">Remove the page limit for long screenshots</string>
@@ -551,7 +529,10 @@
     <string name="unlock_local_upgrade">Odblokuj lokalne uaktualnienie</string>
     <string name="unlock_local_upgrade_summary">After clicking, relevant operations will be performed automatically, please wait patiently for a few seconds</string>
     <string name="restore_ota_update_verity">Resume OTA update verification</string>
-    <string name="restore_ota_update_verity_summary">Current Status: [%1$s]\nTry to use this feature if the OTA update prompts for validation failure or prompts for dm-verity\nDo not ask why the feature is grayed out because the system has update validation enabled by default\nWhen validation is turned off the OTA update fails, so when the feature is turned on it locks out this feature</string>
+    <string name="restore_ota_update_verity_summary">Current Status: [%1$s]
+Try to use this feature if the OTA update prompts for validation failure or prompts for dm-verity
+Do not ask why the feature is grayed out because the system has update validation enabled by default
+When validation is turned off the OTA update fails, so when the feature is turned on it locks out this feature</string>
 
     <string name="extract_ota_information">Extract OTA information</string>
     <string name="extract_ota_information_summary">When the new version is obtained, you can click to extract the OTA information</string>
@@ -567,7 +548,6 @@
     <string name="force_enable_aon_gestures">Force enable aon gestures</string>
     <string name="force_enable_aon_gestures_summary">Note: AONService (com.aiunit.aon) needs to be installed, and the camera permission must be granted!</string>
     <string name="custom_aon_gesture_scroll_page_whitelist">Custom scroll page whitelist</string>
-    <string name="custom_aon_gesture_video_whitelist">Custom video gesture whitelist</string>
     <string name="custom_aon_gesture_whitelist_tips">Fill in the package name that needs to be added to the whitelist, and only one package name can be filled in each line</string>
     <string name="enable_volume_key_control_flashlight">Enable the volume keys to control the flashlight</string>
 
@@ -583,8 +563,6 @@
 
     <string name="remove_verification_code_floating_window">Remove verification code floating window</string>
 
-    <string name="remove_ads_from_weather_page">Remove weather page bottom information flow ads</string>
-    <string name="remove_ads_from_weather_page_summary">By injecting JS into the page m.weathercn.com to achieve the effect of blocking ads, it is suitable for functions that require a browser, such as the weather of the past 15 days that you jump to through the weather app</string>
     <string name="remove_ads_from_download_dialog">Remove ads from download dialog</string>
     <string name="remove_ads_at_download_page_bottom">Remove ads at the bottom of download page</string>
 

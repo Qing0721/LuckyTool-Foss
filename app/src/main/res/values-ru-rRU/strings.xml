@@ -157,7 +157,6 @@
     <string name="remove_do_not_disturb_mode_notification">Удалить уведомление режима \"Не беспокоить\"</string>
     <string name="remove_hotspot_power_consumption_notification">Удалить уведомление об энергопотреблении персональной точки доступа</string>
     <string name="remove_hotspot_power_consumption_notification_summary">Примечание: Работа персональной точки доступа в течение длительного времени увеличивает энергопотребление и тепловыделение</string>
-    <string name="remove_smart_rapid_charging_notification">Удалить уведомление \"Умная быстрая зарядка\"</string>
     <string name="remove_notifications_for_mute_notifications">Удалить уведомления для отключенных уведомлений</string>
     <string name="remove_virus_risk_notification_in_phone_manager">Удалить уведомление о риске вирусов в диспетчере телефона</string>
     <string name="remove_gt_mode_notification">Удалить уведомление о режиме производительности</string>
@@ -326,7 +325,6 @@
 
     <string name="Desktop">Рабочий стол</string>
     <string name="AppBadgeRelated">Иконка приложения</string>
-    <string name="remove_the_dot_after_app_update">Удалить точку после обновления приложения</string>
     <string name="remove_app_shortcut_badge">Удалить иконку приложения</string>
     <string name="remove_app_work_badge">Удалить рабочую иконку приложения</string>
     <string name="remove_app_clone_badge">Удалить иконку клонированного приложения</string>
@@ -339,9 +337,6 @@
     <string name="long_press_app_icon_open_app_details">Удерживайте иконку приложения, чтобы открыть детали приложения</string>
     <string name="remove_recent_task_list_clear_button">Удалить кнопку очистки списка последних задач</string>
     <string name="remove_bottom_app_icon_of_recent_task_list">Удалить иконку приложения в нижней части списка недавних задач</string>
-    <string name="enable_stacked_task_layout">Включить раскладку задач</string>
-    <string name="set_task_stacking_level">Установить уровень стека задач</string>
-    <string name="fix_current_task_to_the_top">Закрепить текущую задачу наверху</string>
     <string name="PaginationComponentRelated">Компоненты страницы</string>
     <string name="remove_pagination_component">Удалить компонент разбивки на страницы</string>
     <string name="remove_folder_pagination_component">Удалить компонент разбивки на папки</string>
@@ -379,10 +374,6 @@
     <string name="remove_install_ads_summary">Рекомендации приложений безопасности/реклама магазина ПО</string>
     <string name="auto_click_install_button">Автоматически нажать на кнопку установки</string>
     <string name="auto_click_uninstall_button">Автоматически нажать на кнопку удаления</string>
-    <string name="replase_aosp_installer">Заменить установщик AOSP</string>
-    <string name="replase_aosp_installer_summary">Заменить собственным установщиком</string>
-    <string name="show_packagename_and_versioncode">Показать имя пакета и код версии</string>
-    <string name="show_packagename_and_versioncode_summary">Отображать название пакета и код версии в верхней части страницы установки</string>
 
     <string name="ApplyOtherRestrictions">Прочие ограничения</string>
     <string name="remove_adb_install_confirm">Удалить подтверждение установки ADB</string>
@@ -409,7 +400,6 @@
     <string name="remove_secure_pay_found_virus_dialog">Удалено диалоговое окно с обнаруженным вирусом безопасной оплаты</string>
     <string name="remove_access_device_log_dialog">Удалить диалог журнала доступа устройства</string>
     <string name="custom_volume_dialog_background_transparency">Прозрачность фона панели громкости</string>
-    <string name="reduce_power_menu_display_delay">Уменьшить задержку отображения меню питания</string>
 
     <string name="FingerPrintRelated">Отпечаток пальца</string>
     <string name="remove_fingerprint_icon_mode">Удалить иконку отпечатка</string>
@@ -438,8 +428,6 @@
     <string name="performance_mode_and_standby_optimization">Режим производительности и оптимизация режима ожидания</string>
     <string name="performance_mode_and_standby_optimization_summary">Настройки - Батарея - Дополнительные настройки</string>
     <string name="allow_untrusted_touch">Разрешить нежелательные касания</string>
-    <string name="disable_dynamic_refresh_rate">Отключить динамическую частоту обновления</string>
-    <string name="disable_dynamic_refresh_rate_summary">В основном решает проблему падения кадров, когда экран не трогают</string>
     <string name="set_volume_bar_display_position">Установить положение отображения панели громкости</string>
     <string name="force_enable_systemui_blur_feature">Включить функцию системного размытия</string>
     <string name="force_enable_systemui_blur_feature_tips">Уловие: Вам необходимо включить опцию \"Включить функцию размытия в системе\"\nРасположение функции: Разное</string>
@@ -450,9 +438,6 @@
     <string name="restore_default_battery_optimization_whitelist">Восстановить белый список оптимизации батареи по умолчанию</string>
     <string name="disable_customize_battery_optimization_whiteList">Отключить белый список оптимизации батареи</string>
     <string name="disable_customize_battery_optimization_whiteList_summary">Если приложению вручную предоставлено разрешение \"Игнорировать оптимизацию батареи\", после включения этой функции приложение не будет автоматически добавлено в белый список оптимизации батареи</string>
-    <string name="fix_battery_health_data_display">Исправить отображение данных о состоянии батареи</string>
-    <string name="fix_battery_health_data_display_summary">Не используйте эту функцию, если система поддерживает работоспособность батареи\nТочность данных не гарантируется.</string>
-    <string name="fix_battery_health_data_display_tips">Попробуйте перезагрузить систему</string>
 
     <string name="settings_status_bar">Строка состояния</string>
     <string name="enable_statusbar_clock_format">Включить формат часов в строке состояния</string>
@@ -461,13 +446,10 @@
     <string name="enable_show_never_timeout">Включить отображение экрана без тайм-аута</string>
     <string name="enable_show_never_timeout_summary">После включения вы можете увидеть больше опций в настройках</string>
     <string name="settings_display">Экран</string>
-    <string name="force_display_dc_backlight_mode">Принудительно отображать низкую яркость и защиту глаз от мерцания</string>
     <string name="force_display_dc_backlight_mode_summary">Нет гарантии, что он будет работать, он используется только для отображения опций функций</string>
     <string name="force_display_video_memc_frame_insertion">Принудительно отображать видео с динамической вставкой кадров MEMC</string>
     <string name="video_frame_insertion_support_2K120">Динамическая вставка кадров видео поддерживает разрешение 2К 120 Гц (MEMC)</string>
     <string name="video_frame_insertion_support_2K120_summary">Если ваше устройство не поддерживает MEMC, пожалуйста, не используйте эту функцию</string>
-    <string name="enable_screen_color_temperature_rgb_palette">Включить цветовую температуру экрана в палитре RGB</string>
-    <string name="enable_screen_color_temperature_rgb_palette_summary">Может быть переопределено функцией DC</string>
     <string name="settings_application">Приложение</string>
     <string name="force_display_process_management">Принудительно отображать управление процессами</string>
     <string name="force_display_disabled_apps_manager">Принудительное отображение отключенного менеджера приложений</string>
@@ -538,10 +520,6 @@
     <string name="unlock_themestore_vip_summary">Разблокируйте некоторые функции, нажмите на странице сведений о приложении</string>
 
     <string name="Screenshot">Скриншот экрана</string>
-    <string name="remove_system_screenshot_delay">Убрать задержку скриншота системы</string>
-    <string name="remove_system_screenshot_delay_summary">Первый скриншот может не работать</string>
-    <string name="remove_screenshot_privacy_limit">Удалить ограничения конфиденциальности скриншотов</string>
-    <string name="remove_screenshot_privacy_limit_summary">Снимите ограничения на конфиденциальность, которые не могут быть перехвачены. Отключите FLAG_SECURE, если это никак не повлияет</string>
     <string name="disable_flag_secure">Отключить FLAG_SECURE</string>
     <string name="disable_flag_secure_summary">Большинство приложений не могут снимать, делиться скриншотом или ограничивают запись\nТребуется LSPosed 1.8.6+</string>
     <string name="remove_page_limit_for_long_screenshots">Удалить ограничение на количество страниц для длинных скриншотов</string>
@@ -551,7 +529,10 @@
     <string name="unlock_local_upgrade">Разблокировать локальное обновление</string>
     <string name="unlock_local_upgrade_summary">После нажатия соответствующие операции будут выполняться автоматически, терпеливо подождите несколько секунд</string>
     <string name="restore_ota_update_verity">Возобновить проверку обновления OTA</string>
-    <string name="restore_ota_update_verity_summary">Текущее состояние: [%1$s]\nПопробуйте использовать эту функцию, если OTA-обновление запрашивает ошибку проверки или запрашивает dm-verity\nНе спрашивайте, почему эта функция недоступна, поскольку в системе по умолчанию включена проверка обновлений\nКогда проверка отключена, OTA-обновление не выполняется, поэтому при включении функция блокирует эту функцию</string>
+    <string name="restore_ota_update_verity_summary">Текущее состояние: [%1$s]
+Попробуйте использовать эту функцию, если OTA-обновление запрашивает ошибку проверки или запрашивает dm-verity
+Не спрашивайте, почему эта функция недоступна, поскольку в системе по умолчанию включена проверка обновлений
+Когда проверка отключена, OTA-обновление не выполняется, поэтому при включении функция блокирует эту функцию</string>
 
     <string name="extract_ota_information">Извлечь информацию OTA</string>
     <string name="extract_ota_information_summary">Когда будет получена новая версия, вы можете нажать, чтобы извлечь информацию об OTA</string>
@@ -567,7 +548,6 @@
     <string name="force_enable_aon_gestures">Принудительно включить жесты AON</string>
     <string name="force_enable_aon_gestures_summary">Примечание. Необходимо установить AONService (com.aiunit.aon) и предоставить разрешение на доступ к камере!</string>
     <string name="custom_aon_gesture_scroll_page_whitelist">Белый список настраиваемых страниц прокрутки</string>
-    <string name="custom_aon_gesture_video_whitelist">Белый список настраиваемых видеожестов</string>
     <string name="custom_aon_gesture_whitelist_tips">Заполните имя пакета, который необходимо добавить в белый список, и в каждой строке можно указать только одно имя пакета</string>
     <string name="enable_volume_key_control_flashlight">Включить управление фонариком кнопками громкости</string>
 
@@ -583,8 +563,6 @@
 
     <string name="remove_verification_code_floating_window">Удалить плавающее окно с проверочным кодом</string>
 
-    <string name="remove_ads_from_weather_page">Удалить рекламу на странице с информацией о погоде</string>
-    <string name="remove_ads_from_weather_page_summary">Внедрив JS на страницу m.weathercn.com для достижения эффекта блокировки рекламы, он подходит для функций, требующих браузера, таких как погода за последние 15 дней, к которой вы переходите через приложение погоды</string>
     <string name="remove_ads_from_download_dialog">Удалить рекламу из диалога загрузки</string>
     <string name="remove_ads_at_download_page_bottom">Удалить рекламу в нижней части страницы загрузки</string>
 

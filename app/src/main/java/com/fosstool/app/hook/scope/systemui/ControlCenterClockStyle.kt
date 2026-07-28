@@ -8,11 +8,12 @@ import android.widget.TextView
 import com.highcapable.yukihookapi.hook.bean.VariousClass
 import com.highcapable.yukihookapi.hook.entity.YukiBaseHooker
 import com.highcapable.yukihookapi.hook.factory.method
+import com.highcapable.yukihookapi.hook.factory.toClassOrNull
 import com.fosstool.app.utils.A11
-import com.fosstool.app.utils.A14
 import com.fosstool.app.utils.ModulePrefs
 import com.fosstool.app.utils.SDK
 import com.fosstool.app.utils.getCharColor
+import com.fosstool.app.utils.getOSVersionCode
 import com.fosstool.app.utils.safeOf
 
 object ControlCenterClockStyle : YukiBaseHooker() {
@@ -33,55 +34,52 @@ object ControlCenterClockStyle : YukiBaseHooker() {
 
         val removeClockView =
             prefs(ModulePrefs).getBoolean("remove_control_center_clock_view", false)
-        if (removeClockView && SDK >= A14) {
-            "com.oplus.systemui.separate.OplusSeparateQSQuickEntranceManager\$QSQuickEntranceImpl".toClass()
-                .apply {
-                    method { name = "getClockView" }.hook {
-                        before { resultNull() }
-                    }
+
+        if (removeClockView && getOSVersionCode >= 34) {
+            "com.oplus.systemui.separate.OplusSeparateQSQuickEntranceManager\$QSQuickEntranceImpl"
+                .toClassOrNull(appClassLoader)
+                ?.method { name = "getClockView" }?.ignored()?.hook {
+                    before { result = null }
                 }
         }
 
-        "com.android.systemui.statusbar.policy.Clock".toClass().apply {
-            method { name = "setShowSecondsAndUpdate" }.hook {
-                before {
-                    val view = instance<TextView>()
-                    val resName = runCatching { view.context.resources.getResourceEntryName(view.id) }.getOrNull()
-                    if (resName != "qs_footer_clock" && resName != "oplus_qs_clock") return@before
-                    if (showSecond) args().first().setTrue()
+        "com.android.systemui.statusbar.policy.Clock"
+            .toClassOrNull(appClassLoader)?.let { c ->
+                c.method { name = "setShowSecondsAndUpdate" }.ignored().hook {
+                    before {
+                        val view = instance as? TextView ?: return@before
+                        val resName =
+                            runCatching { view.context.resources.getResourceEntryName(view.id) }.getOrNull()
+                        if (resName != "qs_footer_clock" && resName != "oplus_qs_clock") return@before
+                        if (showSecond && args.isNotEmpty()) args[0] = true
+                    }
+                }
+                c.method { name = "setTextWithOpStyle"; paramCount = 1 }.ignored().hook {
+                    after {
+                        val view = instance as? TextView ?: return@after
+                        val resName =
+                            runCatching { view.context.resources.getResourceEntryName(view.id) }.getOrNull()
+                        if (resName != "qs_footer_clock" && resName != "oplus_qs_clock") return@after
+                        val char = args.getOrNull(0) as? CharSequence ?: return@after
+                        setStyle(view, char, "0", redOneMode)
+                    }
                 }
             }
-            method {
-                name = "setTextWithOpStyle"
-                paramCount = 1
-            }.hook {
-                after {
-                    val view = instance<TextView>()
-                    val resName = runCatching { view.context.resources.getResourceEntryName(view.id) }.getOrNull()
-                    if (resName != "qs_footer_clock" && resName != "oplus_qs_clock") return@after
-                    val char = args().first().cast<CharSequence>() ?: return@after
-                    setStyle(view, char, "0", redOneMode)
-                }
-            }
-        }
 
         VariousClass(
             "com.oplusos.systemui.ext.BaseClockExt",
             "com.oplus.systemui.common.clock.OplusClockExImpl"
-        ).toClass().apply {
-            method {
-                name = "setTextWithRedOneStyle"
-                paramCount = 2
-            }.hook {
+        ).toClassOrNull(appClassLoader)
+            ?.method { name = "setTextWithRedOneStyle"; paramCount = 2 }?.ignored()?.hook {
                 after {
-                    val view = args().first().cast<TextView>() ?: return@after
-                    val resName = runCatching { view.context.resources.getResourceEntryName(view.id) }.getOrNull()
+                    val view = args.getOrNull(0) as? TextView ?: return@after
+                    val resName =
+                        runCatching { view.context.resources.getResourceEntryName(view.id) }.getOrNull()
                     if (resName != "qs_footer_clock" && resName != "oplus_qs_clock") return@after
-                    val char = args().last().cast<CharSequence>() ?: return@after
+                    val char = args.getOrNull(1) as? CharSequence ?: return@after
                     setStyle(view, char, colonStyle, redOneMode)
                 }
             }
-        }
     }
 
     @SuppressLint("DiscouragedApi")
@@ -139,28 +137,28 @@ object ControlCenterClockStyle : YukiBaseHooker() {
                 redOneMode = it
             }
 
-            "com.android.systemui.statusbar.policy.Clock".toClass().apply {
-                method { name = "setShowSecondsAndUpdate" }.hook {
-                    before {
-                        val view = instance<TextView>()
-                        val resName = runCatching { view.context.resources.getResourceEntryName(view.id) }.getOrNull()
-                        if (resName != "qs_footer_clock" && resName != "oplus_qs_clock") return@before
-                        if (showSecond) args().first().setTrue()
+            "com.android.systemui.statusbar.policy.Clock"
+                .toClassOrNull(appClassLoader)?.let { c ->
+                    c.method { name = "setShowSecondsAndUpdate" }.ignored().hook {
+                        before {
+                            val view = instance as? TextView ?: return@before
+                            val resName =
+                                runCatching { view.context.resources.getResourceEntryName(view.id) }.getOrNull()
+                            if (resName != "qs_footer_clock" && resName != "oplus_qs_clock") return@before
+                            if (showSecond && args.isNotEmpty()) args[0] = true
+                        }
+                    }
+                    c.method { name = "setTextWithOpStyle"; paramCount = 1 }.ignored().hook {
+                        after {
+                            val view = instance as? TextView ?: return@after
+                            val resName =
+                                runCatching { view.context.resources.getResourceEntryName(view.id) }.getOrNull()
+                            if (resName != "qs_footer_clock" && resName != "oplus_qs_clock") return@after
+                            val char = args.getOrNull(0) as? CharSequence ?: return@after
+                            setStyle(view, char, "0", redOneMode)
+                        }
                     }
                 }
-                method {
-                    name = "setTextWithOpStyle"
-                    paramCount = 1
-                }.hook {
-                    after {
-                        val view = instance<TextView>()
-                        val resName = runCatching { view.context.resources.getResourceEntryName(view.id) }.getOrNull()
-                        if (resName != "qs_footer_clock" && resName != "oplus_qs_clock") return@after
-                        val char = args().first().cast<CharSequence>() ?: return@after
-                        setStyle(view, char, "0", redOneMode)
-                    }
-                }
-            }
         }
     }
 }

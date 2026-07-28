@@ -11,10 +11,8 @@ import androidx.core.graphics.drawable.RoundedBitmapDrawableFactory
 import com.fosstool.app.hook.utils.OplusBuildUtlils
 import com.fosstool.app.utils.ModulePrefs
 import com.highcapable.yukihookapi.hook.entity.YukiBaseHooker
-import com.highcapable.yukihookapi.hook.factory.field
 import com.highcapable.yukihookapi.hook.factory.method
-import com.highcapable.yukihookapi.hook.factory.toClass
-import com.highcapable.yukihookapi.hook.log.YLog
+import com.highcapable.yukihookapi.hook.factory.toClassOrNull
 
 object CustomizeDeviceOtaCardBackground : YukiBaseHooker() {
 
@@ -42,53 +40,53 @@ object CustomizeDeviceOtaCardBackground : YukiBaseHooker() {
 
         if (path == null && !hideText) return
 
-        val className = "com.oplus.settings.widget.preference.AboutDeviceOtaUpdatePreference"
-        try {
-            className.toClass().apply {
-                method { name = "onBindViewHolder"; paramCount = 1 }.hook {
-                    before {
-                        val holder = args().first().any() ?: return@before
-                        val itemView = field { name = "itemView" }.get(holder).cast<View>()
-                            ?: return@before
-                        val context = itemView.context
-                        val settingsPkg = context.packageName
+        "com.oplus.settings.widget.preference.AboutDeviceOtaUpdatePreference".toClassOrNull(appClassLoader)
+            ?.method { name = "onBindViewHolder"; paramCount = 1 }
+            ?.ignored()
+            ?.hook {
 
-                        if (path != null && itemView is RelativeLayout) {
-                            applyBackground(itemView, context, settingsPkg, path)
+                after {
+                    val holder = args.getOrNull(0) ?: return@after
+                    val itemView = runCatching {
+                        var c: Class<*>? = holder.javaClass
+                        var f: java.lang.reflect.Field? = null
+                        while (c != null && f == null) {
+                            f = c.declaredFields.firstOrNull { it.name == "itemView" }
+                            c = c.superclass
                         }
+                        f?.isAccessible = true
+                        f?.get(holder) as? View
+                    }.getOrNull() ?: return@after
+                    val context = itemView.context
+                    val settingsPkg = context.packageName
 
-                        if (hideText && itemView is ViewGroup) {
-                            hideTopText(itemView)
-                        }
+                    if (path != null && itemView is RelativeLayout) {
+                        applyBackground(itemView, context, settingsPkg, path)
+                    }
+
+                    if (hideText && itemView is ViewGroup) {
+                        hideTopText(itemView)
                     }
                 }
             }
-        } catch (e: Throwable) {
-            YLog.error(
-                "CustomizeDeviceOtaCardBackground: $className not found",
-                tag = "LuckyTool"
-            )
-        }
 
         val applySharing = prefs(ModulePrefs).getBoolean("apply_device_parameter_sharing_page", false)
-        val osVersionCode = try { OplusBuildUtlils().getOSVersionCode ?: 0 } catch (_: Throwable) { 0 }
+        val osVersionCode = try {
+            OplusBuildUtlils().getOSVersionCode ?: 0
+        } catch (_: Throwable) {
+            0
+        }
         if (applySharing && osVersionCode >= 34 && path != null) {
-            val sharingClassName = "com.oplus.settings.feature.deviceinfo.aboutphone.ShareAboutPhoneActivity"
-            try {
-                sharingClassName.toClass().apply {
-                    method { name = "updateOsVersion" }.hook {
-                        before {
-                            val activity = instance<Activity>() ?: return@before
-                            applySharingBackground(activity, path)
-                        }
+            "com.oplus.settings.feature.deviceinfo.aboutphone.ShareAboutPhoneActivity".toClassOrNull(appClassLoader)
+                ?.method { name = "updateOsVersion" }
+                ?.ignored()
+                ?.hook {
+
+                    after {
+                        val activity = instance as? Activity ?: return@after
+                        applySharingBackground(activity, path)
                     }
                 }
-            } catch (e: Throwable) {
-                YLog.error(
-                    "CustomizeDeviceOtaCardBackground: $sharingClassName not found",
-                    tag = "LuckyTool"
-                )
-            }
         }
     }
 

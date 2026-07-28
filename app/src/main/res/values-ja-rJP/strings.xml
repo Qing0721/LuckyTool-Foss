@@ -157,7 +157,6 @@
     <string name="remove_do_not_disturb_mode_notification">Do Not Disturbモードの通知を削除</string>
     <string name="remove_hotspot_power_consumption_notification">パーソナルホットスポットの消費電力通知を削除</string>
     <string name="remove_hotspot_power_consumption_notification_summary">注意: パーソナルホットスポットを長時間使用すると大幅な電力の消費と発熱を起こす可能性が増加します</string>
-    <string name="remove_smart_rapid_charging_notification">「急速充電中」の通知を削除する</string>
     <string name="remove_notifications_for_mute_notifications">ミュートされた通知を通知しない</string>
     <string name="remove_virus_risk_notification_in_phone_manager">フォンマネージャーのウイルスリスク通知を削除</string>
     <string name="remove_gt_mode_notification">GT モードの通知を削除</string>
@@ -326,7 +325,6 @@
 
     <string name="Desktop">ホーム画面関連</string>
     <string name="AppBadgeRelated">アプリバッジ関連</string>
-    <string name="remove_the_dot_after_app_update">アプリ更新のドットを削除</string>
     <string name="remove_app_shortcut_badge">アプリのショートカットバッジを削除</string>
     <string name="remove_app_work_badge">アプリの仕事用バッジを削除</string>
     <string name="remove_app_clone_badge">アプリのクローンバッジを削除</string>
@@ -339,9 +337,6 @@
     <string name="long_press_app_icon_open_app_details">アプリのアイコンを長押ししてアプリ詳細を開く</string>
     <string name="remove_recent_task_list_clear_button">最近のタスクリストのクリアボタンを削除</string>
     <string name="remove_bottom_app_icon_of_recent_task_list">アプリ履歴リストの下部にあるアプリアイコンを削除</string>
-    <string name="enable_stacked_task_layout">タスクを積み上げるレイアウトにする</string>
-    <string name="set_task_stacking_level">タスクの積み上げレベルを設定</string>
-    <string name="fix_current_task_to_the_top">現在のタスクを一番上に固定</string>
     <string name="PaginationComponentRelated">ページネーション関連</string>
     <string name="remove_pagination_component">ページネーションを削除</string>
     <string name="remove_folder_pagination_component">フォルダのページネーションを削除</string>
@@ -379,10 +374,6 @@
     <string name="remove_install_ads_summary">設定を閉じる - セキュリティアプリの推奨 の順で開けます</string>
     <string name="auto_click_install_button">インストールボタンを自動的に押す</string>
     <string name="auto_click_uninstall_button">アンインストールボタンを自動的に押す</string>
-    <string name="replase_aosp_installer">AOSPインストーラーに置き換え</string>
-    <string name="replase_aosp_installer_summary">Googleのネイティブなインストーラーに置き換えます</string>
-    <string name="show_packagename_and_versioncode">パッケージ名とバージョンコードを表示</string>
-    <string name="show_packagename_and_versioncode_summary">インストール画面の上部にパッケージ名とバージョンコードを表示します</string>
 
     <string name="ApplyOtherRestrictions">その他の制限</string>
     <string name="remove_adb_install_confirm">ADBインストール確認の削除</string>
@@ -409,7 +400,6 @@
     <string name="remove_secure_pay_found_virus_dialog">安全な支払いでウイルスが見つかった時のダイアログを削除</string>
     <string name="remove_access_device_log_dialog">デバイスログへのアクセスダイアログを無効化</string>
     <string name="custom_volume_dialog_background_transparency">カスタム音量ダイアログの背景の透明度</string>
-    <string name="reduce_power_menu_display_delay">Reduce power menu display delay</string>
 
     <string name="FingerPrintRelated">指紋認証関連</string>
     <string name="remove_fingerprint_icon_mode">指紋アイコンを削除</string>
@@ -438,8 +428,6 @@
     <string name="performance_mode_and_standby_optimization">パフォーマンスモードとスタンバイの最適化</string>
     <string name="performance_mode_and_standby_optimization_summary">設定 - バッテリー - 詳細設定 の順で開けます</string>
     <string name="allow_untrusted_touch">信頼されないタッチ操作を許可</string>
-    <string name="disable_dynamic_refresh_rate">動的リフレッシュレートを無効化</string>
-    <string name="disable_dynamic_refresh_rate_summary">画面がタッチされていないときのフレームドロップの問題などを解決します（注意：LTPO パネル搭載デバイスでは動的リフレッシュレートが無効になります）</string>
     <string name="set_volume_bar_display_position">Set the volume bar display position</string>
     <string name="force_enable_systemui_blur_feature">システム UI のぼかし機能を強制的に有効化</string>
     <string name="force_enable_systemui_blur_feature_tips">有効にする前に「システム UI のぼかし機能を強制的に有効化」オプションをオンにする必要があります。\nオプションは「その他」のページにあります。</string>
@@ -450,9 +438,6 @@
     <string name="restore_default_battery_optimization_whitelist">デフォルトのバッテリー最適化ホワイトリストを復元します</string>
     <string name="disable_customize_battery_optimization_whiteList">カスタムバッテリー最適化ホワイトリストを無効にする</string>
     <string name="disable_customize_battery_optimization_whiteList_summary">ユーザーによって「バッテリーの最適化を無視」権限がアプリに許可されている場合、 この機能を有効にすると自動的にアプリがバッテリー最適化ホワイトリストに追加されなくなります。</string>
-    <string name="fix_battery_health_data_display">バッテリーの状態データ表示を修正</string>
-    <string name="fix_battery_health_data_display_summary">システムがバッテリーの状態表示に対応している場合はこの機能を使用しないでください\nデータの精度は無保証です</string>
-    <string name="fix_battery_health_data_display_tips">システムを再起動してみてください</string>
 
     <string name="settings_status_bar">ステータスバー</string>
     <string name="enable_statusbar_clock_format">ステータスバーの時計形式を有効化</string>
@@ -461,13 +446,10 @@
     <string name="enable_show_never_timeout">画面表示のタイムアウト無効化オプションを表示</string>
     <string name="enable_show_never_timeout_summary">有効にすると、設定で他のオプションが表示されます</string>
     <string name="settings_display">ディスプレイ</string>
-    <string name="force_display_dc_backlight_mode">低輝度とちらつき防止を強制する</string>
     <string name="force_display_dc_backlight_mode_summary">動作する保証はありません。機能オプションを表示させるためにのみ使用されます</string>
     <string name="force_display_video_memc_frame_insertion">強制的に MEMC ビデオフレーム補間を表示する</string>
     <string name="video_frame_insertion_support_2K120">ビデオフレーム補間を 2K 120FPS 対応にする</string>
     <string name="video_frame_insertion_support_2K120_summary">お使いのデバイスが MEMC に対応していない場合は、この機能を使用しないでください</string>
-    <string name="enable_screen_color_temperature_rgb_palette">画面の色温度 RGB パレットを有効化</string>
-    <string name="enable_screen_color_temperature_rgb_palette_summary">DC 調光で上書きされる可能性があります</string>
     <string name="settings_application">Application</string>
     <string name="force_display_process_management">Force display of process management</string>
     <string name="force_display_disabled_apps_manager">Force display of disabled apps manager</string>
@@ -538,10 +520,6 @@
     <string name="unlock_themestore_vip_summary">一部をアンロックして機能を試す事ができます</string>
 
     <string name="Screenshot">スクリーンショット</string>
-    <string name="remove_system_screenshot_delay">システムからスクリーンショットの遅延を削除</string>
-    <string name="remove_system_screenshot_delay_summary">最初のスクリーンショットが反映されない場合があります</string>
-    <string name="remove_screenshot_privacy_limit">スクリーンショットのプライバシー制限を削除</string>
-    <string name="remove_screenshot_privacy_limit_summary">傍受できないプライバシーの制限を解除します。効果がない場合は FLAG_SECURE を無効化してください</string>
     <string name="disable_flag_secure">FLAG_SECUREを無効化</string>
     <string name="disable_flag_secure_summary">スクリーンショット、画面共有、または画面録画ができないアプリでの問題を大抵解決します\nLSPosed 1.8.6以上が必要です</string>
     <string name="remove_page_limit_for_long_screenshots">ロングスクリーンショットのページ上限を削除</string>
@@ -551,7 +529,10 @@
     <string name="unlock_local_upgrade">ローカルアップグレードを解放</string>
     <string name="unlock_local_upgrade_summary">タップした後に関連する操作が自動的に実行されます。しばらくお待ちください</string>
     <string name="restore_ota_update_verity">OTA アップデートの検証を再開</string>
-    <string name="restore_ota_update_verity_summary">現在の状態：[%1$s]\nOTA アップデートで検証失敗のプロンプトが表示されるか、dm-verity のプロンプトが表示される場合にこの機能を使用してください。\nシステムがデフォルトでアップデート検証を有効にしているため、この機能がグレーアウトしている理由を聞かないでください。\n検証がオフにされた場合 OTA アップデートは失敗するため、この機能はロックされます</string>
+    <string name="restore_ota_update_verity_summary">現在の状態：[%1$s]
+OTA アップデートで検証失敗のプロンプトが表示されるか、dm-verity のプロンプトが表示される場合にこの機能を使用してください。
+システムがデフォルトでアップデート検証を有効にしているため、この機能がグレーアウトしている理由を聞かないでください。
+検証がオフにされた場合 OTA アップデートは失敗するため、この機能はロックされます</string>
 
     <string name="extract_ota_information">OTA 情報を抽出</string>
     <string name="extract_ota_information_summary">新しいバージョンが降ってきたとき、タップすると OTA 情報を抽出できます</string>
@@ -567,7 +548,6 @@
     <string name="force_enable_aon_gestures">AON ジェスチャーを強制的に有効化</string>
     <string name="force_enable_aon_gestures_summary">注意: AONService (com.aiunit.aon) をインストールする必要があり、カメラ権限の許可が必要です。</string>
     <string name="custom_aon_gesture_scroll_page_whitelist">カスタムスクロールページのホワイトリスト設定</string>
-    <string name="custom_aon_gesture_video_whitelist">カスタムビデオジェスチャーのホワイトリスト設定</string>
     <string name="custom_aon_gesture_whitelist_tips">ホワイトリストに追加するパッケージ名を入力してください。各行に1つだけパッケージ名を入力してください</string>
     <string name="enable_volume_key_control_flashlight">音量ボタンでのライト制御を有効化</string>
 
@@ -583,8 +563,6 @@
 
     <string name="remove_verification_code_floating_window">検証コードのフローティングウィンドウを削除</string>
 
-    <string name="remove_ads_from_weather_page">Remove weather page bottom information flow ads</string>
-    <string name="remove_ads_from_weather_page_summary">By injecting JS into the page m.weathercn.com to achieve the effect of blocking ads, it is suitable for functions that require a browser, such as the weather of the past 15 days that you jump to through the weather app</string>
     <string name="remove_ads_from_download_dialog">Remove ads from download dialog</string>
     <string name="remove_ads_at_download_page_bottom">Remove ads at the bottom of download page</string>
 

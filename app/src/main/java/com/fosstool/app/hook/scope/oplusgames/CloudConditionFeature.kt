@@ -1,4 +1,4 @@
-package com.fosstool.app.hook.scope.oplusgames
+﻿package com.fosstool.app.hook.scope.oplusgames
 
 import com.highcapable.yukihookapi.hook.entity.YukiBaseHooker
 import com.highcapable.yukihookapi.hook.factory.method
@@ -10,7 +10,9 @@ import com.highcapable.yukihookapi.hook.type.java.MapClass
 import com.highcapable.yukihookapi.hook.type.java.StringClass
 import com.fosstool.app.utils.DexkitUtils
 import com.fosstool.app.utils.DexkitUtils.checkDataList
+import com.fosstool.app.utils.DexkitUtils.firstOrNullSafe
 import com.fosstool.app.utils.ModulePrefs
+import com.highcapable.yukihookapi.hook.factory.toClassOrNull
 
 class CloudConditionFeature(private val appSet: Array<String>) : YukiBaseHooker() {
     override fun onHook() {
@@ -33,14 +35,14 @@ class CloudConditionFeature(private val appSet: Array<String>) : YukiBaseHooker(
                 prefs(ModulePrefs).getBoolean("enable_super_resolution_feature", false)
             val xMode = prefs(ModulePrefs).getBoolean("enable_x_mode_feature", false)
 
-            "com.oplus.addon.OplusFeatureHelper\$Companion".toClass().apply {
+            ("com.oplus.addon.OplusFeatureHelper\$Companion".toClassOrNull(appClassLoader)
+                ?: "com.oplus.addon.OplusFeatureHelper".toClassOrNull(appClassLoader))?.apply {
                 method {
-                    param { it[1] == StringClass && it[2] == BooleanType && it[3] == IntType && it[4] == AnyClass }
-                    paramCount = 5
+                    param(StringClass, BooleanType)
                     returnType = BooleanType
                 }.hook {
                     after {
-                        when (args(1).string()) {
+                        when (args().first().string()) {
                             "oplus.software.display.game.memc_enable" -> if (pickleFeature || fpsFeature || powerFeature) resultTrue()
                             "oplus.software.display.game.memc_increase_fps_limit_mode" -> if (pickleFeature) resultTrue()
                             "oplus.software.display.game.memc_increase_fps_mode" -> if (fpsFeature) resultTrue()
@@ -74,7 +76,7 @@ class CloudConditionFeature(private val appSet: Array<String>) : YukiBaseHooker(
                 prefs(ModulePrefs).getBoolean("remove_game_voice_changer_whitelist", false)
             val gameAiPlay = prefs(ModulePrefs).getBoolean("enable_game_ai_play", false)
 
-            "com.coloros.gamespaceui.config.cloud.CloudConditionUtil".toClass().apply {
+            "com.coloros.gamespaceui.config.cloud.CloudConditionUtil".toClassOrNull(appClassLoader)?.apply {
                 method {
                     param(StringClass, MapClass, IntType, AnyClass)
                     returnType = BooleanType
@@ -135,8 +137,8 @@ class CloudConditionFeature(private val appSet: Array<String>) : YukiBaseHooker(
                     }
                 }.apply {
                     checkDataList("HookCloudApiImpl")
-                    val member = first()
-                    member.name.toClass().apply {
+                    val member = firstOrNullSafe() ?: return@apply
+                    member.name.toClassOrNull(appClassLoader)?.apply {
                         method {
                             name = "isFunctionEnabledFromCloud"
                             paramCount = 2

@@ -1,12 +1,12 @@
-package com.fosstool.app.hook.scope.android
+﻿package com.fosstool.app.hook.scope.android
 
-import com.fosstool.app.utils.ModulePrefs
 import com.highcapable.yukihookapi.hook.entity.YukiBaseHooker
-import com.highcapable.yukihookapi.hook.factory.current
 import com.highcapable.yukihookapi.hook.factory.field
 import com.highcapable.yukihookapi.hook.factory.method
+import com.highcapable.yukihookapi.hook.factory.toClassOrNull
 import com.highcapable.yukihookapi.hook.log.YLog
-import com.highcapable.yukihookapi.hook.type.java.IntType
+import com.fosstool.app.utils.ModulePrefs
+import de.robv.android.xposed.XposedHelpers
 
 object RemoveAlwaysAllowAppStartList : YukiBaseHooker() {
 
@@ -28,17 +28,23 @@ object RemoveAlwaysAllowAppStartList : YukiBaseHooker() {
         }
 
         runCatching {
-            CLASS_SECURITY.toClass().method { name = "init" }.hook {
+            val cls = CLASS_SECURITY.toClassOrNull(appClassLoader) ?: return@runCatching
+            cls.method { name = "init" }.ignored().hook {
                 after {
                     activityStartController = runCatching {
-                        instance.current().field {
-                            type = CLASS_CONTROLLER
-                        }.any()
-                    }.getOrNull() ?: runCatching {
-                        instance.current().field {
-                            name = "OplusActivityStartController"
-                        }.any()
+                        cls.field { name = CLASS_CONTROLLER }.ignored().get(instance).any()
                     }.getOrNull()
+                        ?: runCatching {
+                            cls.declaredFields.firstOrNull {
+                                it.type.name == CLASS_CONTROLLER
+                            }?.let {
+                                it.isAccessible = true
+                                it.get(instance)
+                            }
+                        }.getOrNull()
+                        ?: runCatching {
+                            XposedHelpers.getObjectField(instance, "OplusActivityStartController")
+                        }.getOrNull()
                 }
             }
         }.onFailure {
@@ -58,10 +64,7 @@ object RemoveAlwaysAllowAppStartList : YukiBaseHooker() {
         }
         userIds.forEach { userId ->
             runCatching {
-                controller.current().method {
-                    name = METHOD_ON_USER_REMOVED
-                    param(IntType)
-                }.call(userId)
+                XposedHelpers.callMethod(controller, METHOD_ON_USER_REMOVED, userId)
             }.onFailure {
                 YLog.error(
                     "RemoveAlwaysAllowAppStartList: onUserRemoved($userId) failed",

@@ -8,12 +8,14 @@ keystoreProperties.load(FileInputStream(keystorePropertiesFile))
 
 plugins {
     id("com.android.application")
-    id("org.jetbrains.kotlin.android") version "2.2.0"
-    id("org.jetbrains.kotlin.plugin.serialization") version "2.2.0"
-    id("com.google.devtools.ksp") version "2.2.0-2.0.2"
-    id("com.joom.paranoid")
+    id("org.jetbrains.kotlin.android") version "2.4.0"
+    id("org.jetbrains.kotlin.plugin.serialization") version "2.4.0"
+    id("com.google.devtools.ksp") version "2.3.10"
     id("stringfog")
 }
+
+val appVersionCode = getVersionCode()
+val appVersionName = "2.0.2"
 
 android {
     signingConfigs {
@@ -28,22 +30,22 @@ android {
             storePassword = keystoreProperties["storePassword"] as String
         }
     }
-    compileSdk = 36
+    compileSdk = 37
     namespace = "com.fosstool.app"
     defaultConfig {
         applicationId = "com.fosstool.app"
         minSdk = 30
         targetSdk = 36
-        versionCode = getVersionCode()
-        versionName = "2.0.0"
+        versionCode = appVersionCode
+        versionName = appVersionName
         buildConfigField("String", "APP_CENTER_SECRET", "\"${getAppCenterSecret()}\"")
     }
 
     buildTypes {
         release {
             isDebuggable = false
-            isMinifyEnabled = true
-            isShrinkResources = true
+            isMinifyEnabled = false
+            isShrinkResources = false
             signingConfig = signingConfigs.getByName("release")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
@@ -88,18 +90,18 @@ android {
 
 configurations.all {
     resolutionStrategy {
-        force("org.jetbrains.kotlin:kotlin-stdlib:2.2.0")
-        force("org.jetbrains.kotlin:kotlin-stdlib-jdk7:2.2.0")
-        force("org.jetbrains.kotlin:kotlin-stdlib-jdk8:2.2.0")
-        force("org.jetbrains.kotlin:kotlin-reflect:2.2.0")
+        force("org.jetbrains.kotlin:kotlin-stdlib:2.4.0")
+        force("org.jetbrains.kotlin:kotlin-stdlib-jdk7:2.4.0")
+        force("org.jetbrains.kotlin:kotlin-stdlib-jdk8:2.4.0")
+        force("org.jetbrains.kotlin:kotlin-reflect:2.4.0")
     }
 }
 
 dependencies {
 
     compileOnly("de.robv.android.xposed:api:82")
-    implementation("com.highcapable.yukihookapi:api:1.3.1")
-    ksp("com.highcapable.yukihookapi:ksp-xposed:1.3.1")
+    implementation("com.highcapable.yukihookapi:api:1.3.2")
+    ksp("com.highcapable.yukihookapi:ksp-xposed:1.3.2")
 
     implementation("org.luckypray:dexkit:2.2.0")
 

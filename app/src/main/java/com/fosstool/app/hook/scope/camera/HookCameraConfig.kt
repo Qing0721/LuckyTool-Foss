@@ -2,15 +2,10 @@ package com.fosstool.app.hook.scope.camera
 
 import android.util.ArrayMap
 import android.util.ArraySet
-import com.highcapable.yukihookapi.hook.bean.VariousClass
 import com.highcapable.yukihookapi.hook.entity.YukiBaseHooker
 import com.highcapable.yukihookapi.hook.factory.method
-import com.highcapable.yukihookapi.hook.type.java.ListClass
-import com.highcapable.yukihookapi.hook.type.java.StringClass
+import com.highcapable.yukihookapi.hook.factory.toClassOrNull
 import com.fosstool.app.utils.ModulePrefs
-import com.fosstool.app.utils.DexkitUtils
-import com.fosstool.app.utils.DexkitUtils.checkDataList
-import com.fosstool.app.utils.safeOfNull
 
 object HookCameraConfig : YukiBaseHooker() {
     override fun onHook() {
@@ -22,15 +17,17 @@ object HookCameraConfig : YukiBaseHooker() {
             val is10bit = prefs(ModulePrefs).getBoolean("enable_10_bit_image_support", false)
             val isHasselblad =
                 prefs(ModulePrefs).getBoolean("enable_hasselblad_watermark_style", false)
+
             val frameWatermark =
-                prefs(ModulePrefs).getBoolean("enable_frame_watermark_style", false) ||
-                    prefs(ModulePrefs).getBoolean("enable_frame_watermark", false)
-            val cameraDebug =
-                prefs(ModulePrefs).getBoolean("enable_camera_debug_ui_option", false)
+                prefs(ModulePrefs).getBoolean("enable_frame_watermark_style", false)
             val nightZoom30x =
                 prefs(ModulePrefs).getBoolean("enable_camera_night_zoom_30x", false)
             val rouletteZoom =
                 prefs(ModulePrefs).getBoolean("enable_video_capture_roulette_zoom", false)
+            val aiMasterWatermark =
+                prefs(ModulePrefs).getBoolean("enable_ai_master_watermark", false)
+            val removeFlashLimit =
+                prefs(ModulePrefs).getBoolean("remove_camera_flash_limit", false)
             val universalFilters =
                 prefs(ModulePrefs).getStringSet("camera_universal_filter_settings", ArraySet())
                     ?: emptySet()
@@ -61,19 +58,17 @@ object HookCameraConfig : YukiBaseHooker() {
                 arrayMap["com.oplus.10bits.heic.encode.support"] = true
                 arrayMap["com.oplus.feature.video.10bit.support"] = true
             }
+
+            if (frameWatermark) {
+                arrayMap["com.oplus.camera.support.frame.watermark"] = true
+            }
+            if (aiMasterWatermark) arrayMap["com.oplus.camera.support.ai.master.watermark"] = true
             if (isHasselblad) {
+                arrayMap["com.oplus.camera.support.frame.watermark"] = false
                 arrayMap["com.oplus.hasselblad.watermark.support.default"] = true
                 arrayMap["com.oplus.camera.support.custom.hasselblad.watermark"] = true
+                arrayMap["com.oplus.hasselblad.watermark.guide.support"] = true
                 arrayMap["com.oplus.use.hasselblad.style.support"] = true
-            }
-            if (frameWatermark) {
-                arrayMap["com.oplus.frame.watermark.support"] = true
-                arrayMap["com.oplus.feature.frame.watermark.support"] = true
-                arrayMap["com.oplus.camera.frame.watermark.support"] = true
-            }
-            if (cameraDebug) {
-                arrayMap["com.oplus.camera.debug.ui.support"] = true
-                arrayMap["com.oplus.debug.ui.option.support"] = true
             }
             if (nightZoom30x) {
                 arrayMap["com.oplus.night.mode.max.zoom.support"] = true
@@ -81,6 +76,13 @@ object HookCameraConfig : YukiBaseHooker() {
             }
             if (rouletteZoom) {
                 arrayMap["com.oplus.video.inertial.zoom.support"] = false
+            }
+            if (removeFlashLimit) arrayMap["com.oplus.feature.temperature.protection.support"] = false
+            if (masterFilter) {
+                arrayMap["com.oplus.photo.master.filter.type.list"] =
+                    "Radiance.cube.rgb.bin,Serenity.cube.rgb.bin,Emerald.cube.rgb.bin"
+                arrayMap["com.oplus.portrait.master.filter.type.list"] =
+                    "Radiance.cube.rgb.bin,Serenity.cube.rgb.bin,Emerald.cube.rgb.bin"
             }
             if (jiangwenFilter) {
                 arrayMap["com.oplus.director.filter.support"] = true
@@ -109,78 +111,23 @@ object HookCameraConfig : YukiBaseHooker() {
                 arrayMap["com.oplus.video.only.blur.support"] = true
             }
 
-            val vendorTagTargets = listOf(
+            listOf(
                 "com.oplus.ocs.camera.appinterface.adapter.CameraAdapterUtils",
                 "com.oplus.ocs.camera.consumer.apsAdapter.adapter.ApsUtils"
-            )
-            DexkitUtils.create(appInfo.sourceDir) { dexKitBridge ->
-                runCatching {
-                    dexKitBridge.findMethod {
-                        searchPackages(
-                            "com.oplus.ocs.camera.appinterface.adapter",
-                            "com.oplus.ocs.camera.consumer.apsAdapter.adapter"
-                        )
-                        matcher {
-                            name("getVendorTagConfig")
-                            paramCount(1)
-                        }
-                    }.apply {
-                        checkDataList("HookCameraConfig getVendorTagConfig", false)
-                        forEach { member ->
-                            if (member.className !in vendorTagTargets) return@forEach
-                            runCatching {
-                                member.className.toClass().method {
-                                    name = member.methodName
-                                    paramCount = 1
-                                }.hook {
-                                    after {
-                                        val key = args().first().string()
-                                        val override = arrayMap[key] ?: return@after
-                                        result = when (override) {
-                                            is Boolean -> if (override) "1" else "0"
-                                            is Int -> override.toString()
-                                            is String -> override
-                                            else -> override.toString()
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+            ).forEach { target ->
+                target.toClassOrNull(appClassLoader)?.method {
+                    name = "getVendorTagConfig"
+                    paramCount = 1
+                }?.ignored()?.hook {
+                    after {
+                        val key = args().first().string()
+                        if (key.isBlank()) return@after
+                        val override = arrayMap[key] ?: return@after
 
-            VariousClass(
-                "com.oplus.camera.aps.config.CameraConfig",
-                "com.oplus.camera.configure.CameraConfig"
-            ).toClass().apply {
-                method {
-                    param { it[0] == StringClass }
-                    paramCount(1..2)
-                    returnType = StringClass
-                }.hookAll {
-                    after {
-                        when (args().first().string()) {
-                            "com.oplus.use.hasselblad.style.support" -> if (isHasselblad) {
-                                if (result<String>()?.toIntOrNull() != null) result = "1"
-                            }
-                        }
-                    }
-                }
-                method {
-                    param(StringClass)
-                    returnType = ListClass
-                }.hookAll {
-                    after {
-                        val type = safeOfNull { method.genericReturnType.typeName } ?: return@after
-                        if (type.contains(StringClass.name).not()) return@after
-                        when (args().first().string()) {
-                            "com.oplus.photo.master.filter.type.list", "com.oplus.portrait.master.filter.type.list" -> if (isHasselblad && masterFilter) result =
-                                listOf(
-                                    "Emerald.cube.rgb.bin",
-                                    "Radiance.cube.rgb.bin",
-                                    "Serenity.cube.rgb.bin"
-                                )
+                        result = when (override) {
+                            is Boolean -> if (override) "1" else "0"
+                            is Int -> override.toString()
+                            else -> override
                         }
                     }
                 }

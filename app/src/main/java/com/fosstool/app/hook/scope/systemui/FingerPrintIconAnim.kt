@@ -6,9 +6,11 @@ import android.graphics.drawable.BitmapDrawable
 import android.widget.ImageView
 import com.highcapable.yukihookapi.hook.bean.VariousClass
 import com.highcapable.yukihookapi.hook.entity.YukiBaseHooker
-import com.highcapable.yukihookapi.hook.factory.current
 import com.highcapable.yukihookapi.hook.factory.method
+import com.highcapable.yukihookapi.hook.factory.toClassOrNull
 import com.fosstool.app.utils.ModulePrefs
+import de.robv.android.xposed.XposedHelpers
+import java.lang.reflect.Field
 
 object FingerPrintIconAnim : YukiBaseHooker() {
     override fun onHook() {
@@ -21,56 +23,86 @@ object FingerPrintIconAnim : YukiBaseHooker() {
             "com.oplus.systemui.keyguard.finger.onscreenfingerprint.OnScreenFingerprintUiMech",
             "com.oplus.systemui.biometrics.finger.udfps.OnScreenFingerprintUiMach",
             "com.oplus.systemui.biometrics.finger.udfps.OnScreenFingerprintUiMech"
-        ).toClass().apply {
-            method { name = "loadAnimDrawables" }.hook {
-                when (removeMode) {
-                    "0" -> if (isReplaceIcon) after {
-                        instance.setCustomDrawable(
-                            iconPath, true
-                        )
+        ).toClassOrNull(appClassLoader)?.let { c ->
+            when (removeMode) {
+                "0" -> if (isReplaceIcon) c.method { name = "loadAnimDrawables" }.ignored().hook {
+                    after {
+                        instance.setCustomDrawable(iconPath, true)
                     }
+                }
 
-                    "1" -> after { instance.setCustomDrawable(null, true) }
-                    "2" -> after {
+                "1" -> c.method { name = "loadAnimDrawables" }.ignored().hook {
+                    after {
+                        instance.setCustomDrawable(null, true)
+                    }
+                }
+
+                "2" -> c.method { name = "loadAnimDrawables" }.ignored().hook {
+                    after {
                         instance.removePressAnim()
                         if (isReplaceIcon) instance.setCustomDrawable(iconPath, true)
                     }
-
-                    "3" -> intercept()
                 }
+
+                "3" -> c.method { name = "loadAnimDrawables" }.ignored().hook { intercept() }
             }
-            method { name = "startFadeInAnimation" }.hook {
-                if (isReplaceIcon) replaceUnit {
-                    instance.setCustomDrawable(iconPath, false)
-                } else if (removeMode == "1" || removeMode == "3") intercept()
+            if (isReplaceIcon) {
+                c.method { name = "startFadeInAnimation" }.ignored().hook {
+                    before {
+                        instance.setCustomDrawable(iconPath, false)
+                        result = null
+                    }
+                }
+            } else if (removeMode == "1" || removeMode == "3") {
+                c.method { name = "startFadeInAnimation" }.ignored().hook { intercept() }
             }
-            method { name = "startFadeOutAnimation" }.hook {
-                if (isReplaceIcon) intercept()
-                else if (removeMode == "1" || removeMode == "3") intercept()
+            if (isReplaceIcon || removeMode == "1" || removeMode == "3") {
+                c.method { name = "startFadeOutAnimation" }.ignored().hook { intercept() }
             }
         }
     }
 
     private fun Any.setCustomDrawable(iconPath: String?, update: Boolean) {
-        this.current {
-            val mContext = field { name = "mContext" }.cast<Context>()
-            val getCurrentUserContext =
-                method { name = "getCurrentUserContext" }.invoke<Context>(mContext) ?: return
-            val drawable = if (iconPath.isNullOrEmpty()) null else BitmapDrawable(
-                getCurrentUserContext.resources, BitmapFactory.decodeFile(iconPath)
-            )
-            if (drawable == null) {
-                field { name = "mFadeInAnimDrawable" }.setNull()
-                field { name = "mFadeOutAnimDrawable" }.setNull()
-            }
-            field { name = "mImMobileDrawable" }.set(drawable)
-            field { name = "mFpIcon" }.cast<ImageView>()?.setImageDrawable(drawable)
-            if (update) method { name = "updateFpIconColor" }.call()
+        val clazz = javaClass
+
+        val userCtx = (clazz.findField("mContext")?.get(this) as? Context)
+            ?: (clazz.findFieldOfType(Context::class.java)?.get(this) as? Context)
+            ?: return
+        val drawable = if (iconPath.isNullOrEmpty()) null else BitmapDrawable(
+            userCtx.resources, BitmapFactory.decodeFile(iconPath)
+        )
+        if (drawable == null) {
+            clazz.findField("mFadeInAnimDrawable")?.set(this, null)
+            clazz.findField("mFadeOutAnimDrawable")?.set(this, null)
+        }
+        clazz.findField("mImMobileDrawable")?.set(this, drawable)
+        (clazz.findField("mFpIcon")?.get(this) as? ImageView)?.setImageDrawable(drawable)
+        if (update) runCatching {
+            XposedHelpers.callMethod(this, "updateFpIconColor")
         }
     }
 
     private fun Any.removePressAnim() {
-        this.current().field { name = "mPressedAnimDrawable" }.setNull()
-        this.current().field { name = "mPressedAnimDrawableTmp" }.setNull()
+        javaClass.findField("mPressedAnimDrawable")?.set(this, null)
+        javaClass.findField("mPressedAnimDrawableTmp")?.set(this, null)
+    }
+
+    private fun Class<*>.findFieldOfType(type: Class<*>): Field? {
+        var cls: Class<*>? = this
+        while (cls != null) {
+            cls.declaredFields.firstOrNull { type.isAssignableFrom(it.type) }
+                ?.let { f -> return f.also { it.isAccessible = true } }
+            cls = cls.superclass
+        }
+        return null
+    }
+
+    private fun Class<*>.findField(name: String): Field? {
+        var cls: Class<*>? = this
+        while (cls != null) {
+            runCatching { return cls.getDeclaredField(name).also { it.isAccessible = true } }
+            cls = cls.superclass
+        }
+        return null
     }
 }

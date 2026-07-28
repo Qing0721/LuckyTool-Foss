@@ -5,7 +5,7 @@ import com.highcapable.yukihookapi.hook.type.java.BooleanType
 import com.highcapable.yukihookapi.hook.type.java.IntType
 import com.highcapable.yukihookapi.hook.type.java.LongType
 import com.highcapable.yukihookapi.hook.type.java.StringClass
-import com.fosstool.app.hook.scope.systemui.StatusBarBatteryInfoNotify.toClass
+import com.highcapable.yukihookapi.hook.factory.toClass
 
 @Suppress("unused", "MemberVisibilityCanBePrivate")
 class SystemPropertiesUtils(classLoader: ClassLoader?) {

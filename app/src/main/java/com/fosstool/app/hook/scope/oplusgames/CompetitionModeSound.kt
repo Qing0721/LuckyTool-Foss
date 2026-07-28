@@ -1,9 +1,9 @@
-package com.fosstool.app.hook.scope.oplusgames
+﻿package com.fosstool.app.hook.scope.oplusgames
 
 import android.media.AudioManager
 import android.media.SoundPool
 import com.highcapable.yukihookapi.hook.entity.YukiBaseHooker
-import com.highcapable.yukihookapi.hook.factory.method
+import com.highcapable.yukihookapi.hook.factory.toClassOrNull
 import com.highcapable.yukihookapi.hook.type.android.ContextClass
 import com.highcapable.yukihookapi.hook.type.android.SparseIntArrayClass
 import com.highcapable.yukihookapi.hook.type.java.BooleanType
@@ -11,6 +11,9 @@ import com.highcapable.yukihookapi.hook.type.java.IntType
 import com.highcapable.yukihookapi.hook.type.java.UnitType
 import com.fosstool.app.utils.DexkitUtils
 import com.fosstool.app.utils.DexkitUtils.checkDataList
+import com.fosstool.app.utils.DexkitUtils.firstOrNullSafe
+import de.robv.android.xposed.XC_MethodHook
+import de.robv.android.xposed.XposedBridge
 
 object CompetitionModeSound : YukiBaseHooker() {
     const val key = "remove_competition_mode_sound"
@@ -38,9 +41,18 @@ object CompetitionModeSound : YukiBaseHooker() {
                 }
             }.apply {
                 checkDataList("CompetitionModeSound")
-                first().name.toClass().apply {
-                    method { param(IntType) }.hookAll {
-                        before { if (args().first().int() == 9) resultNull() }
+                val cls = (firstOrNullSafe()?.name ?: return@apply).toClassOrNull(appClassLoader) ?: return@apply
+                for (m in cls.declaredMethods) {
+                    if (m.parameterCount == 1 && m.parameterTypes[0] == Int::class.javaPrimitiveType) {
+                        runCatching {
+                            XposedBridge.hookMethod(m, object : XC_MethodHook() {
+                                override fun beforeHookedMethod(param: MethodHookParam) {
+                                    if (param.args.getOrNull(0) as? Int == 9) {
+                                        param.result = null
+                                    }
+                                }
+                            })
+                        }
                     }
                 }
             }

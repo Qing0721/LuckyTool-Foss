@@ -1,10 +1,13 @@
 package com.fosstool.app.hook.scope.packageinstaller
 
+import com.fosstool.app.utils.ModulePrefs
 import com.highcapable.yukihookapi.hook.entity.YukiBaseHooker
-import com.highcapable.yukihookapi.hook.factory.hasMethod
-import com.highcapable.yukihookapi.hook.factory.method
-import com.highcapable.yukihookapi.hook.type.java.BooleanType
-import com.highcapable.yukihookapi.hook.type.java.IntType
+import com.highcapable.yukihookapi.hook.factory.toClassOrNull
+import de.robv.android.xposed.XC_MethodHook
+import de.robv.android.xposed.XC_MethodReplacement
+import de.robv.android.xposed.XposedBridge
+import de.robv.android.xposed.XposedHelpers
+import java.lang.reflect.Method
 
 class SkipApkScan(private val commit: String) : YukiBaseHooker() {
 
@@ -12,13 +15,13 @@ class SkipApkScan(private val commit: String) : YukiBaseHooker() {
     override fun onHook() {
         val OPIA = "com.android.packageinstaller.oplus.OPlusPackageInstallerActivity"
         val ADRU = "com.android.packageinstaller.oplus.utils.AppDetailRedirectionUtils"
-        val opiaCls = OPIA.toClass()
-        val adruCls = runCatching { ADRU.toClass() }.getOrNull()
+        val opiaCls = OPIA.toClassOrNull(appClassLoader) ?: return
+        val adruCls = ADRU.toClassOrNull(appClassLoader)
 
-        val isNew = adruCls?.hasMethod { name = "shouldStartAppDetail" } == true
-        val hasPlainScan = opiaCls.hasMethod { name = "checkToScanRisk" }
-        val hasPlainStart = opiaCls.hasMethod { name = "isStartAppDetail" }
-        val hasPlainInit = opiaCls.hasMethod { name = "initiateInstall" }
+        val isNew = adruCls?.findMethod("shouldStartAppDetail") != null
+        val hasPlainScan = opiaCls.findMethod("checkToScanRisk") != null
+        val hasPlainStart = opiaCls.findMethod("isStartAppDetail") != null
+        val hasPlainInit = opiaCls.findMethod("initiateInstall") != null
 
         val member: Array<String> = when {
             isNew -> arrayOf(ADRU, "shouldStartAppDetail", "checkToScanRisk", "initiateInstall")
@@ -35,22 +38,32 @@ class SkipApkScan(private val commit: String) : YukiBaseHooker() {
             }
         }
 
-        member[0].toClass().apply {
-            method {
-                name = member[1]
-                if (member[0] == OPIA) returnType = BooleanType
-                if (member[0] == ADRU) returnType = IntType
-            }.hookAll {
-                if (member[0] == OPIA) replaceToFalse()
-                if (member[0] == ADRU) replaceTo(9)
+        if (prefs(ModulePrefs).getBoolean("disable_start_app_detail", false)) {
+            member[0].toClassOrNull(appClassLoader)?.findMethod(member[1])?.let { m ->
+                if (member[0] == OPIA) runCatching { XposedBridge.hookMethod(m, XC_MethodReplacement.returnConstant(false)) }
+                if (member[0] == ADRU) runCatching { XposedBridge.hookMethod(m, XC_MethodReplacement.returnConstant(9)) }
             }
         }
-        opiaCls.apply {
-            method { name = member[2] }.hook {
-                replaceUnit {
-                    method { name = member[3] }.get(instance).call()
-                }
+        opiaCls.findMethod(member[2])?.let { m ->
+            runCatching {
+                XposedBridge.hookMethod(m, object : XC_MethodHook() {
+                    override fun beforeHookedMethod(param: MethodHookParam) {
+                        runCatching {
+                            XposedHelpers.callMethod(param.thisObject, member[3])
+                        }
+                        param.result = null
+                    }
+                })
             }
         }
+    }
+
+    private fun Class<*>.findMethod(name: String): Method? {
+        var c: Class<*>? = this
+        while (c != null && c != Any::class.java) {
+            c.declaredMethods.firstOrNull { it.name == name }?.let { return it.apply { isAccessible = true } }
+            c = c.superclass
+        }
+        return null
     }
 }

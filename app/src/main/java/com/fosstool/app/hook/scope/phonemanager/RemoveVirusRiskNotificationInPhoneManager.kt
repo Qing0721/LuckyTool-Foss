@@ -1,13 +1,16 @@
-package com.fosstool.app.hook.scope.phonemanager
+﻿package com.fosstool.app.hook.scope.phonemanager
 
 import com.highcapable.yukihookapi.hook.entity.YukiBaseHooker
-import com.highcapable.yukihookapi.hook.factory.method
+import com.highcapable.yukihookapi.hook.factory.toClassOrNull
 import com.highcapable.yukihookapi.hook.type.android.ContextClass
 import com.highcapable.yukihookapi.hook.type.java.ArrayListClass
 import com.highcapable.yukihookapi.hook.type.java.IntType
 import com.highcapable.yukihookapi.hook.type.java.StringClass
 import com.fosstool.app.utils.DexkitUtils
 import com.fosstool.app.utils.DexkitUtils.checkDataList
+import com.fosstool.app.utils.DexkitUtils.firstOrNullSafe
+import de.robv.android.xposed.XC_MethodReplacement
+import de.robv.android.xposed.XposedBridge
 
 object RemoveVirusRiskNotificationInPhoneManager : YukiBaseHooker() {
     override fun onHook() {
@@ -27,9 +30,12 @@ object RemoveVirusRiskNotificationInPhoneManager : YukiBaseHooker() {
                 }
             }.apply {
                 checkDataList("RemoveVirusRiskNotificationInPhoneManager")
-                first().name.toClass().apply {
-                    method { param(ArrayListClass) }.hookAll {
-                        intercept()
+                val cls = (firstOrNullSafe()?.name ?: return@apply).toClassOrNull(appClassLoader) ?: return@apply
+                for (m in cls.declaredMethods) {
+                    if (m.parameterCount == 1 &&
+                        java.util.ArrayList::class.java.isAssignableFrom(m.parameterTypes[0])
+                    ) {
+                        runCatching { XposedBridge.hookMethod(m, XC_MethodReplacement.returnConstant(null)) }
                     }
                 }
             }

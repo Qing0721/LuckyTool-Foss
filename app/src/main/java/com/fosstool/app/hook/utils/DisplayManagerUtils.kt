@@ -9,8 +9,7 @@ import com.highcapable.yukihookapi.hook.factory.extends
 import com.highcapable.yukihookapi.hook.factory.method
 import com.highcapable.yukihookapi.hook.type.android.IBinderClass
 import com.highcapable.yukihookapi.hook.type.java.LongType
-import com.fosstool.app.hook.scope.systemui.FingerPrintIconAnim.toClass
-
+import com.highcapable.yukihookapi.hook.factory.toClass
 
 @Suppress("unused", "MemberVisibilityCanBePrivate")
 class DisplayManagerUtils(val classLoader: ClassLoader?) {
@@ -37,10 +36,10 @@ class DisplayManagerUtils(val classLoader: ClassLoader?) {
         val extend = (address.javaClass.extends(addressPhysicalClazz))
         val params = surfaceControlClazz.method { name = "getDynamicDisplayInfo";paramCount = 1 }
             .give()?.parameterTypes ?: return null
-        val physicalDisplayId = getPhysicalDisplayId(address)
+
         val displayTokenOrId: Any? = when (params[0]) {
-            LongType -> if (extend) physicalDisplayId else 0
-            IBinderClass -> if (extend) getPhysicalDisplayToken(physicalDisplayId)
+            LongType -> if (extend) getPhysicalDisplayId(address) else 0
+            IBinderClass -> if (extend) getPhysicalDisplayToken(getPhysicalDisplayId(address))
             else getInternalDisplayToken()
 
             else -> return null

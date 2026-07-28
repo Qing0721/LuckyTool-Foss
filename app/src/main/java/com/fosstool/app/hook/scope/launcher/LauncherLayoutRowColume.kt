@@ -1,31 +1,57 @@
 package com.fosstool.app.hook.scope.launcher
 
+import android.util.Pair
+import com.fosstool.app.utils.ModulePrefs
+import com.fosstool.app.utils.getOSVersionCode
 import com.highcapable.yukihookapi.hook.entity.YukiBaseHooker
 import com.highcapable.yukihookapi.hook.factory.field
 import com.highcapable.yukihookapi.hook.factory.method
-import com.highcapable.yukihookapi.hook.type.java.IntArrayType
-import com.fosstool.app.utils.ModulePrefs
+import com.highcapable.yukihookapi.hook.factory.toClassOrNull
+import com.highcapable.yukihookapi.hook.log.YLog
 
 object LauncherLayoutRowColume : YukiBaseHooker() {
     override fun onHook() {
-        "com.android.launcher.UiConfig".toClass().apply {
-            method { name = "isSupportLayout" }.hook {
-                replaceToTrue()
-            }
-        }
         val maxRows = prefs(ModulePrefs).getInt("launcher_layout_max_rows", 6)
         val maxColumns = prefs(ModulePrefs).getInt("launcher_layout_max_columns", 4)
-        "com.android.launcher.togglebar.adapter.ToggleBarLayoutAdapter".toClass().apply {
-            method { name = "initToggleBarLayoutConfigs" }.hook {
+
+        val uiConfig = "com.android.launcher.UiConfig".toClassOrNull(appClassLoader)
+        if (uiConfig == null) {
+            YLog.error("LauncherLayoutRowColume: UiConfig not found")
+        } else {
+            uiConfig.method { name = "isSupportLayout" }.ignored().hook { replaceToTrue() }
+        }
+
+        if (getOSVersionCode >= 37) {
+            if (uiConfig == null) return
+            uiConfig.method { name = "getSupportLayout" }.ignored().hook {
                 before {
-                    field {
-                        name = "MIN_MAX_COLUMN"
-                        type = IntArrayType
-                    }.get().cast<IntArray>()?.set(1, maxColumns)
-                    field {
-                        name = "MIN_MAX_ROW"
-                        type = IntArrayType
-                    }.get().cast<IntArray>()?.set(1, maxRows)
+                    val list = ArrayList<Pair<Int, Pair<Int, Int>>>()
+                    for (column in 4..maxColumns) {
+                        for (row in 6..maxRows) {
+                            list.add(Pair(column, Pair(row, row + 1)))
+                        }
+                    }
+                    result = list
+                }
+            }
+            return
+        }
+
+        val adapter = "com.android.launcher.togglebar.adapter.ToggleBarLayoutAdapter"
+            .toClassOrNull(appClassLoader)
+        if (adapter == null) {
+            YLog.error("LauncherLayoutRowColume: ToggleBarLayoutAdapter not found")
+            return
+        }
+        adapter.method { name = "initToggleBarLayoutConfigs" }.ignored().hook {
+            before {
+                runCatching {
+                    adapter.field { name = "MIN_MAX_COLUMN"; superClass() }
+                        .ignored().get().cast<IntArray>()?.set(1, maxColumns)
+                }
+                runCatching {
+                    adapter.field { name = "MIN_MAX_ROW"; superClass() }
+                        .ignored().get().cast<IntArray>()?.set(1, maxRows)
                 }
             }
         }

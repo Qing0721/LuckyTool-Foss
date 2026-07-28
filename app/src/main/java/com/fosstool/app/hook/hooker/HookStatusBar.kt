@@ -7,9 +7,7 @@ import com.fosstool.app.hook.scope.systemui.HideInActiveSignalLabelsGen2x2
 import com.fosstool.app.hook.scope.systemui.MusicFluidCloudControl
 import com.fosstool.app.hook.scope.systemui.VibrateWhenOpeningTheStatusBar
 import com.fosstool.app.hook.scope.systemui.VolumeBarPercent
-import com.fosstool.app.utils.A13
 import com.fosstool.app.utils.ModulePrefs
-import com.fosstool.app.utils.SDK
 
 object HookStatusBar : YukiBaseHooker() {
     override fun onHook() {
@@ -26,9 +24,7 @@ object HookStatusBar : YukiBaseHooker() {
             loadHooker(VolumeBarPercent)
         }
         loadHooker(DisableVolumeBarThickness)
-        if (SDK >= A13) loadHooker(MusicFluidCloudControl)
-
-
+        loadHooker(MusicFluidCloudControl)
 
     }
 }

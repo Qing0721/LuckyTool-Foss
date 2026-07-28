@@ -7,24 +7,26 @@ import android.widget.EditText
 import android.widget.TextView
 import androidx.core.view.children
 import androidx.core.view.forEach
+import com.fosstool.app.hook.utils.appcompat.dialog.COUIAlertDialogBuilder
 import com.highcapable.yukihookapi.hook.entity.YukiBaseHooker
 import com.highcapable.yukihookapi.hook.factory.method
-import com.fosstool.app.hook.utils.appcompat.dialog.COUIAlertDialogBuilder
+import com.highcapable.yukihookapi.hook.factory.toClassOrNull
 
 object CustomizeDeviceSharingPageParameters : YukiBaseHooker() {
 
     @SuppressLint("DiscouragedApi")
     override fun onHook() {
-        "com.oplus.settings.feature.deviceinfo.aboutphone.ShareAboutPhoneActivity".toClass().apply {
-            method { name = "onCreate" }.hook {
+        "com.oplus.settings.feature.deviceinfo.aboutphone.ShareAboutPhoneActivity".toClassOrNull(appClassLoader)
+            ?.method { name = "onCreate" }
+            ?.ignored()
+            ?.hook {
                 after {
-                    val activity = instance<Activity>()
+                    val activity = instance as? Activity ?: return@after
                     val shareViewId = activity.resources.getIdentifier(
                         "share_view", "id",
                         this@CustomizeDeviceSharingPageParameters.packageName
                     ).takeIf { it != 0 } ?: return@after
-                    val shareView = activity.findViewById<ViewGroup>(shareViewId)
-                        ?: return@after
+                    val shareView = activity.findViewById<ViewGroup>(shareViewId) ?: return@after
 
                     shareView.children.forEach {
                         if (it is ViewGroup) it.forEach { it2 ->
@@ -39,7 +41,6 @@ object CustomizeDeviceSharingPageParameters : YukiBaseHooker() {
                     }
                 }
             }
-        }
     }
 
     private fun TextView.setClickInfo() {

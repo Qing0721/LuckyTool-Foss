@@ -7,16 +7,13 @@ import com.fosstool.app.hook.scope.systemui.ControlCenterProgressPercent
 import com.fosstool.app.hook.scope.systemui.ControlCenterSliderTransparency
 import com.fosstool.app.hook.scope.systemui.ControlCenterWhiteBackground
 import com.fosstool.app.hook.scope.systemui.EnableNotificationAlignBothSides
-import com.fosstool.app.hook.scope.systemui.EnableNotificationBackgroundBlurEffect
 import com.fosstool.app.hook.scope.systemui.NfcDelayShutdown
 import com.fosstool.app.hook.scope.systemui.RemoveControlCenterEditMoreButton
 import com.fosstool.app.hook.scope.systemui.RemoveControlCenterUserSwitcher
 import com.fosstool.app.hook.scope.systemui.RemoveStatusBarBottomNetworkWarn
-import com.fosstool.app.hook.scope.systemui.SetControlCenterVolumeSeekbarMode
 import com.fosstool.app.hook.scope.systemui.SpecialTileGaps
-import com.fosstool.app.utils.A13
 import com.fosstool.app.utils.ModulePrefs
-import com.fosstool.app.utils.SDK
+import com.fosstool.app.utils.getOSVersionCode
 
 object StatusBarControlCenter : YukiBaseHooker() {
     override fun onHook() {
@@ -27,8 +24,9 @@ object StatusBarControlCenter : YukiBaseHooker() {
         if (prefs(ModulePrefs).getBoolean("enable_notification_align_both_sides", false)) {
             loadHooker(EnableNotificationAlignBothSides)
         }
+
         if (prefs(ModulePrefs).getBoolean("remove_control_center_user_switcher", false)) {
-            if (SDK < A13) loadHooker(RemoveControlCenterUserSwitcher)
+            if (getOSVersionCode < 26) loadHooker(RemoveControlCenterUserSwitcher)
         }
         loadHooker(RemoveStatusBarBottomNetworkWarn)
 
@@ -38,8 +36,7 @@ object StatusBarControlCenter : YukiBaseHooker() {
         loadHooker(NfcDelayShutdown)
         loadHooker(SpecialTileGaps)
         loadHooker(ControlCenterSliderTransparency)
-        loadHooker(EnableNotificationBackgroundBlurEffect)
         loadHooker(RemoveControlCenterEditMoreButton)
-        loadHooker(SetControlCenterVolumeSeekbarMode)
+
     }
 }

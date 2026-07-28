@@ -56,7 +56,6 @@ class TouchPanelControllerService : RootService() {
             runCatching { writeHexValue(toHexString(0)) }
         }
 
-
         private fun readSamplingRateValue(): Int? {
             val raw: String? = when (mode) {
                 1 -> runCatching { BufferedReader(FileReader(gameSwitchFile)).readLine() }.getOrNull()

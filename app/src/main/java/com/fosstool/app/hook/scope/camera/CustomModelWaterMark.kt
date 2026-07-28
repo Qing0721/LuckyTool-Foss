@@ -1,25 +1,24 @@
 package com.fosstool.app.hook.scope.camera
 
-import android.os.Build
 import com.highcapable.yukihookapi.hook.entity.YukiBaseHooker
+import com.highcapable.yukihookapi.hook.factory.field
 import com.highcapable.yukihookapi.hook.factory.method
-import com.highcapable.yukihookapi.hook.type.android.BitmapClass
 import com.highcapable.yukihookapi.hook.type.android.ContextClass
-import com.highcapable.yukihookapi.hook.type.android.PaintClass
-import com.highcapable.yukihookapi.hook.type.java.BooleanType
+import com.highcapable.yukihookapi.hook.type.defined.VagueType
+import com.highcapable.yukihookapi.hook.type.java.ArrayListClass
 import com.highcapable.yukihookapi.hook.type.java.FloatType
-import com.highcapable.yukihookapi.hook.type.java.IntType
 import com.highcapable.yukihookapi.hook.type.java.StringClass
-import com.highcapable.yukihookapi.hook.type.java.UnitType
 import com.fosstool.app.utils.DexkitUtils
 import com.fosstool.app.utils.DexkitUtils.checkDataList
+import com.fosstool.app.utils.DexkitUtils.firstOrNullSafe
 import com.fosstool.app.utils.ModulePrefs
+import com.highcapable.yukihookapi.hook.factory.toClassOrNull
 
 object CustomModelWaterMark : YukiBaseHooker() {
     override fun onHook() {
-        val isRealme = Build.MODEL.startsWith("RM", true)
-        if (isRealme) return
+
         loadHooker(HookCameraModelWaterMark)
+
     }
 
     private object HookCameraModelWaterMark : YukiBaseHooker() {
@@ -28,65 +27,83 @@ object CustomModelWaterMark : YukiBaseHooker() {
             if (waterMark.isBlank() || waterMark == "None") return
 
             DexkitUtils.create(appInfo.sourceDir) { dexKitBridge ->
-                dexKitBridge.findClass {
+
+                dexKitBridge.findMethod {
                     matcher {
-                        fields {
-                            addForType(StringClass.name)
-                            count(1)
-                        }
-                        methods {
-                            add {
-                                paramCount(0)
-                                returnType(StringClass.name)
-                            }
-                            count(2..4)
-                        }
-                        usingStrings("ro.vendor.oplus.market.enname", "ro.vendor.oplus.market.name")
+                        paramTypes(ContextClass.name, FloatType.name, null, null)
+                        usingStrings("key_watermark_part_a_line", "key_watermark_part_b_line")
+                        usingNumbers(0.03f, 0.007f)
                     }
                 }.apply {
-                    checkDataList("HookCameraModelWaterMark MarketUtil")
-                    val member = first()
-                    member.name.toClass().apply {
-                        method { emptyParam();returnType = StringClass }.hookAll {
-                            after {
-                                val res = result<String>() ?: return@after
-                                if (res.contains("getVendorMarketName")) return@after
-                                result = waterMark
+                    checkDataList("CustomModelWaterMark Shot")
+                    val member = firstOrNullSafe() ?: return@apply
+                    val clazz = member.className.toClassOrNull(appClassLoader) ?: return@apply
+                    clazz.method {
+                        name = member.methodName
+                        param(ContextClass, FloatType, VagueType, VagueType)
+                        returnType = member.returnTypeName
+                    }.ignored().hook {
+                        after {
+                            @Suppress("UNCHECKED_CAST")
+                            val map = result as? HashMap<String, Any> ?: return@after
+                            arrayOf(
+                                "key_watermark_part_a_line",
+                                "key_watermark_part_b_line"
+                            ).forEach { key ->
+                                val holder = map[key] ?: return@forEach
+                                @Suppress("UNCHECKED_CAST")
+                                val lines = clazz.field { type = ArrayListClass }
+                                    .ignored().get(holder).any() as? ArrayList<String>
+                                    ?: return@forEach
+                                for (index in lines.indices) {
+                                    if (lines[index].contains("Shot on OnePlus")) {
+                                        lines[index] = waterMark
+                                    }
+                                }
                             }
                         }
                     }
                 }
 
-                dexKitBridge.findClass {
+                dexKitBridge.findMethod {
                     matcher {
-                        methods {
-                            add { returnType(PaintClass.name) }
-                            add { returnType(BitmapClass.name) }
-                            add { returnType(UnitType.name) }
-                            add { returnType(IntType.name) }
-                            add { returnType(FloatType.name) }
-                            add { returnType(BooleanType.name) }
-                            add { returnType(StringClass.name) }
-                            add { paramCount(8) }
-                            add { paramTypes(StringClass.name) }
-                            add { paramTypes(ContextClass.name, FloatType.name) }
-                            add { paramTypes(ContextClass.name, IntType.name, FloatType.name) }
-                        }
-                        usingStrings("WatermarkHelper", "removeChineseOfString")
+                        paramCount(0)
+                        returnType(StringClass.name)
+                        usingStrings(
+                            "",
+                            "ro.vendor.oplus.market.enname",
+                            "ro.vendor.oplus.market.name"
+                        )
                     }
                 }.apply {
-                    checkDataList("HookCameraModelWaterMark WatermarkHelper")
-                    val member = first()
-                    member.name.toClass().apply {
-                        method { param(StringClass);returnType = StringClass }.hookAll {
-                            after {
-                                val res = result<String>() ?: return@after
-                                if (res.contains("removeChineseOfString")) return@after
-                                if (res.toIntOrNull() != null) return@after
-                                result = waterMark
+                    checkDataList("CustomModelWaterMark MarketName", onlyOne = false)
+                    forEach { member ->
+                        member.className.toClassOrNull(appClassLoader)
+                            ?.method {
+                                name = member.methodName
+                                emptyParam()
+                                returnType = StringClass
                             }
-                        }
+                            ?.ignored()
+                            ?.hook { replaceTo(waterMark) }
                     }
+                }
+
+                dexKitBridge.findMethod {
+                    matcher {
+                        returnType(StringClass.name)
+                        usingStrings("[一-龥]", "")
+                    }
+                }.apply {
+                    checkDataList("CustomModelWaterMark RemoveChineseOfString")
+                    val member = firstOrNullSafe() ?: return@apply
+                    member.className.toClassOrNull(appClassLoader)
+                        ?.method {
+                            name = member.methodName
+                            returnType = StringClass
+                        }
+                        ?.ignored()
+                        ?.hookAll { replaceTo(waterMark) }
                 }
             }
         }

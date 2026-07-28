@@ -2,11 +2,15 @@ package com.fosstool.app.hook.scope.gallery
 
 import com.fosstool.app.utils.A15
 import com.fosstool.app.utils.DexkitUtils
+import com.fosstool.app.utils.DexkitUtils.useFirst
 import com.fosstool.app.utils.ModulePrefs
 import com.fosstool.app.utils.SDK
 import com.highcapable.yukihookapi.hook.entity.YukiBaseHooker
-import com.highcapable.yukihookapi.hook.factory.method
+import com.highcapable.yukihookapi.hook.factory.constructor
 import com.highcapable.yukihookapi.hook.type.java.BooleanType
+import com.highcapable.yukihookapi.hook.type.java.IntType
+import com.highcapable.yukihookapi.hook.type.java.StringClass
+import com.highcapable.yukihookapi.hook.factory.toClassOrNull
 
 object RemoveAigcEliminationLimit : YukiBaseHooker() {
     override fun onHook() {
@@ -14,83 +18,77 @@ object RemoveAigcEliminationLimit : YukiBaseHooker() {
         if (!prefs(ModulePrefs).getBoolean("remove_aigc_elimination_limit", false)) return
 
         DexkitUtils.create(appInfo.sourceDir) { bridge ->
-            runCatching {
-                bridge.findClass {
-                    matcher {
-                        usingStrings("Info", "isContentSensitive")
+
+            bridge.findClass {
+                matcher {
+                    fields {
+                        addForType(BooleanType.name)
                     }
-                }.forEach { data ->
-                    if (data.name.contains("EliminateDetect", ignoreCase = true) ||
-                        data.name.endsWith("EliminateDetectInfo")
-                    ) {
-                        hookDetectInfo(data.name)
-                    } else if (data.name.contains("EliminateSave", ignoreCase = true) ||
-                        data.name.endsWith("EliminateSaveEntry")
-                    ) {
-                        hookSaveEntry(data.name)
-                    } else if (data.name.contains("Eliminate", ignoreCase = true)) {
-                        when {
-                            data.name.contains("Detect", ignoreCase = true) ->
-                                hookDetectInfo(data.name)
-                            data.name.contains("Save", ignoreCase = true) ->
-                                hookSaveEntry(data.name)
-                        }
+                    methods {
+                        add { name = "equals" }
+                        add { name = "hashCode" }
+                        add { name = "toString" }
                     }
+                    usingStrings("Info", "isContentSensitive")
                 }
+            }.useFirst("EliminateDetectInfo") { data ->
+                hookDetectInfo(data.name)
             }
-            listOf("EliminateDetectInfo", "EliminateSaveEntry").forEach { key ->
-                runCatching {
-                    bridge.findClass {
-                        matcher { usingStrings(key) }
-                    }.forEach { data ->
-                        when {
-                            data.name.contains("Detect", ignoreCase = true) ->
-                                hookDetectInfo(data.name)
-                            data.name.contains("Save", ignoreCase = true) ->
-                                hookSaveEntry(data.name)
-                        }
+
+            bridge.findClass {
+                matcher {
+                    fields {
+                        addForType(IntType.name)
+                        addForType(StringClass.name)
+                        addForType(BooleanType.name)
                     }
+                    methods {
+                        add { name = "equals" }
+                        add { name = "hashCode" }
+                        add { name = "toString" }
+                    }
+                    usingStrings("EliminateSaveEntry", "isContentSensitive")
                 }
+            }.useFirst("EliminateSaveEntry") { data ->
+                hookSaveEntry(data.name)
             }
         }
     }
 
     private fun hookDetectInfo(className: String) {
         runCatching {
-            className.toClass().method {
-                returnType = BooleanType
-            }.hookAll {
-                before {
-                    for (i in 0 until 8) {
-                        when (val v = runCatching { args(i).any() }.getOrNull()) {
-                            is Boolean -> args(i).set(false)
-                            is Enum<*> -> args(i).setNull()
+            className.toClassOrNull(appClassLoader)
+                ?.constructor { param { types -> types.any { it == BooleanType } } }
+                ?.ignored()
+                ?.hook {
+                    before {
+                        args.forEachIndexed { index, value ->
+                            when {
+                                value is Boolean -> args(index).set(false)
+                                value != null && value.javaClass.isEnum -> args(index).setNull()
+                            }
                         }
                     }
                 }
-            }
         }
     }
 
     private fun hookSaveEntry(className: String) {
         runCatching {
-            className.toClass().method {
-                returnType = BooleanType
-            }.hookAll {
-                before {
-                    var lastBool = -1
-                    for (i in 0 until 8) {
-                        when (val v = runCatching { args(i).any() }.getOrNull()) {
-                            is Boolean -> {
-                                args(i).set(false)
-                                lastBool = i
+            className.toClassOrNull(appClassLoader)
+                ?.constructor { param { types -> types.any { it == BooleanType } } }
+                ?.ignored()
+                ?.hook {
+                    before {
+                        args.forEachIndexed { index, value ->
+                            when {
+                                value is Boolean -> args(index).set(false)
+                                value != null && value.javaClass.isEnum -> args(index).setNull()
                             }
-                            is Enum<*> -> args(i).setNull()
                         }
+                        if (args.lastOrNull() is Boolean) args(args.lastIndex).set(true)
                     }
-                    if (lastBool >= 0) args(lastBool).set(true)
                 }
-            }
         }
     }
 }

@@ -61,7 +61,6 @@ import kotlin.math.roundToLong
 import kotlin.random.Random
 import kotlin.system.exitProcess
 
-
 @Suppress("DEPRECATION")
 fun Context.getAppCommit(packName: String): String? {
     val commitInfo = PackageUtils(packageManager).getApplicationInfo(packName, 128)
@@ -237,7 +236,6 @@ fun getDeviceID(): String {
     }
     return "null"
 }
-
 
 val getGuid: String
     get() = ShellUtils.execCommand(
@@ -473,10 +471,12 @@ fun Preference.setPrefsIconRes(resource: Any?, result: (Drawable?, Boolean) -> U
     if (image == null || image.intrinsicWidth <= 0 || image.intrinsicHeight <= 0) {
         val icon =
             ResourcesCompat.getDrawable(context.resources, android.R.mipmap.sym_def_app_icon, null)
-        result(icon, true)
+        result(icon?.let { context.zoomDrawable(it, 48.dp, 48.dp) }, true)
         return
     }
-    val bitmap = image.toBitmapOrNull()
+
+    val scaled = context.zoomDrawable(image, 48.dp, 48.dp)
+    val bitmap = scaled.toBitmapOrNull()
     if (bitmap == null) {
         result(null, false)
         return
@@ -488,9 +488,7 @@ fun Preference.setPrefsIconRes(resource: Any?, result: (Drawable?, Boolean) -> U
 }
 
 fun Preference.fixIconSize(icon: Drawable?): Drawable? {
-    return if (icon != null && ((icon.intrinsicWidth < 48.dp) || (icon.intrinsicHeight < 48.dp))) {
-        context.zoomDrawable(icon, 48.dp, 48.dp)
-    } else icon
+    return if (icon != null) context.zoomDrawable(icon, 48.dp, 48.dp) else null
 }
 
 fun arraySummaryDot(vararg string: String?): String {
@@ -770,14 +768,11 @@ fun Fragment.navigatePage(action: Int, title: CharSequence? = "Title") = try {
 
 }
 
-
 fun Fragment.navigatePage(action: Int, bundle: Bundle?) = try {
     findNavController().navigate(action, bundle)
 } catch (_: IllegalArgumentException) {
 
 }
-
-
 
 fun getScreenOrientation(view: View, result: (Boolean) -> Unit) {
     getScreenOrientation(view.resources) { result(it) }

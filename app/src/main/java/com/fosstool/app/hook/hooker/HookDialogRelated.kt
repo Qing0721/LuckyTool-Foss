@@ -10,15 +10,14 @@ import com.fosstool.app.hook.scope.systemui.RemoveStartRecordingOrCastingDialog
 import com.fosstool.app.hook.scope.systemui.RemoveUSBConnectDialog
 import com.fosstool.app.hook.scope.systemui.RunFloatingWindowTasksInForeground
 import com.fosstool.app.hook.scope.systemui.VolumeDialogWhiteBackground
-import com.fosstool.app.utils.A13
 import com.fosstool.app.utils.ModulePrefs
-import com.fosstool.app.utils.SDK
+import com.fosstool.app.utils.getOSVersionCode
 
-object HookDialogRelated : YukiBaseHooker() {
+class HookDialogRelated : YukiBaseHooker() {
     override fun onHook() {
         if (packageName == "com.android.systemui") {
             if (prefs(ModulePrefs).getBoolean("disable_duplicate_floating_window", false)) {
-                if (SDK >= A13) loadHooker(DisableDuplicateFloatingWindow)
+                loadHooker(DisableDuplicateFloatingWindow)
             }
             if (prefs(ModulePrefs).getBoolean("disable_headphone_high_volume_warning", false)) {
                 loadHooker(DisableHeadphoneHighVolumeWarning)
@@ -33,7 +32,9 @@ object HookDialogRelated : YukiBaseHooker() {
             if (prefs(ModulePrefs).getBoolean("remove_start_recording_or_casting_dialog", false)) {
                 loadHooker(RemoveStartRecordingOrCastingDialog)
             }
-            if (prefs(ModulePrefs).getBoolean("run_floating_window_tasks_in_foreground", false)) {
+            if (prefs(ModulePrefs).getBoolean("run_floating_window_tasks_in_foreground", false) &&
+                getOSVersionCode in 26..33
+            ) {
                 loadHooker(RunFloatingWindowTasksInForeground)
             }
             if (prefs(ModulePrefs).getBoolean("force_show_toast_icon", false)) {

@@ -1,9 +1,13 @@
-package com.fosstool.app.hook.scope.android
+﻿package com.fosstool.app.hook.scope.android
 
-import com.fosstool.app.utils.ModulePrefs
 import com.highcapable.yukihookapi.hook.entity.YukiBaseHooker
-import com.highcapable.yukihookapi.hook.factory.current
+import com.highcapable.yukihookapi.hook.factory.field
 import com.highcapable.yukihookapi.hook.factory.method
+import com.highcapable.yukihookapi.hook.factory.toClassOrNull
+import com.fosstool.app.utils.ModulePrefs
+import de.robv.android.xposed.XC_MethodHook
+import de.robv.android.xposed.XposedBridge
+import de.robv.android.xposed.XposedHelpers
 
 object FullBrightnessMinRefresh : YukiBaseHooker() {
     override fun onHook() {
@@ -17,55 +21,40 @@ object FullBrightnessMinRefresh : YukiBaseHooker() {
                     false
                 )
 
-        val backLightBeanCls = runCatching {
-            "com.oplus.vrr.bean.BackLightBean".toClass()
-        }.getOrNull()
+        val backLightBeanCls = "com.oplus.vrr.bean.BackLightBean".toClassOrNull(appClassLoader)
 
         if (enableForce1Hz) {
-            runCatching {
-                "com.oplus.vrr.OPlusFeatureManager".toClass().apply {
-                    if (backLightBeanCls != null) {
-                        method {
-                            name { it.contains("on", ignoreCase = true) }
-                            param { params -> params.any { it == backLightBeanCls } }
-                        }.hookAll {
-                            before {
-                                val bean = (0 until 4).mapNotNull { i ->
-                                    runCatching { args(i).any() }.getOrNull()
-                                }.firstOrNull { it != null && backLightBeanCls.isInstance(it) }
-                                    ?: return@before
-                                forceNitsToMinFps(bean)
-                            }
+            "com.oplus.vrr.OPlusFeatureManager".toClassOrNull(appClassLoader)?.let { mgr ->
+
+                val methods = mgr.declaredMethods.filter { m ->
+                    m.name.startsWith("on") &&
+                        m.parameterTypes.size == 1 &&
+                        m.parameterTypes.any {
+                            it == backLightBeanCls || it.name.contains("BackLightBean")
                         }
-                    } else {
-                        method {
-                            name { it.contains("on", ignoreCase = true) }
-                            paramCount(1..3)
-                        }.hookAll {
-                            before {
-                                val bean = (0 until 4).mapNotNull { i ->
-                                    runCatching { args(i).any() }.getOrNull()
-                                }.firstOrNull {
-                                    it != null && it.javaClass.name.contains("BackLightBean")
-                                } ?: return@before
-                                forceNitsToMinFps(bean)
-                            }
+                }
+                methods.forEach { m ->
+                    XposedBridge.hookMethod(m, object : XC_MethodHook() {
+                        override fun beforeHookedMethod(param: MethodHookParam) {
+                            val bean = param.args.firstOrNull { arg ->
+                                arg != null && (
+                                    (backLightBeanCls != null && backLightBeanCls.isInstance(arg)) ||
+                                        arg.javaClass.name.contains("BackLightBean")
+                                    )
+                            } ?: return
+                            forceNitsToMinFps(bean)
                         }
-                    }
+                    })
                 }
             }
         }
 
-        runCatching {
-            "com.oplus.vrr.OPlusOnlineConfigManager".toClass().apply {
-                method {
-                    name = "createGameEvent"
-                }.hookAll {
-                    after {
-                        val host = instance ?: return@after
-                        disableBackLightBean(host, "mBackLightBean")
-                        disableBackLightBean(host, "mPwmBackLightBean")
-                    }
+        "com.oplus.vrr.OPlusOnlineConfigManager".toClassOrNull(appClassLoader)?.let { cfg ->
+            cfg.method { name = "createGameEvent" }.ignored().hook {
+                after {
+                    val host = instance
+                    disableBackLightBean(host, "mBackLightBean")
+                    disableBackLightBean(host, "mPwmBackLightBean")
                 }
             }
         }
@@ -74,8 +63,7 @@ object FullBrightnessMinRefresh : YukiBaseHooker() {
     @Suppress("UNCHECKED_CAST")
     private fun forceNitsToMinFps(bean: Any) {
         runCatching {
-            val map = bean.current().field { name = "mNitsToMinFPS" }.cast<HashMap<*, *>>()
-                ?: return
+            val map = softFieldOrGet(bean, "mNitsToMinFPS") as? HashMap<*, *> ?: return
             for ((key, value) in map.entries.toList()) {
                 val list = value as? ArrayList<*> ?: continue
                 for (inner in list) {
@@ -93,9 +81,15 @@ object FullBrightnessMinRefresh : YukiBaseHooker() {
 
     private fun disableBackLightBean(host: Any, fieldName: String) {
         runCatching {
-            val bean = host.current().field { name = fieldName }.any() ?: return
-            bean.current().field { name = "mEnable" }.set(false)
-            bean.current().field { name = "mNitsToMinFPS" }.cast<HashMap<*, *>>()?.clear()
+            val bean = softFieldOrGet(host, fieldName) ?: return
+            XposedHelpers.setBooleanField(bean, "mEnable", false)
+            (softFieldOrGet(bean, "mNitsToMinFPS") as? HashMap<*, *>)?.clear()
         }
+    }
+
+    private fun softFieldOrGet(obj: Any, fieldName: String): Any? {
+        return runCatching {
+            obj.javaClass.field { name = fieldName }.ignored().get(obj).any()
+        }.getOrNull() ?: runCatching { XposedHelpers.getObjectField(obj, fieldName) }.getOrNull()
     }
 }

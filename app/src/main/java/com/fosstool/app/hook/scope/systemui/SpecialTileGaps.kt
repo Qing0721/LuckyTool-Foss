@@ -5,10 +5,11 @@ import android.util.TypedValue
 import android.view.View
 import android.widget.LinearLayout
 import com.highcapable.yukihookapi.hook.entity.YukiBaseHooker
-import com.highcapable.yukihookapi.hook.factory.current
 import com.highcapable.yukihookapi.hook.factory.method
+import com.highcapable.yukihookapi.hook.factory.toClassOrNull
 import com.fosstool.app.hook.utils.OplusBuildUtlils
 import com.fosstool.app.utils.ModulePrefs
+import java.lang.reflect.Field
 
 object SpecialTileGaps : YukiBaseHooker() {
     override fun onHook() {
@@ -41,19 +42,18 @@ object SpecialTileGaps : YukiBaseHooker() {
         )
         for (cls in controllers) {
             runCatching {
-                cls.toClass().apply {
-                    method { name = "updateResources" }.hookAll {
+                cls.toClassOrNull(appClassLoader)
+                    ?.method { name = "updateResources" }?.ignored()?.hook {
                         after {
                             val host = instance ?: return@after
                             runCatching {
-                                host.current().field { name = "mTopGap" }.set(topGap)
+                                host.javaClass.findField("mTopGap")?.set(host, topGap)
                             }
                             runCatching {
-                                host.current().field { name = "mBottomGap" }.set(bottomGap)
+                                host.javaClass.findField("mBottomGap")?.set(host, bottomGap)
                             }
                         }
                     }
-                }
             }
         }
 
@@ -62,19 +62,18 @@ object SpecialTileGaps : YukiBaseHooker() {
             "com.oplusos.systemui.qs.OplusQSTileMediaContainer",
         ).forEach { cls ->
             runCatching {
-                cls.toClass().apply {
-                    method { name = "updateResources" }.hookAll {
+                cls.toClassOrNull(appClassLoader)
+                    ?.method { name = "updateResources" }?.ignored()?.hook {
                         after {
                             val host = instance ?: return@after
                             runCatching {
-                                host.current().field { name = "mTopGap" }.set(topGap)
+                                host.javaClass.findField("mTopGap")?.set(host, topGap)
                             }
                             runCatching {
-                                host.current().field { name = "mBottomGap" }.set(bottomGap)
+                                host.javaClass.findField("mBottomGap")?.set(host, bottomGap)
                             }
                         }
                     }
-                }
             }
         }
     }
@@ -82,8 +81,6 @@ object SpecialTileGaps : YukiBaseHooker() {
     private fun hookDecreaseHorizontalBrightnessBarTopGap() {
         val enabled = prefs(ModulePrefs).getBoolean(
             "decrease_horizontal_brightness_bar_top_gap", false
-        ) || prefs(ModulePrefs).getBoolean(
-            "reduce_landscape_brightness_bar_top_gap", false
         )
         if (!enabled) return
 
@@ -95,17 +92,17 @@ object SpecialTileGaps : YukiBaseHooker() {
         if (os < 30) return
 
         runCatching {
-            "com.oplus.systemui.qs.OplusQSBottomImpl".toClass().apply {
-                method { name = "updateResources" }.hookAll {
+            "com.oplus.systemui.qs.OplusQSBottomImpl"
+                .toClassOrNull(appClassLoader)
+                ?.method { name = "updateResources" }?.ignored()?.hook {
                     after {
                         val host = instance ?: return@after
                         val pageIndicator = runCatching {
-                            host.current().field { name = "mPageIndicator" }.any() as? View
+                            host.javaClass.findField("mPageIndicator")?.get(host) as? View
                         }.getOrNull() ?: return@after
                         applyLandscapePageIndicatorBottomMargin(pageIndicator)
                     }
                 }
-            }
         }
     }
 
@@ -120,5 +117,14 @@ object SpecialTileGaps : YukiBaseHooker() {
             lp.bottomMargin = margin6dp
             view.layoutParams = lp
         }
+    }
+
+    private fun Class<*>.findField(name: String): Field? {
+        var cls: Class<*>? = this
+        while (cls != null) {
+            runCatching { return cls.getDeclaredField(name).also { it.isAccessible = true } }
+            cls = cls.superclass
+        }
+        return null
     }
 }

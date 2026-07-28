@@ -6,25 +6,25 @@ import android.view.ViewGroup
 import androidx.core.view.isVisible
 import com.highcapable.yukihookapi.hook.bean.VariousClass
 import com.highcapable.yukihookapi.hook.entity.YukiBaseHooker
-import com.highcapable.yukihookapi.hook.factory.current
-import com.highcapable.yukihookapi.hook.factory.field
-import com.highcapable.yukihookapi.hook.factory.hasMethod
 import com.highcapable.yukihookapi.hook.factory.method
 import com.highcapable.yukihookapi.hook.factory.toClassOrNull
-import com.fosstool.app.utils.A12
-import com.fosstool.app.utils.A13
-import com.fosstool.app.utils.A14
 import com.fosstool.app.utils.ModulePrefs
-import com.fosstool.app.utils.SDK
+import com.fosstool.app.utils.getOSVersionCode
+import de.robv.android.xposed.XC_MethodHook
+import de.robv.android.xposed.XposedBridge
+import de.robv.android.xposed.XposedHelpers
+import java.lang.reflect.Field
 
 object MobileDataIconRelated : YukiBaseHooker() {
     override fun onHook() {
-        if (SDK >= A14) loadHooker(MobileDataIconRelatedC14)
-        else if (SDK >= A12) loadHooker(MobileDataIconRelated)
+
+        val osV = getOSVersionCode
+        if (osV >= 34) loadHooker(MobileDataIconRelatedC14)
+        else if (osV >= 23) loadHooker(MobileDataIconRelatedC12)
         else loadHooker(MobileDataIconRelatedC120)
     }
 
-    object MobileDataIconRelated : YukiBaseHooker() {
+    object MobileDataIconRelatedC12 : YukiBaseHooker() {
         override fun onHook() {
             val removeInout = prefs(ModulePrefs).getBoolean("remove_mobile_data_inout", false)
             val removeType = prefs(ModulePrefs).getBoolean("remove_mobile_data_type", false)
@@ -35,74 +35,76 @@ object MobileDataIconRelated : YukiBaseHooker() {
 
             VariousClass(
                 "com.oplusos.systemui.statusbar.OplusStatusBarMobileView",
-                "com.oplus.systemui.statusbar.phone.signal.OplusStatusBarMobileViewExImpl"
-            ).toClass().apply {
-                method { name = "initViewState" }.hook {
+                "com.oplus.systemui.statusbar.phone.signal.OplusStatusBarMobileViewExImpl",
+            ).toClassOrNull(appClassLoader)?.let { clazz ->
+                clazz.method { name = "initViewState" }.ignored().hook {
                     after {
-                        if (hideNonNetwork) {
-                            val state = args().first().any()
-                            val subId = state?.current()?.field { name = "subId" }?.int()
-                            val subId2 = SubscriptionManager.getDefaultDataSubscriptionId()
-                            field { name = "mMobileGroup" }.get(instance)
-                                .cast<ViewGroup>()?.isVisible =
-                                subId == subId2
-                        }
-                        if (removeInout) field { name = "mDataActivity" }.get(instance)
-                            .cast<View>()?.isVisible = false
-                        if (removeType) field {
-                            name = "mMobileType"
-                            if (SDK < A13) superClass(true)
-                        }.get(instance).cast<View>()?.isVisible = false
+                        applyState(clazz, instance, args, hideNonNetwork, removeInout, removeType)
                     }
                 }
-                method {
-                    name = when (simpleName) {
-                        "OplusStatusBarMobileView" -> "updateMobileViewState"
-                        "OplusStatusBarMobileViewExImpl" -> "updateState"
-                        else -> "updateState"
-                    }
-                }.hook {
+                val updateName = when (clazz.simpleName) {
+                    "OplusStatusBarMobileView" -> "updateMobileViewState"
+                    "OplusStatusBarMobileViewExImpl" -> "updateState"
+                    else -> "updateState"
+                }
+                clazz.method { name = updateName }.ignored().hook {
                     after {
-                        if (hideNonNetwork) {
-                            val state = args().first().any()
-                            val subId = state?.current()?.field { name = "subId" }?.int()
-                            val subId2 = SubscriptionManager.getDefaultDataSubscriptionId()
-                            field { name = "mMobileGroup" }.get(instance)
-                                .cast<ViewGroup>()?.isVisible =
-                                subId == subId2
-                        }
-                        if (removeInout) field { name = "mDataActivity" }.get(instance)
-                            .cast<View>()?.isVisible = false
-                        if (removeType) field {
-                            name = "mMobileType"
-                            if (SDK < A13) superClass(true)
-                        }.get(instance).cast<View>()?.isVisible = false
+                        applyState(clazz, instance, args, hideNonNetwork, removeInout, removeType)
                     }
                 }
             }
 
             VariousClass(
                 "com.oplusos.systemui.ext.StatusBarSignalPolicyExt",
-                "com.oplus.systemui.statusbar.phone.signal.OplusStatusBarSignalPolicyExImpl"
-            ).toClass().apply {
-                method {
-                    name = "setNoSims"
-                    paramCount = 3
-                }.hook {
+                "com.oplus.systemui.statusbar.phone.signal.OplusStatusBarSignalPolicyExImpl",
+            ).toClassOrNull(appClassLoader)?.let { clazz ->
+                clazz.method { name = "setNoSims"; paramCount = 3 }.ignored().hook {
                     after {
                         if (!hideNoSS) return@after
-                        val iconController = if (hasMethod { name = "getIconController" }) method {
-                            name = "getIconController"
-                        }.get(instance).call()
-                        else field { name = "iconController" }.get(instance).any()
-                        val slotNoSim = field { name = "slotNoSim" }.get(instance).cast<String>()
-                        iconController?.current()?.method {
-                            name = "setIconVisibility"
-                            paramCount = 2
-                            if (simpleName == "StatusBarSignalPolicyExt") superClass()
-                        }?.call(slotNoSim, false)
+                        val iconController = runCatching {
+                            clazz.getDeclaredMethod("getIconController").apply { isAccessible = true }
+                                .invoke(instance)
+                        }.getOrNull()
+                            ?: clazz.findField("iconController")?.get(instance)
+                            ?: return@after
+                        val slotNoSim = clazz.findField("slotNoSim")?.get(instance) as? String
+                            ?: return@after
+                        runCatching {
+                            XposedHelpers.callMethod(iconController, "setIconVisibility", slotNoSim, false)
+                        }
                     }
                 }
+            }
+        }
+
+        private fun applyState(
+            clazz: Class<*>,
+            instance: Any,
+            args: Array<Any?>,
+            hideNonNetwork: Boolean,
+            removeInout: Boolean,
+            removeType: Boolean
+        ) {
+            if (hideNonNetwork) {
+                val state = args.getOrNull(0)
+                val subId = runCatching {
+                    XposedHelpers.getIntField(state, "subId")
+                }.getOrNull()
+                val subId2 = SubscriptionManager.getDefaultDataSubscriptionId()
+                clazz.findField("mMobileGroup")?.get(instance)?.let { group ->
+                    (group as? ViewGroup)?.isVisible = subId == subId2
+                }
+            }
+            if (removeInout) {
+                clazz.findField("mDataActivity")?.get(instance)?.let { v ->
+                    (v as? View)?.isVisible = false
+                }
+            }
+            if (removeType) {
+                clazz.findField("mMobileType")
+                    ?.get(instance)?.let { v ->
+                        (v as? View)?.isVisible = false
+                    }
             }
         }
     }
@@ -116,48 +118,61 @@ object MobileDataIconRelated : YukiBaseHooker() {
             var hideNoSS = prefs(ModulePrefs).getBoolean("hide_nosim_noservice", false)
             dataChannel.wait<Boolean>("hide_nosim_noservice") { hideNoSS = it }
 
-            "com.android.systemui.statusbar.StatusBarMobileView".toClass().apply {
-                method { name = "initViewState" }.hook {
-                    after {
-                        if (hideNonNetwork) {
-                            val state = field { name = "mState" }.get(instance).any()
-                            val subId = state?.current()?.field { name = "subId" }?.int()
-                            val subId2 = SubscriptionManager.getDefaultDataSubscriptionId()
-                            field { name = "mMobileGroup" }.get(instance)
-                                .cast<ViewGroup>()?.isVisible =
-                                subId == subId2
-                        }
-                        if (removeInout) field { name = "mInoutContainer" }.get(instance)
-                            .cast<View>()?.isVisible = false
-                        if (removeType) field { name = "mMobileType" }.get(instance)
-                            .cast<View>()?.isVisible = false
-                    }
+            val mobile = "com.android.systemui.statusbar.StatusBarMobileView"
+                .toClassOrNull(appClassLoader) ?: return
+            mobile.method { name = "initViewState" }.ignored().hook {
+                after {
+                    applyStateC120(mobile, instance, hideNonNetwork, removeInout, removeType)
                 }
-                method { name = "updateState" }.hook {
-                    after {
-                        if (hideNonNetwork) {
-                            val state = field { name = "mState" }.get(instance).any()
-                            val subId = state?.current()?.field { name = "subId" }?.int()
-                            val subId2 = SubscriptionManager.getDefaultDataSubscriptionId()
-                            field { name = "mMobileGroup" }.get(instance)
-                                .cast<ViewGroup>()?.isVisible =
-                                subId == subId2
-                        }
-                        if (removeInout) field { name = "mInoutContainer" }.get(instance)
-                            .cast<View>()?.isVisible = false
-                        if (removeType) field { name = "mMobileType" }.get(instance)
-                            .cast<View>()?.isVisible = false
-                    }
+            }
+            mobile.method { name = "updateState" }.ignored().hook {
+                after {
+                    applyStateC120(mobile, instance, hideNonNetwork, removeInout, removeType)
                 }
             }
 
-            "com.oplusos.systemui.statusbar.widget.SignalClusterView".toClass().apply {
-                method { name = "updateNoSimView" }.hook {
-                    after {
-                        if (!hideNoSS) return@after
-                        val mNoSims = field { name = "mNoSims" }.get(instance).cast<View>()
-                        method { name = "animateHide" }.get(instance).call(mNoSims, 8)
+            "com.oplusos.systemui.statusbar.widget.SignalClusterView"
+                .toClassOrNull(appClassLoader)?.let { clazz ->
+                    clazz.method { name = "updateNoSimView" }.ignored().hook {
+                        after {
+                            if (!hideNoSS) return@after
+                            val mNoSims = clazz.findField("mNoSims")?.get(instance) as? View
+                                ?: return@after
+                            runCatching {
+                                clazz.getDeclaredMethod("animateHide", View::class.java, Int::class.java)
+                                    .apply { isAccessible = true }
+                                    .invoke(instance, mNoSims, 8)
+                            }
+                        }
                     }
+                }
+        }
+
+        private fun applyStateC120(
+            mobile: Class<*>,
+            instance: Any,
+            hideNonNetwork: Boolean,
+            removeInout: Boolean,
+            removeType: Boolean
+        ) {
+            if (hideNonNetwork) {
+                val state = mobile.findField("mState")?.get(instance)
+                val subId = runCatching {
+                    XposedHelpers.getIntField(state, "subId")
+                }.getOrNull()
+                val subId2 = SubscriptionManager.getDefaultDataSubscriptionId()
+                mobile.findField("mMobileGroup")?.get(instance)?.let { group ->
+                    (group as? ViewGroup)?.isVisible = subId == subId2
+                }
+            }
+            if (removeInout) {
+                mobile.findField("mInoutContainer")?.get(instance)?.let { v ->
+                    (v as? View)?.isVisible = false
+                }
+            }
+            if (removeType) {
+                mobile.findField("mMobileType")?.get(instance)?.let { v ->
+                    (v as? View)?.isVisible = false
                 }
             }
         }
@@ -175,16 +190,16 @@ object MobileDataIconRelated : YukiBaseHooker() {
 
             if (removeInout || removeType) {
                 "com.oplus.systemui.statusbar.pipeline.mobile.ui.viewmodel.OplusMobileIconViewModel"
-                    .toClassOrNull()?.apply {
+                    .toClassOrNull(appClassLoader)?.let { clazz ->
                         if (removeInout) {
-                            method { name = "getMobileActivityResId" }.hook {
+                            clazz.method { name = "getMobileActivityResId" }.ignored().hook {
                                 before {
                                     hostStateFlow(hostCl, 0)?.let { result = it }
                                 }
                             }
                         }
                         if (removeType) {
-                            method { name = "getNetworkTypeIcon" }.hook {
+                            clazz.method { name = "getNetworkTypeIcon" }.ignored().hook {
                                 before {
                                     hostStateFlow(hostCl, 0)?.let { result = it }
                                 }
@@ -197,16 +212,21 @@ object MobileDataIconRelated : YukiBaseHooker() {
                 VariousClass(
                     "com.oplus.systemui.statusbar.pipeline.mobile.ui.viewmodel.OplusMobileIconViewModel",
                     "com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel.MobileIconViewModel",
-                    "com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel.LocationBasedMobileViewModel"
-                ).toClassOrNull()?.apply {
-                    method {
-                        name = "isVisible"
-                        returnType = "kotlinx.coroutines.flow.StateFlow"
-                    }.hook {
-                        before {
-                            if (!hideNonNetwork) return@before
-                            val subId = field { name = "subscriptionId"; superClass(true) }
-                                .get(instance).int()
+                    "com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel.LocationBasedMobileViewModel",
+                ).toClassOrNull(appClassLoader)?.let { clazz ->
+
+                    clazz.method { name = "isVisible" }.ignored().hook {
+                        after {
+                            if (!hideNonNetwork) return@after
+
+                            val originFlow = result ?: return@after
+                            val boolNow = runCatching {
+                                originFlow.javaClass.getMethod("getValue").invoke(originFlow) as? Boolean
+                            }.getOrNull() ?: return@after
+                            if (!boolNow) return@after
+                            val subIdField = clazz.findField("subscriptionId") ?: return@after
+                            subIdField.isAccessible = true
+                            val subId = subIdField.getInt(instance)
                             val subId2 = SubscriptionManager.getDefaultDataSubscriptionId()
                             hostStateFlow(hostCl, subId == subId2)?.let { result = it }
                         }
@@ -216,8 +236,8 @@ object MobileDataIconRelated : YukiBaseHooker() {
 
             if (hideNoSS) {
                 "com.oplus.systemui.statusbar.phone.signal.OplusStatusBarSignalPolicy"
-                    .toClassOrNull()?.apply {
-                        method { name = "updateSlotIconVisibility" }.hookAll {
+                    .toClassOrNull(appClassLoader)?.let { clazz ->
+                        clazz.method { name = "updateSlotIconVisibility" }.ignored().hook {
                             before {
                                 if (!hideNoSS) return@before
                                 runCatching {
@@ -226,7 +246,7 @@ object MobileDataIconRelated : YukiBaseHooker() {
                                         val a = args[i]
                                         if (!hit && a is String && a == "nosim_all") hit = true
                                         else if (hit && a is Int) {
-                                            args(i).set(0)
+                                            args[i] = 0
                                             break
                                         }
                                     }
@@ -240,11 +260,20 @@ object MobileDataIconRelated : YukiBaseHooker() {
         private fun hostStateFlow(hostCl: ClassLoader?, value: Any): Any? {
             if (hostCl == null) return null
             return runCatching {
-                val stateFlowKt = Class.forName("kotlinx.coroutines.flow.StateFlowKt", false, hostCl)
-                val mutable = stateFlowKt.getDeclaredMethod("MutableStateFlow", Any::class.java)
+                val stateFlowKt =
+                    Class.forName("kotlinx.coroutines.flow.StateFlowKt", false, hostCl)
+                stateFlowKt.getDeclaredMethod("MutableStateFlow", Any::class.java)
                     .invoke(null, value)
-                mutable
             }.getOrNull()
         }
+    }
+
+    private fun Class<*>.findField(name: String): Field? {
+        var cls: Class<*>? = this
+        while (cls != null) {
+            runCatching { return cls.getDeclaredField(name).also { it.isAccessible = true } }
+            cls = cls.superclass
+        }
+        return null
     }
 }

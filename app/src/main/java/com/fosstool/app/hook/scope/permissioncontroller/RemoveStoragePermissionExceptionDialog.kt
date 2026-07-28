@@ -6,6 +6,8 @@ import com.highcapable.yukihookapi.hook.type.android.ActivityClass
 import com.highcapable.yukihookapi.hook.type.java.UnitType
 import com.fosstool.app.utils.DexkitUtils
 import com.fosstool.app.utils.DexkitUtils.checkDataList
+import com.fosstool.app.utils.DexkitUtils.firstOrNullSafe
+import com.highcapable.yukihookapi.hook.factory.toClassOrNull
 
 object RemoveStoragePermissionExceptionDialog : YukiBaseHooker() {
     override fun onHook() {
@@ -13,19 +15,24 @@ object RemoveStoragePermissionExceptionDialog : YukiBaseHooker() {
             dexKitBridge.findMethod {
                 matcher {
                     declaredClass {
-                        superClass("android.app.Activity")
-                        usingStrings(
-                            "oplus.intent.extra.PACKAGE_LABEL",
-                            "oplus.intent.extra.GROUP_NAME",
-                            "android.permission-group.STORAGE"
-                        )
+                        fields {
+                            addForType("android.app.Application")
+                            addForType("android.os.UserHandle")
+                            addForType("android.app.admin.DevicePolicyManager")
+                        }
+                        usingStrings("GrantPermissionsViewModel")
                     }
                     paramTypes(ActivityClass.name)
                     returnType(UnitType.name)
+                    usingStrings(
+                        "oplus.intent.extra.PACKAGE_LABEL",
+                        "oplus.intent.extra.GROUP_NAME",
+                        "android.permission-group.STORAGE"
+                    )
                 }
             }.checkDataList("RemoveStoragePermissionExceptionDialog").apply {
-                val member = first()
-                member.className.toClass().apply {
+                val member = firstOrNullSafe() ?: return@apply
+                member.className.toClassOrNull(appClassLoader)?.apply {
                     method {
                         name = member.methodName
                         param(ActivityClass)

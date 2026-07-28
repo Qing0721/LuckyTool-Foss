@@ -5,13 +5,13 @@ import android.view.View
 import android.widget.CheckBox
 import com.highcapable.yukihookapi.hook.bean.VariousClass
 import com.highcapable.yukihookapi.hook.entity.YukiBaseHooker
-import com.highcapable.yukihookapi.hook.factory.current
-import com.highcapable.yukihookapi.hook.factory.field
 import com.highcapable.yukihookapi.hook.factory.method
-import com.fosstool.app.utils.A13
+import com.highcapable.yukihookapi.hook.factory.toClassOrNull
 import com.fosstool.app.utils.ModulePrefs
 import com.fosstool.app.utils.SDK
 import com.fosstool.app.utils.safeOfNan
+import de.robv.android.xposed.XposedHelpers
+import java.lang.reflect.Field
 
 object ControlCenterSliderTransparency : YukiBaseHooker() {
     override fun onHook() {
@@ -21,42 +21,68 @@ object ControlCenterSliderTransparency : YukiBaseHooker() {
         VariousClass(
             "com.oplusos.systemui.qs.widget.OplusToggleSliderView",
             "com.oplus.systemui.qs.widget.OplusToggleSliderView"
-        ).toClass().apply {
-            method { name = "setupSliderProgressDrawable" }.hook {
+        ).toClassOrNull(appClassLoader)?.let { c ->
+            c.method { name = "setupSliderProgressDrawable" }.ignored().hook {
                 after {
                     if (alpha < 0) return@after
-                    val slider = field { name = "mSlider" }.get(instance).any() ?: return@after
-                    val color = field { name = "mProgressColor" }.get(slider).cast<Int>() ?: return@after
+                    val slider = c.findField("mSlider")?.get(instance) ?: return@after
+                    val color = slider.javaClass.findField("mProgressColor")?.get(slider) as? Int
+                        ?: return@after
                     val ratio = alpha / 10.0F
                     val newColor = color.colorAlphaOf(ratio)
-                    slider.current().method { name = "setProgressColor" }.call(ColorStateList.valueOf(newColor))
-                    slider.current().method { name = "setThumbColor" }.call(ColorStateList.valueOf(0))
+                    runCatching {
+                        XposedHelpers.callMethod(
+                            slider,
+                            "setProgressColor",
+                            ColorStateList.valueOf(newColor)
+                        )
+                        XposedHelpers.callMethod(slider, "setThumbColor", ColorStateList.valueOf(0))
+                    }
                 }
             }
-            method { name = "updateToggleBackground" }.hook {
+            c.method { name = "updateToggleBackground" }.ignored().hook {
                 after {
                     if (alpha < 0) return@after
-                    val toggle = field { name = "mToggle" }.get(instance).cast<CheckBox>() ?: return@after
+                    val toggle = c.findField("mToggle")?.get(instance) as? CheckBox
+                        ?: return@after
                     toggle.background?.setAlpha((alpha * 25).coerceIn(0, 255))
                 }
             }
         }
 
-        if (SDK >= A13) {
-            "com.oplus.systemui.qs.widget.OplusQsToggleSliderLayout".toClass().apply {
-                method { name = "generateSliderView" }.hook {
+        "com.oplus.systemui.qs.widget.OplusQsToggleSliderLayout"
+            .toClassOrNull(appClassLoader)?.let { c ->
+                c.method {
+                    name = "generateSliderView"
+                    if (SDK >= 35) superClass()
+                }.ignored().hook {
                     after {
-                    if (alpha < 0) return@after
-                    val view = result<View>() ?: return@after
-                    val color = field { name = "mProgressColor" }.get(view).cast<Int>() ?: return@after
-                    val newColor = color.colorAlphaOf(alpha / 10.0F)
-                    view.current().method { name = "setProgressColor" }.call(ColorStateList.valueOf(newColor))
+                        if (alpha < 0) return@after
+                        val view = result as? View ?: return@after
+                        val color = view.javaClass.findField("mProgressColor")?.get(view) as? Int
+                            ?: return@after
+                        val newColor = color.colorAlphaOf(alpha / 10.0F)
+                        runCatching {
+                            XposedHelpers.callMethod(
+                                view,
+                                "setProgressColor",
+                                ColorStateList.valueOf(newColor)
+                            )
+                        }
                     }
                 }
             }
-        }
     }
 
     private fun Int.colorAlphaOf(value: Float) =
         safeOfNan { (255.coerceAtMost(0.coerceAtLeast((value * 255).toInt())) shl 24) + (0x00ffffff and this) }
+
+    private fun Class<*>.findField(name: String): Field? {
+        var cls: Class<*>? = this
+        while (cls != null) {
+            runCatching { return cls.getDeclaredField(name).also { it.isAccessible = true } }
+            cls = cls.superclass
+        }
+        return null
+    }
 }

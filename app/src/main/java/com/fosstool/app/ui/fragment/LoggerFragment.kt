@@ -117,7 +117,6 @@ class LoggerFragment : Fragment(), MenuProvider {
         scope?.close()
     }
 
-
     override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
         menu.add(0, 1, 0, getString(R.string.common_words_refresh)).apply {
             setIcon(R.drawable.ic_baseline_refresh_24)

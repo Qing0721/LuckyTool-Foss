@@ -2,12 +2,16 @@ package com.fosstool.app.hook.utils
 
 import com.highcapable.yukihookapi.hook.factory.field
 import com.highcapable.yukihookapi.hook.factory.method
-import com.highcapable.yukihookapi.hook.factory.toClass
+import com.highcapable.yukihookapi.hook.factory.toClassOrNull
+import com.fosstool.app.utils.SDK
+import com.fosstool.app.utils.getOSVersionCode
 
 @Suppress("unused", "MemberVisibilityCanBePrivate", "PrivatePropertyName")
 class OplusBuildUtlils(val classLoader: ClassLoader? = null) {
 
-    val clazz = "com.oplus.os.OplusBuild".toClass(classLoader)
+    val clazz: Class<*> = "com.oplus.os.OplusBuild".toClassOrNull(classLoader)
+        ?: runCatching { Class.forName("com.oplus.os.OplusBuild") }.getOrNull()
+        ?: Any::class.java
 
     private val VERSIONS = arrayOf(
         "V1.0", "V1.2", "V1.4", "V2.0", "V2.1", "V3.0", "V3.1", "V3.2", "V5.0", "V5.1",
@@ -34,3 +38,7 @@ class OplusBuildUtlils(val classLoader: ClassLoader? = null) {
         return if (code - 1 < VERSIONS.size) VERSIONS[code - 1] else null
     }
 }
+
+fun requireOsV(range: IntRange): Boolean = getOSVersionCode in range
+
+fun requireSdk(range: IntRange): Boolean = SDK in range

@@ -32,10 +32,15 @@ import com.fosstool.app.utils.AppInfo
 import com.fosstool.app.utils.ModulePrefs
 import com.fosstool.app.utils.PackageUtils
 import com.fosstool.app.utils.getBoolean
+import com.fosstool.app.utils.getString
 import com.fosstool.app.utils.getStringSet
 import com.fosstool.app.utils.putBoolean
+import com.fosstool.app.utils.putString
 import com.fosstool.app.utils.putStringSet
 import com.fosstool.app.utils.setupMenuProvider
+
+private const val ZOOM_DISPLAY_MODE_KEY = "custom_app_floating_window_display_mode"
+private const val ZOOM_DISPLAY_MODE_WHITELIST = "3"
 
 class ZoomWindowFragment : Fragment(), MenuProvider {
 
@@ -56,12 +61,16 @@ class ZoomWindowFragment : Fragment(), MenuProvider {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         binding.enableSwitch.apply {
+
             text = context.getString(R.string.enable_zoom_window)
-            isChecked = context.getBoolean(ModulePrefs, "enable_zoom_window", false)
+            isChecked = context.getString(
+                ModulePrefs, ZOOM_DISPLAY_MODE_KEY, "0"
+            ) == ZOOM_DISPLAY_MODE_WHITELIST
             setOnCheckedChangeListener { buttonView, isChecked ->
                 if (buttonView.isPressed) {
-                    context.putBoolean(ModulePrefs, "enable_zoom_window", isChecked)
-                    requireActivity().dataChannel("android").put("enable_zoom_window", isChecked)
+                    val mode = if (isChecked) ZOOM_DISPLAY_MODE_WHITELIST else "0"
+                    context.putString(ModulePrefs, ZOOM_DISPLAY_MODE_KEY, mode)
+                    requireActivity().dataChannel("android").put(ZOOM_DISPLAY_MODE_KEY, mode)
                 }
             }
         }

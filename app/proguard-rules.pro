@@ -39,3 +39,8 @@
 -keep class com.fosstool.app.hook.hooker.** { *; }
 -keep class com.fosstool.app.hook.scope.** { *; }
 -keep class com.fosstool.app.hook.statusbar.** { *; }
+-keep class com.fosstool.app.hook.utils.** { *; }
+
+-keep class org.luckypray.dexkit.** { *; }
+-keep class de.robv.android.xposed.** { *; }
+-dontwarn de.robv.android.xposed.**

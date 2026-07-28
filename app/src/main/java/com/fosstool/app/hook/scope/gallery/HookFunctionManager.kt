@@ -1,4 +1,4 @@
-package com.fosstool.app.hook.scope.gallery
+﻿package com.fosstool.app.hook.scope.gallery
 
 import com.highcapable.yukihookapi.hook.entity.YukiBaseHooker
 import com.highcapable.yukihookapi.hook.factory.method
@@ -8,7 +8,9 @@ import com.highcapable.yukihookapi.hook.type.java.StringClass
 import com.highcapable.yukihookapi.hook.type.java.UnitType
 import com.fosstool.app.utils.DexkitUtils
 import com.fosstool.app.utils.DexkitUtils.checkDataList
+import com.fosstool.app.utils.DexkitUtils.firstOrNullSafe
 import com.fosstool.app.utils.ModulePrefs
+import com.highcapable.yukihookapi.hook.factory.toClassOrNull
 
 object HookFunctionManager : YukiBaseHooker() {
     override fun onHook() {
@@ -35,8 +37,8 @@ object HookFunctionManager : YukiBaseHooker() {
                 }
             }.apply {
                 checkDataList("HookFunctionManager")
-                val member = first()
-                member.name.toClass().apply {
+                val member = firstOrNullSafe() ?: return@apply
+                member.name.toClassOrNull(appClassLoader)?.apply {
                     method {
                         param(StringClass)
                         returnType(BooleanType)

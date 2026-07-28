@@ -7,17 +7,16 @@ import com.fosstool.app.hook.scope.android.AppSplashScreen
 import com.fosstool.app.hook.scope.android.BatteryOptimizationWhitelist
 import com.fosstool.app.hook.scope.android.DarkModeService
 import com.fosstool.app.hook.scope.android.DisableAccessibilityWarningDialog
-import com.fosstool.app.hook.scope.android.DisableDynamicRefreshRate
+import com.fosstool.app.hook.scope.android.DisableMaliciousAppIntercept
 import com.fosstool.app.hook.scope.android.DisableFlagSecure
 import com.fosstool.app.hook.scope.android.EnableKeepNotificationWhenAppStop
-import com.fosstool.app.hook.scope.android.FixBatteryHealthDataDisplay
+import com.fosstool.app.hook.scope.android.EnableRecordCallsOnThirdPartyApps
 import com.fosstool.app.hook.scope.android.ForceAllAppsSupportSplitScreen
+import com.fosstool.app.hook.scope.android.ForceEnable32BitSupport
 import com.fosstool.app.hook.scope.android.FullBrightnessMinRefresh
-import com.fosstool.app.hook.scope.android.GameFeatureOverrides
 import com.fosstool.app.hook.scope.android.HideAppIntent
 import com.fosstool.app.hook.scope.android.HookNotificationManager
 import com.fosstool.app.hook.scope.android.HookOplusMemcHelper
-import com.fosstool.app.hook.scope.android.HookSystemProperties
 import com.fosstool.app.hook.scope.android.HookWindowManagerService
 import com.fosstool.app.hook.scope.android.MediaVolumeLevel
 import com.fosstool.app.hook.scope.android.MultiApp
@@ -25,24 +24,21 @@ import com.fosstool.app.hook.scope.android.RemoveAccessDeviceLogDialog
 import com.fosstool.app.hook.scope.android.RemoveAppUninstallButtonBlackList
 import com.fosstool.app.hook.scope.android.RemovePasswordTimeoutVerification
 import com.fosstool.app.hook.scope.android.RemoveStatusBarTopNotification
-import com.fosstool.app.hook.scope.android.RemoveSystemPromptIcon
-import com.fosstool.app.hook.scope.android.RemoveSystemScreenshotDelay
 import com.fosstool.app.hook.scope.android.RemoveVPNActiveNotification
-import com.fosstool.app.hook.scope.android.ReducePowerMenuDisplayDelay
 import com.fosstool.app.hook.scope.android.RemoveAlwaysAllowAppStartList
+import com.fosstool.app.hook.scope.android.RemoveGmsUsageRestrictions
 import com.fosstool.app.hook.scope.android.ReplaceSystemRootStateDetection
-import com.fosstool.app.hook.scope.android.ScreenColorTemperatureRGBPalette
+import com.fosstool.app.hook.scope.android.RunFloatingWindowTasksInForeground
 import com.fosstool.app.hook.scope.android.ScrollToTopWhiteList
 import com.fosstool.app.hook.scope.android.SetAppUpdateDotDisplayMode
-import com.fosstool.app.hook.scope.android.SuperVolumeMode
 import com.fosstool.app.hook.scope.android.SystemEnableVolumeKeyControlFlashlight
-import com.fosstool.app.hook.scope.android.ZoomWindow
 import com.fosstool.app.hook.scope.launcher.CustomAppFloatingWindowDisplayMode
 import com.fosstool.app.hook.scope.launcher.CustomMultiWindowDisplayUpperLimit
+import com.fosstool.app.hook.scope.wirelesssettings.WlanSla
 import com.fosstool.app.hook.utils.SystemPropertiesOverrideEngineHooker
 import com.fosstool.app.hook.utils.SystemPropertiesOverrideEngineHooker.Mode
 import com.fosstool.app.utils.ModulePrefs
-
+import com.fosstool.app.utils.getOSVersionCode
 
 object HookAndroid : YukiBaseHooker() {
 
@@ -51,45 +47,43 @@ object HookAndroid : YukiBaseHooker() {
 
         loadHooker(RemoveStatusBarTopNotification)
 
-        loadHooker(RemoveSystemPromptIcon)
-
         loadHooker(EnableKeepNotificationWhenAppStop)
 
         loadHooker(RemoveVPNActiveNotification)
 
         loadHooker(HookNotificationManager)
 
+        loadHooker(WlanSla)
+
         loadHooker(HookWindowManagerService)
 
-        loadHooker(HookSystemProperties)
-
         loadHooker(HookOplusMemcHelper)
-
-        loadHooker(SuperVolumeMode)
-
-        loadHooker(GameFeatureOverrides)
 
         loadHooker(MediaVolumeLevel)
 
         loadHooker(MultiApp)
 
-        if (prefs(ModulePrefs).getBoolean("disable_accessibility_warning_dialog", false)) {
+        if (prefs(ModulePrefs).getBoolean("disable_accessibility_warning_dialog", false) &&
+            getOSVersionCode >= 38
+        ) {
             loadHooker(DisableAccessibilityWarningDialog)
+        }
+
+        if (prefs(ModulePrefs).getBoolean("disable_malicious_app_intercept", false) &&
+            getOSVersionCode >= 38
+        ) {
+            loadHooker(DisableMaliciousAppIntercept)
         }
 
         loadHooker(ADBInstallConfirm)
 
         loadHooker(RemovePasswordTimeoutVerification)
 
-        loadHooker(RemoveSystemScreenshotDelay)
+        if (getOSVersionCode >= 26) loadHooker(AppSplashScreen)
 
-        loadHooker(AppSplashScreen)
+        loadHooker(DisableFlagSecure())
 
-        loadHooker(DisableFlagSecure)
-
-        loadHooker(AllowUntrustedTouch)
-
-        loadHooker(ZoomWindow)
+        if (getOSVersionCode >= 23) loadHooker(AllowUntrustedTouch)
 
         loadHooker(CustomAppFloatingWindowDisplayMode)
 
@@ -99,38 +93,33 @@ object HookAndroid : YukiBaseHooker() {
 
         loadHooker(BatteryOptimizationWhitelist)
 
-        loadHooker(ScrollToTopWhiteList)
+        if (getOSVersionCode >= 26) loadHooker(ScrollToTopWhiteList)
 
-        loadHooker(RemoveAccessDeviceLogDialog)
-
-        loadHooker(FixBatteryHealthDataDisplay)
-
-        loadHooker(DisableDynamicRefreshRate)
+        if (getOSVersionCode >= 26) loadHooker(RemoveAccessDeviceLogDialog)
 
         loadHooker(SystemEnableVolumeKeyControlFlashlight)
 
-        loadHooker(ForceAllAppsSupportSplitScreen)
+        if (getOSVersionCode in 26..33) loadHooker(ForceAllAppsSupportSplitScreen)
 
-        loadHooker(RemoveAppUninstallButtonBlackList)
-
-        loadHooker(ScreenColorTemperatureRGBPalette)
+        if (getOSVersionCode >= 26) loadHooker(RemoveAppUninstallButtonBlackList)
 
         loadHooker(HideAppIntent)
 
-        loadHooker(SetAppUpdateDotDisplayMode)
+        loadHooker(EnableRecordCallsOnThirdPartyApps)
 
+        if (getOSVersionCode >= 33) loadHooker(SetAppUpdateDotDisplayMode)
 
+        loadHooker(RunFloatingWindowTasksInForeground)
 
+        loadHooker(ForceEnable32BitSupport)
 
-        loadHooker(ReducePowerMenuDisplayDelay)
+        loadHooker(RemoveGmsUsageRestrictions)
 
         loadHooker(ReplaceSystemRootStateDetection)
 
         loadHooker(FullBrightnessMinRefresh)
 
         loadHooker(RemoveAlwaysAllowAppStartList)
-
-
 
     }
 }
