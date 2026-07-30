@@ -157,7 +157,6 @@
     <string name="remove_do_not_disturb_mode_notification">Odstranit oznámení o režimu Nerušit</string>
     <string name="remove_hotspot_power_consumption_notification">Odebrat oznámení o spotřebě energie při zapnutém hotspotu</string>
     <string name="remove_hotspot_power_consumption_notification_summary">Upozornění: Zapnutí osobního hotspotu na dlouhou dobu zvýší spotřebu energie a zvýší teplotu zařízení</string>
-    <string name="remove_smart_rapid_charging_notification">Odstranit oznámení \"Chytré rychlé nabíjení\"</string>
     <string name="remove_notifications_for_mute_notifications">Odstranit oznámení pro ztlumená oznámení</string>
     <string name="remove_virus_risk_notification_in_phone_manager">Odstranit upozornění na riziko virů ve Správci telefonu</string>
     <string name="remove_gt_mode_notification">Odstranit oznámení o GT režimu</string>
@@ -326,7 +325,6 @@
 
     <string name="Desktop">Plocha</string>
     <string name="AppBadgeRelated">Odznaky aplikací</string>
-    <string name="remove_the_dot_after_app_update">Odstranit tečku po aktualizaci aplikace</string>
     <string name="remove_app_shortcut_badge">Odstranit odznak na ikoně aplikace</string>
     <string name="remove_app_work_badge">Odstranit značku pracovní aplikace</string>
     <string name="remove_app_clone_badge">Odstranit odznak na klonované ikoně aplikace</string>
@@ -339,9 +337,6 @@
     <string name="long_press_app_icon_open_app_details">Dlouhým stiskem ikony aplikace otevřete detaily aplikace</string>
     <string name="remove_recent_task_list_clear_button">Odstranit tlačítko pro vymazání nedávných aplikací</string>
     <string name="remove_bottom_app_icon_of_recent_task_list">Odstranit ikonu aplikace v dolní části seznamu nedávných úkolů</string>
-    <string name="enable_stacked_task_layout">Povolit těsnější rozvržení v seznamu úloh</string>
-    <string name="set_task_stacking_level">Nastavit úroveň stohování úloh</string>
-    <string name="fix_current_task_to_the_top">Opravit aktuální úlohu na začátek/vrchol </string>
     <string name="PaginationComponentRelated">Související se stránkováním (plochy spouštěče)</string>
     <string name="remove_pagination_component">Odstranit komponentu stránkování</string>
     <string name="remove_folder_pagination_component">Odstranit komponentu stránkování složky</string>
@@ -379,10 +374,6 @@
     <string name="remove_install_ads_summary">Bezpečnostní doporučení aplikací/reklamy v Obchodě Play</string>
     <string name="auto_click_install_button">Automaticky kliknout na tlačítko instalace</string>
     <string name="auto_click_uninstall_button">Automaticky kliknout na tlačítko odinstalace</string>
-    <string name="replase_aosp_installer">Nahradit AOSP instalátor</string>
-    <string name="replase_aosp_installer_summary">Nahradit nativním Google instalátorem</string>
-    <string name="show_packagename_and_versioncode">Zobrazit název balíčku a kód verze</string>
-    <string name="show_packagename_and_versioncode_summary">Zobrazit název balíčku a kód verze v horní části instalační stránky</string>
 
     <string name="ApplyOtherRestrictions">Ostatní limity</string>
     <string name="remove_adb_install_confirm">Odstranit ADB potvrzení instalace</string>
@@ -409,7 +400,6 @@
     <string name="remove_secure_pay_found_virus_dialog">Odstranit dialog o kontrole virů u zabezpečených plateb</string>
     <string name="remove_access_device_log_dialog">Odebrat dialogové okno protokolu zařízení</string>
     <string name="custom_volume_dialog_background_transparency">Vlastní průhlednost pozadí panelu hlasitosti</string>
-    <string name="reduce_power_menu_display_delay">Snížit zpoždění nabídky tlačítka napájení</string>
 
     <string name="FingerPrintRelated">Nastavení související s otiskem prstu</string>
     <string name="remove_fingerprint_icon_mode">Odstranit ikonu otisku prstu</string>
@@ -438,8 +428,6 @@
     <string name="performance_mode_and_standby_optimization">Optimalizace výkonu a pohotovostního režimu</string>
     <string name="performance_mode_and_standby_optimization_summary">Nastavení - Baterie - Další nastavení</string>
     <string name="allow_untrusted_touch">Povolit nedůvěryhodné dotyky</string>
-    <string name="disable_dynamic_refresh_rate">Zakázat dynamickou obnovovací frekvenci</string>
-    <string name="disable_dynamic_refresh_rate_summary">Řeší hlavně problém s poklesem snímku, když se obrazovky nedotýkáte</string>
     <string name="set_volume_bar_display_position">Nastavit pozici zobrazení panelu hlasitosti</string>
     <string name="force_enable_systemui_blur_feature">Vynutit povolení systémového rozostření</string>
     <string name="force_enable_systemui_blur_feature_tips">Podmínky: Musíte zapnout možnost „Vynutit povolení systémové rozostření“\n Umístění funkce: Různé</string>
@@ -450,9 +438,6 @@
     <string name="restore_default_battery_optimization_whitelist">Obnovit výchozí optimalizaci baterie v seznamu povolených</string>
     <string name="disable_customize_battery_optimization_whiteList">Zakázat vlastní seznam optimalizovaných aplikací baterie</string>
     <string name="disable_customize_battery_optimization_whiteList_summary">Pokud uživatel aplikaci ručně udělil oprávnění `ignorovat optimalizaci baterie`, nebude aplikace po zapnutí této funkce automaticky přidána na seznam povolených aplikací optimalizace baterie</string>
-    <string name="fix_battery_health_data_display">Opravit zobrazení dat o zdraví baterie</string>
-    <string name="fix_battery_health_data_display_summary">Nepoužívejte tuto funkci, pokud systém podporuje zdraví baterie\nPřesnost dat nelze garantovat</string>
-    <string name="fix_battery_health_data_display_tips">Zkuste restartovat systém</string>
 
     <string name="settings_status_bar">Stavová lišta</string>
     <string name="enable_statusbar_clock_format">Povolit formát hodin ve stavové liště</string>
@@ -461,13 +446,10 @@
     <string name="enable_show_never_timeout">Povolení nevypršení časového limitu obrazovky</string>
     <string name="enable_show_never_timeout_summary">Po zapnutí můžete vidět další možnosti v nastavení</string>
     <string name="settings_display">Displej</string>
-    <string name="force_display_dc_backlight_mode">Vynucené zobrazení nízkého jasu a bez ochrany očí</string>
     <string name="force_display_dc_backlight_mode_summary">Neexistuje žádná záruka, že to bude fungovat, je to použito pouze pro zobrazení možností</string>
     <string name="force_display_video_memc_frame_insertion">Vynuceně zobrazit interpolační rám MEMC</string>
     <string name="video_frame_insertion_support_2K120">Interpolace snímků videa je podporována při frekvenci 2K 120FPS</string>
     <string name="video_frame_insertion_support_2K120_summary">Pokud vaše zařízení nepodporuje MEMC, nepoužívejte tuto funkci</string>
-    <string name="enable_screen_color_temperature_rgb_palette">Povolit paletu pro teplotu barev obrazovky RGB</string>
-    <string name="enable_screen_color_temperature_rgb_palette_summary">Může být přepsáno DC funkcí</string>
     <string name="settings_application">Aplikace</string>
     <string name="force_display_process_management">Vynutit zobrazení řízení procesů</string>
     <string name="force_display_disabled_apps_manager">Vynutit zobrazení správce zakázaných aplikací</string>
@@ -538,10 +520,6 @@
     <string name="unlock_themestore_vip_summary">Odemkněte část funkce a vyzkoušejte ji sám</string>
 
     <string name="Screenshot">Snímky obrazovky</string>
-    <string name="remove_system_screenshot_delay">Odstranit zpoždění snímku systémové obrazovky</string>
-    <string name="remove_system_screenshot_delay_summary">První snímek obrazovky se nemusí zaznamenat</string>
-    <string name="remove_screenshot_privacy_limit">Odstranit limit ochrany osobních údajů na snímku obrazovky</string>
-    <string name="remove_screenshot_privacy_limit_summary">Odstranit omezení ochrany osobních údajů, která nelze zachytit. Pokud se toto neprojeví, zakažte FLAG_SECURE</string>
     <string name="disable_flag_secure">Zakázat FLAG_SECURE</string>
     <string name="disable_flag_secure_summary">Vyřešit většinu problémů aplikací s nahráváním, sdílením obrazovky nebo limity nahrávání\nVyžaduje LSPosed 1.8.6.+</string>
     <string name="remove_page_limit_for_long_screenshots">Odstranit limit stránek pro dlouhé snímky obrazovky</string>
@@ -551,7 +529,10 @@
     <string name="unlock_local_upgrade">Povolit lokální upgrade</string>
     <string name="unlock_local_upgrade_summary">Po kliknutí budou příslušné operace prováděny automaticky, prosím trpělivě počkejte několik sekund</string>
     <string name="restore_ota_update_verity">Pokračovat v ověřování OTA aktualizace</string>
-    <string name="restore_ota_update_verity_summary">Aktuální stav: [%1$s]\nZkuste použít tuto funkci, pokud OTA požádá o potvrzení, nebo se zeptá na dm-verity\nNeptat se, proč je funkce zašedlá, protože systém má povoleno ověření aktualizace ve výchozím nastavení\nPokud je ověření vypnuto, OTA aktualizace selže, takže když je funkce zapnutá, uzamkne tuto funkci</string>
+    <string name="restore_ota_update_verity_summary">Aktuální stav: [%1$s]
+Zkuste použít tuto funkci, pokud OTA požádá o potvrzení, nebo se zeptá na dm-verity
+Neptat se, proč je funkce zašedlá, protože systém má povoleno ověření aktualizace ve výchozím nastavení
+Pokud je ověření vypnuto, OTA aktualizace selže, takže když je funkce zapnutá, uzamkne tuto funkci</string>
 
     <string name="extract_ota_information">Extrahovat OTA informace</string>
     <string name="extract_ota_information_summary">Jakmile je nalezena nová verze, můžete zde kliknout pro získání informací o OTA</string>
@@ -567,7 +548,6 @@
     <string name="force_enable_aon_gestures">Vynutit povolení AON gest</string>
     <string name="force_enable_aon_gestures_summary">Poznámka: AONService (com.aiunit.aon) musí být nainstalován a oprávnění k fotoaparátu musí být uděleno!</string>
     <string name="custom_aon_gesture_scroll_page_whitelist">Vlastní seznam povolených posuvných stránek</string>
-    <string name="custom_aon_gesture_video_whitelist">Vlastní seznam gest videí</string>
     <string name="custom_aon_gesture_whitelist_tips">Vyplňte název balíčku, který má být přidán na whitelist, přičemž na každém řádku může být vyplněn pouze jeden název balíčku.</string>
     <string name="enable_volume_key_control_flashlight">Povolit ovládání svítilny pomocí tlačítek hlasitosti</string>
 
@@ -583,8 +563,6 @@
 
     <string name="remove_verification_code_floating_window">Odstranit plovoucí okno s ověřovacím kódem</string>
 
-    <string name="remove_ads_from_weather_page">Odstranění reklam na spodní straně informačního toku o počasí</string>
-    <string name="remove_ads_from_weather_page_summary">Vložením JS do stránky m.weathercn.com, aby se dosáhlo efektu blokování reklamy, se hodí funkce, které vyžadují prohlížeč, jako je počasí za posledních 15 dní, na které se přejde přes aplikaci počasí</string>
     <string name="remove_ads_from_download_dialog">Odstranit reklamy z dialogového okna stahování</string>
     <string name="remove_ads_at_download_page_bottom">Odstranit reklamy v dolní části stránky stahování</string>
 

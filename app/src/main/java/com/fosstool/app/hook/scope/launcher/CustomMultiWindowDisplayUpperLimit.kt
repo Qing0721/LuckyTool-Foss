@@ -1,10 +1,12 @@
 package com.fosstool.app.hook.scope.launcher
 
-import com.highcapable.yukihookapi.hook.entity.YukiBaseHooker
-import com.highcapable.yukihookapi.hook.factory.method
-import com.highcapable.yukihookapi.hook.type.java.IntType
 import com.fosstool.app.utils.ModulePrefs
 import com.fosstool.app.utils.getOSVersionCode
+import com.highcapable.yukihookapi.hook.entity.YukiBaseHooker
+import com.highcapable.yukihookapi.hook.factory.method
+import com.highcapable.yukihookapi.hook.factory.toClassOrNull
+import com.highcapable.yukihookapi.hook.log.YLog
+import com.highcapable.yukihookapi.hook.type.java.IntType
 
 object CustomMultiWindowDisplayUpperLimit : YukiBaseHooker() {
     override fun onHook() {
@@ -15,18 +17,17 @@ object CustomMultiWindowDisplayUpperLimit : YukiBaseHooker() {
         var limit = prefs(ModulePrefs).getInt("custom_multi_window_display_upper_limit", 2)
         dataChannel.wait<Int>("custom_multi_window_display_upper_limit") { limit = it }
 
-        runCatching {
-            "com.android.server.wm.FlexibleWindowManagerService".toClass().apply {
-                method {
-                    name = "getMaxWinNum"
-                    param(IntType)
-                    returnType = IntType
-                }.hook {
-                    before {
-                        if (forceEnable && limit > 0) result = limit
-                    }
+        val clazz = "com.android.server.wm.FlexibleWindowManagerService".toClassOrNull(appClassLoader)
+        if (clazz == null) {
+            YLog.error("CustomMultiWindowDisplayUpperLimit: FlexibleWindowManagerService not found")
+            return
+        }
+        clazz.method { name = "getMaxWinNum"; returnType = IntType }
+            .ignored()
+            .hook {
+                after {
+                    if (forceEnable && limit > 0) result = limit
                 }
             }
-        }
     }
 }

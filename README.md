@@ -30,4 +30,4 @@ Realme GT 7 PRO
 
 ## License
 
-[GNU General Public License v3.0](https://github.com/luckyzyx/LuckyTool/blob/main/LICENSE)
+[GNU General Public License v3.0](https://github.com/Qing0721/LuckyTool-Foss/blob/main/LICENSE)

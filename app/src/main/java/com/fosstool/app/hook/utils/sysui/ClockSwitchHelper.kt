@@ -1,13 +1,16 @@
 package com.fosstool.app.hook.utils.sysui
 
 import android.content.Context
+import com.highcapable.yukihookapi.hook.bean.VariousClass
 import com.highcapable.yukihookapi.hook.factory.method
-import com.fosstool.app.hook.scope.android.HookSystemProperties.toClass
 
 @Suppress("unused", "MemberVisibilityCanBePrivate")
 class ClockSwitchHelper(val classLoader: ClassLoader?) {
 
-    val clazz = "com.oplusos.systemui.keyguard.clock.ClockSwitchHelper".toClass(classLoader)
+    val clazz: Class<*> = VariousClass(
+        "com.oplusos.systemui.keyguard.clock.ClockSwitchHelper",
+        "com.oplus.systemui.keyguard.clock.ClockSwitchHelper"
+    ).get(classLoader)
 
     fun getInstance(context: Context): Any? {
         return clazz.method {

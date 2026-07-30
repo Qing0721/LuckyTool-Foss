@@ -1,24 +1,25 @@
-package com.fosstool.app.hook.scope.securepay
+﻿package com.fosstool.app.hook.scope.securepay
 
 import com.highcapable.yukihookapi.hook.entity.YukiBaseHooker
-import com.highcapable.yukihookapi.hook.factory.method
+import com.highcapable.yukihookapi.hook.factory.toClassOrNull
 import com.highcapable.yukihookapi.hook.type.android.CheckBoxClass
 import com.highcapable.yukihookapi.hook.type.android.ContextClass
 import com.highcapable.yukihookapi.hook.type.android.DialogInterfaceClass
 import com.highcapable.yukihookapi.hook.type.android.ViewClass
-import com.highcapable.yukihookapi.hook.type.defined.VagueType
 import com.highcapable.yukihookapi.hook.type.java.BooleanType
 import com.highcapable.yukihookapi.hook.type.java.IntType
 import com.highcapable.yukihookapi.hook.type.java.StringClass
 import com.highcapable.yukihookapi.hook.type.java.UnitType
 import com.fosstool.app.utils.DexkitUtils
 import com.fosstool.app.utils.DexkitUtils.checkDataList
+import com.fosstool.app.utils.DexkitUtils.firstOrNullSafe
+import de.robv.android.xposed.XC_MethodReplacement
+import de.robv.android.xposed.XposedBridge
 
 object RemoveSecurePayFoundVirusDialog : YukiBaseHooker() {
     override fun onHook() {
         DexkitUtils.create(appInfo.sourceDir) { dexKitBridge ->
             dexKitBridge.findClass {
-                searchPackages("com.coloros.securepay")
                 matcher {
                     fields {
                         addForType(BooleanType.name)
@@ -43,16 +44,13 @@ object RemoveSecurePayFoundVirusDialog : YukiBaseHooker() {
                 }
             }.apply {
                 checkDataList("RemoveSecurePayFoundVirusDialog")
-                first().name.toClass().apply {
-                    method {
-                        param(VagueType, StringClass)
-                        returnType = UnitType
-                    }.hook { intercept() }
-                    method {
-                        emptyParam()
-                        returnType = UnitType
-                    }.hookAll {
-                        intercept()
+                val cls = (firstOrNullSafe()?.name ?: return@apply).toClassOrNull(appClassLoader) ?: return@apply
+                for (m in cls.declaredMethods) {
+                    if (m.returnType != Void.TYPE) continue
+                    if (m.parameterCount == 2 && m.parameterTypes[1] == String::class.java) {
+                        runCatching { XposedBridge.hookMethod(m, XC_MethodReplacement.returnConstant(null)) }
+                    } else if (m.parameterCount == 0) {
+                        runCatching { XposedBridge.hookMethod(m, XC_MethodReplacement.returnConstant(null)) }
                     }
                 }
             }

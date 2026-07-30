@@ -3,6 +3,7 @@ package com.fosstool.app.hook.scope.systemui
 import com.highcapable.yukihookapi.hook.bean.VariousClass
 import com.highcapable.yukihookapi.hook.entity.YukiBaseHooker
 import com.highcapable.yukihookapi.hook.factory.method
+import com.highcapable.yukihookapi.hook.factory.toClassOrNull
 import com.fosstool.app.utils.ModulePrefs
 
 object EnableGlobalNotificationSimpleBannerMode : YukiBaseHooker() {
@@ -13,10 +14,7 @@ object EnableGlobalNotificationSimpleBannerMode : YukiBaseHooker() {
             "com.oplusos.systemui.notification.helper.FullScreenBannerHelper",
             "com.oplus.systemui.statusbar.notification.helper.FullScreenBannerHelper",
             "com.oplus.systemui.notification.interruption.fullscreenbanner.FullScreenBannerHelper"
-        ).toClass().apply {
-            method { name = "isSimpleBannerEnable" }.hook {
-                before { resultTrue() }
-            }
-        }
+        ).toClassOrNull(appClassLoader)
+            ?.method { name = "isSimpleBannerEnable" }?.ignored()?.hook { replaceToTrue() }
     }
 }

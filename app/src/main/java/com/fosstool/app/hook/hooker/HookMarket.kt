@@ -1,7 +1,6 @@
 package com.fosstool.app.hook.hooker
 
 import com.highcapable.yukihookapi.hook.entity.YukiBaseHooker
-import com.fosstool.app.hook.scope.market.RemoveMarketDownloadPageAppRecommend
 import com.fosstool.app.hook.scope.market.RemoveMarketMinePageAppRecommend
 import com.fosstool.app.hook.scope.market.RemoveMarketSplashPageAppRecommend
 import com.fosstool.app.hook.scope.market.RemoveMarketUpdatePageAppRecommend
@@ -12,9 +11,9 @@ object HookMarket : YukiBaseHooker() {
         if (prefs(ModulePrefs).getBoolean("remove_market_splash_page_app_recommend", false)) {
             loadHooker(RemoveMarketSplashPageAppRecommend)
         }
+
         if (prefs(ModulePrefs).getBoolean("remove_market_update_download_page_app_recommend", false)) {
             loadHooker(RemoveMarketUpdatePageAppRecommend)
-            loadHooker(RemoveMarketDownloadPageAppRecommend)
         }
         if (prefs(ModulePrefs).getBoolean("remove_market_mine_page_app_recommend", false)) {
             loadHooker(RemoveMarketMinePageAppRecommend)

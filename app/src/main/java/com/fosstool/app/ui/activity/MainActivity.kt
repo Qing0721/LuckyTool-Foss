@@ -17,7 +17,6 @@ import com.google.android.material.color.DynamicColors
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.highcapable.yukihookapi.YukiHookAPI
 import com.highcapable.yukihookapi.hook.factory.prefs
-import com.joom.paranoid.Obfuscate
 import com.fosstool.app.BuildConfig
 import com.fosstool.app.IGlobalFuncController
 import com.fosstool.app.R
@@ -28,7 +27,6 @@ import com.fosstool.app.utils.*
 import kotlinx.coroutines.Dispatchers
 import kotlin.system.exitProcess
 
-@Obfuscate
 @Suppress("PrivatePropertyName")
 open class MainActivity : AppCompatActivity() {
     private var isStart = YukiHookAPI.Status.isXposedModuleActive

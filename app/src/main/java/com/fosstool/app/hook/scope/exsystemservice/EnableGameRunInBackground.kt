@@ -7,21 +7,24 @@ import android.os.Bundle
 import com.fosstool.app.hook.utils.OplusBuildUtlils
 import com.fosstool.app.utils.DexkitUtils
 import com.fosstool.app.utils.DexkitUtils.checkDataList
+import com.fosstool.app.utils.DexkitUtils.firstOrNullSafe
 import com.fosstool.app.utils.LogUtils
 import com.fosstool.app.utils.ModulePrefs
 import com.highcapable.yukihookapi.hook.entity.YukiBaseHooker
 import com.highcapable.yukihookapi.hook.factory.method
+import com.highcapable.yukihookapi.hook.factory.toClassOrNull
 import com.highcapable.yukihookapi.hook.type.android.ContextClass
 import com.highcapable.yukihookapi.hook.type.java.BooleanType
+import com.highcapable.yukihookapi.hook.type.java.ListClass
 import com.highcapable.yukihookapi.hook.type.java.UnitType
 
-object EnableGameRunInBackground : YukiBaseHooker() {
-    private const val TAG = "EnableGameRunInBackground"
-    private const val FG_SERVICE_PKG = "com.oplus.exsystemservice"
-    private const val FG_SERVICE_CLS = "com.oplus.backgroundstream.RouteForegroundService"
-    private const val FG_SERVICE_ACTION = "oplus.intent.action.BACKGROUND_STREAM_SERVICE"
-    private const val MIRAGE_OPTIONS_CLASS = "com.oplus.miragewindow.OplusMirageOptions"
-    private const val MIRAGE_MANAGER_CLASS = "com.oplus.miragewindow.OplusMirageWindowManager"
+class EnableGameRunInBackground : YukiBaseHooker() {
+    private val tag = "EnableGameRunInBackground"
+    private val fgServicePkg = "com.oplus.exsystemservice"
+    private val fgServiceCls = "com.oplus.backgroundstream.RouteForegroundService"
+    private val fgServiceAction = "oplus.intent.action.BACKGROUND_STREAM_SERVICE"
+    private val mirageOptionsClass = "com.oplus.miragewindow.OplusMirageOptions"
+    private val mirageManagerClass = "com.oplus.miragewindow.OplusMirageWindowManager"
 
     override fun onHook() {
         if (!prefs(ModulePrefs).getBoolean("enable_game_run_in_background", false)) return
@@ -29,39 +32,61 @@ object EnableGameRunInBackground : YukiBaseHooker() {
         if (osVersionCode < 27) return
 
         DexkitUtils.create(appInfo.sourceDir) { dexKitBridge ->
-            dexKitBridge.findMethod {
+            val classes = dexKitBridge.findClass {
                 matcher {
+                    addFieldForType(ListClass.name)
+                    methods {
+                        add {
+                            paramCount(0)
+                            returnType(BooleanType.name)
+                        }
+                        add {
+                            paramCount(0)
+                            returnType(UnitType.name)
+                        }
+                        add {
+                            paramTypes(ContextClass.name)
+                            returnType(UnitType.name)
+                        }
+                    }
+                    usingStrings("HangUpUtil", "isSupportBackgroundHangUp")
+                }
+            }.checkDataList("$tag Cls")
+            if (classes.isEmpty()) return@create
+
+            dexKitBridge.findMethod {
+                searchInClass(classes)
+                matcher {
+                    paramCount(0)
                     returnType(BooleanType.name)
                     usingStrings("isSupportBackgroundHangUp")
                 }
             }.apply {
-                checkDataList("$TAG findMethod")
-                val member = first()
-                member.className.toClass().apply {
-                    method {
-                        name = member.methodName
-                        returnType = BooleanType
-                    }.hook {
-                        replaceToTrue()
-                    }
-                    method {
-                        param(ContextClass)
-                        returnType = UnitType
-                    }.hook {
-                        replaceUnit {
-                            val context = args().first().cast<Context>()
-                            if (context != null) {
-                                runCatching {
-                                    if (osVersionCode >= 34) {
-                                        startMirageWindowMode()
-                                    } else {
-                                        startRouteForegroundService(context)
-                                    }
-                                }.getOrElse {
-                                    LogUtils.e(TAG, "invoke", "$it")
-                                }
+                checkDataList("$tag Support")
+                val member = firstOrNullSafe() ?: return@apply
+                val clazz = member.className.toClassOrNull(appClassLoader) ?: return@apply
+
+                clazz.method {
+                    name = member.methodName
+                    emptyParam()
+                    returnType = BooleanType
+                }.ignored().hook { replaceToTrue() }
+
+                clazz.method {
+                    param(ContextClass)
+                    returnType = UnitType
+                }.ignored().hook {
+                    before {
+                        runCatching {
+                            if (osVersionCode >= 34) {
+                                startMirageWindowMode()
+                            } else {
+                                args().first().cast<Context>()?.let { startRouteForegroundService(it) }
                             }
+                        }.onFailure {
+                            LogUtils.e(tag, "invoke", "$it")
                         }
+                        resultNull()
                     }
                 }
             }
@@ -69,27 +94,34 @@ object EnableGameRunInBackground : YukiBaseHooker() {
     }
 
     private fun startMirageWindowMode() {
-        val optionsClass = Class.forName(MIRAGE_OPTIONS_CLASS)
+        val cl = appClassLoader
+        val optionsClass = runCatching {
+            if (cl != null) Class.forName(mirageOptionsClass, false, cl)
+            else Class.forName(mirageOptionsClass)
+        }.getOrNull() ?: return
         val makeBgMethod = optionsClass.getDeclaredMethod("makeBackgroundStreamModeOptions")
         val optionsInstance = makeBgMethod.invoke(null)
         val toBundleMethod = optionsClass.getDeclaredMethod("toBundle")
         val bundle = toBundleMethod.invoke(optionsInstance) as Bundle
 
-        val managerClass = Class.forName(MIRAGE_MANAGER_CLASS)
+        val managerClass = runCatching {
+            if (cl != null) Class.forName(mirageManagerClass, false, cl)
+            else Class.forName(mirageManagerClass)
+        }.getOrNull() ?: return
         val getInstanceMethod = managerClass.getDeclaredMethod("getInstance")
         val managerInstance = getInstanceMethod.invoke(null)
         val startMethod = managerClass.getDeclaredMethod(
             "startMirageWindowMode",
             Intent::class.java,
-            Bundle::class.java
+            Bundle::class.java,
         )
         startMethod.invoke(managerInstance, null, bundle)
     }
 
     private fun startRouteForegroundService(context: Context) {
-        val intent = Intent(FG_SERVICE_ACTION).apply {
-            setPackage(FG_SERVICE_PKG)
-            component = ComponentName(FG_SERVICE_PKG, FG_SERVICE_CLS)
+        val intent = Intent(fgServiceAction).apply {
+            setPackage(fgServicePkg)
+            component = ComponentName(fgServicePkg, fgServiceCls)
         }
         context.startForegroundService(intent)
     }

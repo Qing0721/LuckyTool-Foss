@@ -9,12 +9,11 @@ import android.widget.RelativeLayout
 import android.widget.TextView
 import com.highcapable.yukihookapi.hook.bean.VariousClass
 import com.highcapable.yukihookapi.hook.entity.YukiBaseHooker
-import com.highcapable.yukihookapi.hook.factory.field
 import com.highcapable.yukihookapi.hook.factory.method
-import com.fosstool.app.utils.A14
+import com.highcapable.yukihookapi.hook.factory.toClassOrNull
 import com.fosstool.app.utils.ModulePrefs
-import com.fosstool.app.utils.SDK
 import com.fosstool.app.utils.dp
+import java.lang.reflect.Field
 
 object LockScreenComponent : YukiBaseHooker() {
     override fun onHook() {
@@ -25,42 +24,39 @@ object LockScreenComponent : YukiBaseHooker() {
         VariousClass(
             "com.oplusos.systemui.keyguard.clock.RedHorizontalSingleClockView",
             "com.oplus.systemui.shared.clocks.RedHorizontalSingleClockView"
-        ).toClass().apply {
-            method { name = "onFinishInflate" }.hook {
+        ).toClassOrNull(appClassLoader)?.let { c ->
+            c.method { name = "onFinishInflate" }.ignored().hook {
                 after {
                     if (!isCenter) return@after
-                    instance<LinearLayout>().setPadding(0, 20.dp, 0, 0)
+                    (instance as? LinearLayout)?.setPadding(0, 20.dp, 0, 0)
 
-                    field { name = "mTvWeek" }.get(instance).cast<TextView>()
+                    (c.findField("mTvWeek")?.get(instance) as? TextView)
                         ?.setCenterHorizontally()
 
-
-                    (field { name = "mTvColon" }.get(instance)
-                        .cast<TextView>()?.parent as RelativeLayout).setCenterHorizontally()
-
-                    field { name = "mTvDate" }.get(instance).cast<TextView>()
+                    ((c.findField("mTvColon")?.get(instance) as? TextView)?.parent as? RelativeLayout)
                         ?.setCenterHorizontally()
 
-                    field { name = "mTvLunarCalendar" }.get(instance).cast<TextView>()
+                    (c.findField("mTvDate")?.get(instance) as? TextView)
                         ?.setCenterHorizontally()
 
-                    field { name = "mTvExtraContent" }.get(instance).cast<TextView>()
+                    (c.findField("mTvLunarCalendar")?.get(instance) as? TextView)
+                        ?.setCenterHorizontally()
+
+                    (c.findField("mTvExtraContent")?.get(instance) as? TextView)
                         ?.setCenterHorizontally()
                 }
             }
-            method { name = "setTextFont" }.hook {
-                if (userTypeface) intercept()
-            }
+            if (userTypeface) c.method { name = "setTextFont" }.ignored().hook { intercept() }
         }
 
         VariousClass(
             "com.oplusos.systemui.keyguard.clock.SingleClockView",
             "com.oplus.systemui.shared.clocks.SingleClockView"
-        ).toClass().apply {
-            method { name = "onFinishInflate" }.hook {
+        ).toClassOrNull(appClassLoader)?.let { c ->
+            c.method { name = "onFinishInflate" }.ignored().hook {
                 after {
                     if (!isCenter && !userTypeface) return@after
-                    val vg = instance<ViewGroup>()
+                    val vg = instance as? ViewGroup ?: return@after
                     if (isCenter) {
                         vg.setPadding(0, 20.dp, 0, 0)
                         for (i in 0 until vg.childCount) {
@@ -70,10 +66,10 @@ object LockScreenComponent : YukiBaseHooker() {
                     if (userTypeface) vg.resetDescendantTypefacesToDefault()
                 }
             }
-            method { name = "updateKeyguardLandClock" }.hook {
+            c.method { name = "updateKeyguardLandClock" }.ignored().hook {
                 after {
                     if (!isCenter) return@after
-                    instance<ViewGroup>().setPadding(0, 20.dp, 0, 0)
+                    (instance as? ViewGroup)?.setPadding(0, 20.dp, 0, 0)
                 }
             }
         }
@@ -81,28 +77,25 @@ object LockScreenComponent : YukiBaseHooker() {
         VariousClass(
             "com.oplusos.systemui.keyguard.clock.DualClockView",
             "com.oplus.systemui.shared.clocks.DualClockView"
-        ).toClass().apply {
-            method { name = "onFinishInflate" }.hook {
+        ).toClassOrNull(appClassLoader)
+            ?.method { name = "onFinishInflate" }?.ignored()?.hook {
                 after {
                     if (!userTypeface) return@after
-                    instance<ViewGroup>().resetDescendantTypefacesToDefault()
+                    (instance as? ViewGroup)?.resetDescendantTypefacesToDefault()
                 }
             }
-        }
 
         VariousClass(
             "com.oplusos.systemui.keyguard.clock.RedHorizontalDualClockView",
             "com.oplus.systemui.shared.clocks.RedHorizontalDualClockView"
-        ).toClass().apply {
-            method { name = "onFinishInflate" }.hook {
+        ).toClassOrNull(appClassLoader)?.let { c ->
+            c.method { name = "onFinishInflate" }.ignored().hook {
                 after {
                     if (!userTypeface) return@after
-                    instance<ViewGroup>().resetDescendantTypefacesToDefault()
+                    (instance as? ViewGroup)?.resetDescendantTypefacesToDefault()
                 }
             }
-            method { name = "setTextFont" }.hook {
-                if (userTypeface) intercept()
-            }
+            if (userTypeface) c.method { name = "setTextFont" }.ignored().hook { intercept() }
         }
     }
 
@@ -118,5 +111,14 @@ object LockScreenComponent : YukiBaseHooker() {
             if (child is TextView) child.typeface = Typeface.DEFAULT
             if (child is ViewGroup) child.resetDescendantTypefacesToDefault()
         }
+    }
+
+    private fun Class<*>.findField(name: String): Field? {
+        var cls: Class<*>? = this
+        while (cls != null) {
+            runCatching { return cls.getDeclaredField(name).also { it.isAccessible = true } }
+            cls = cls.superclass
+        }
+        return null
     }
 }

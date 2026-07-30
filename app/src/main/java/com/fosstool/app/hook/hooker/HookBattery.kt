@@ -13,12 +13,15 @@ import com.fosstool.app.utils.SDK
 
 object HookBattery : YukiBaseHooker() {
     override fun onHook() {
+
+        if (SDK < A13) return
+
         loadHooker(BatteryFeatureProvider)
 
         loadHooker(HookBatteryNotify)
 
         if (prefs(ModulePrefs).getBoolean("unlock_startup_limit", false)) {
-            if (SDK >= A13) loadHooker(UnlockStartupLimit)
+            loadHooker(UnlockStartupLimit)
         }
 
         if (prefs(ModulePrefs).getBoolean("remove_battery_temperature_control", false)) {
@@ -29,15 +32,14 @@ object HookBattery : YukiBaseHooker() {
             loadHooker(RemoveBatteryRestrictPlugin)
         }
 
-        if (SDK >= A13 && (
-                prefs(ModulePrefs).getBoolean("fix_battery_health_data_display", false) ||
+        if ((
+                prefs(ModulePrefs).getBoolean("open_battery_health", false) ||
                     prefs(ModulePrefs).getBoolean("display_module_calculates_battery_health_data", false) ||
                     (prefs(ModulePrefs).getString("customize_battery_health_data_percentage", "") ?: "").isNotEmpty()
                 )
         ) {
             loadHooker(BatteryHealthDataTips)
         }
-
 
     }
 }

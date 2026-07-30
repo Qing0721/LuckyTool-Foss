@@ -6,7 +6,7 @@ import android.graphics.Paint
 import android.widget.ProgressBar
 import com.highcapable.yukihookapi.hook.entity.YukiBaseHooker
 import com.highcapable.yukihookapi.hook.factory.method
-import com.highcapable.yukihookapi.hook.type.android.CanvasClass
+import com.highcapable.yukihookapi.hook.factory.toClassOrNull
 import com.fosstool.app.utils.ModulePrefs
 
 object ControlCenterProgressPercent : YukiBaseHooker() {
@@ -29,26 +29,20 @@ object ControlCenterProgressPercent : YukiBaseHooker() {
             textPaint.color = Color.parseColor(colorStr)
         }
 
-        val clsName = "com.oplus.systemui.qs.base.seek.OplusQsVerticalSeekBar"
-        runCatching {
-            clsName.toClass().apply {
-                method {
-                    name = "onDraw"
-                    param(CanvasClass)
-                }.hook {
-                    after {
-                        val canvas = args().first().cast<Canvas>() ?: return@after
-                        val bar = instance as? ProgressBar ?: return@after
-                        val max = bar.max.coerceAtLeast(1)
-                        val progress = bar.progress
-                        val percent = (progress * 100 / max).coerceIn(0, 100)
-                        val text = "$percent%"
-                        val cx = bar.width / 2f
-                        val cy = (bar.height * 0.55f).coerceAtLeast(textPaint.textSize)
-                        canvas.drawText(text, cx, cy, textPaint)
-                    }
+        "com.oplus.systemui.qs.base.seek.OplusQsVerticalSeekBar"
+            .toClassOrNull(appClassLoader)
+            ?.method { name = "onDraw"; paramCount = 1 }?.ignored()?.hook {
+                after {
+                    val canvas = args.getOrNull(0) as? Canvas ?: return@after
+                    val bar = instance as? ProgressBar ?: return@after
+                    val max = bar.max.coerceAtLeast(1)
+                    val progress = bar.progress
+                    val percent = (progress * 100 / max).coerceIn(0, 100)
+                    val text = "$percent%"
+                    val cx = bar.width / 2f
+                    val cy = (bar.height * 0.55f).coerceAtLeast(textPaint.textSize)
+                    canvas.drawText(text, cx, cy, textPaint)
                 }
             }
-        }
     }
 }

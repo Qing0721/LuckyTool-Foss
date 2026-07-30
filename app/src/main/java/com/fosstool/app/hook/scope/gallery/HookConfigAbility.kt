@@ -1,18 +1,17 @@
-package com.fosstool.app.hook.scope.gallery
+﻿package com.fosstool.app.hook.scope.gallery
 
 import com.highcapable.yukihookapi.hook.entity.YukiBaseHooker
 import com.highcapable.yukihookapi.hook.factory.method
-import com.highcapable.yukihookapi.hook.type.android.ContextClass
 import com.highcapable.yukihookapi.hook.type.java.BooleanClass
 import com.highcapable.yukihookapi.hook.type.java.BooleanType
 import com.highcapable.yukihookapi.hook.type.java.IntClass
-import com.highcapable.yukihookapi.hook.type.java.IntType
 import com.highcapable.yukihookapi.hook.type.java.LongClass
-import com.highcapable.yukihookapi.hook.type.java.LongType
 import com.highcapable.yukihookapi.hook.type.java.StringClass
 import com.fosstool.app.utils.DexkitUtils
 import com.fosstool.app.utils.DexkitUtils.checkDataList
+import com.fosstool.app.utils.DexkitUtils.firstOrNullSafe
 import com.fosstool.app.utils.ModulePrefs
+import com.highcapable.yukihookapi.hook.factory.toClassOrNull
 
 object HookConfigAbility : YukiBaseHooker() {
 
@@ -33,42 +32,38 @@ object HookConfigAbility : YukiBaseHooker() {
         DexkitUtils.create(appInfo.sourceDir) { dexKitBridge ->
             dexKitBridge.findClass {
                 matcher {
-                    fields {
-                        addForType(ContextClass.name)
-                    }
                     methods {
                         add { name = "close";paramCount = 0 }
                         add { name = "contains";paramTypes = listOf(StringClass.name) }
                         add { returnType = AutoCloseable::class.java.name }
                         add {
-                            paramTypes = listOf(StringClass.name, IntType.name)
+                            paramCount = 2
                             returnType = IntClass.name
                         }
                         add {
-                            paramTypes = listOf(StringClass.name, LongType.name)
+                            paramCount = 2
                             returnType = LongClass.name
                         }
                         add {
                             paramTypes = listOf(StringClass.name, StringClass.name)
                             returnType = StringClass.name
                         }
-                        add {
-                            paramTypes = listOf(StringClass.name, BooleanType.name)
-                            returnType = BooleanClass.name
-                        }
                     }
+                    usingStrings("ConfigAbilityImpl")
                 }
             }.apply {
                 checkDataList("HookConfigAbility")
-                val member = first()
-                member.name.toClass().apply {
+                val member = firstOrNullSafe() ?: return@apply
+                member.name.toClassOrNull(appClassLoader)?.apply {
                     method {
                         param(StringClass, BooleanType)
                         returnType = BooleanClass
                     }.hook {
                         after {
                             when (args().first().string()) {
+
                                 "is_oneplus_brand" -> if (notOplus) resultFalse()
+
                                 "feature_is_support_watermark" -> if (waterMark) resultTrue()
                                 "feature_is_support_hassel_watermark" -> if (hassel || waterMarkLegacy) resultTrue()
                                 "feature_is_support_photo_editor_watermark" -> if (waterMark) resultTrue()

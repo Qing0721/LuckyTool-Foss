@@ -2,8 +2,8 @@ package com.fosstool.app.hook.scope.systemui
 
 import com.highcapable.yukihookapi.hook.bean.VariousClass
 import com.highcapable.yukihookapi.hook.entity.YukiBaseHooker
-import com.highcapable.yukihookapi.hook.factory.hasMethod
 import com.highcapable.yukihookapi.hook.factory.method
+import com.highcapable.yukihookapi.hook.factory.toClassOrNull
 import com.fosstool.app.utils.A13
 import com.fosstool.app.utils.A14
 import com.fosstool.app.utils.ModulePrefs
@@ -15,8 +15,8 @@ object HookSystemUIFeature : YukiBaseHooker() {
         loadHooker(HookStatusBarFeature)
         loadHooker(HookNotificationAppFeature)
         loadHooker(HookFlavorOneFeature)
+        loadHooker(HookQSFeatureOption)
         if (SDK >= A14) {
-            loadHooker(HookQSFeatureOption)
             loadHooker(HookVolumeFeatureOption)
         }
     }
@@ -49,82 +49,81 @@ object HookSystemUIFeature : YukiBaseHooker() {
             dataChannel.wait<String>("set_lock_screen_warp_charging_style") { warpCharge = it }
             val removeMyDevice =
                 prefs(ModulePrefs).getBoolean("remove_control_center_mydevice", false)
+            val forceClockStyle =
+                prefs(ModulePrefs).getBoolean("force_display_clock_style_options", false)
 
-            "com.oplusos.systemui.common.feature.FeatureOption".toClass().apply {
-                if (hasMethod { name = "shouldRemoveAutoBrightness" }) {
-                    method { name = "shouldRemoveAutoBrightness" }.hook {
-                        before {
-                            when (autoBrightnessMode) {
-                                "1" -> resultFalse()
-                                "2" -> resultTrue()
-                            }
+            val clazz = "com.oplusos.systemui.common.feature.FeatureOption".toClassOrNull(appClassLoader) ?: return
+
+            clazz.method { name = "shouldRemoveAutoBrightness" }.ignored().hook {
+                before {
+                    when (autoBrightnessMode) {
+                        "1" -> result = false
+                        "2" -> result = true
+                    }
+                }
+            }
+            if (notifyImportance) {
+                clazz.method { name = "isOriginNotificationBehavior" }.ignored().hook {
+                    replaceToTrue()
+                }
+            }
+            if (volumeBlur > -1) {
+                clazz.method { name = "isVolumeBlurDisabled" }.ignored().hook {
+                    replaceToFalse()
+                }
+            }
+            if (enableBlur) {
+                clazz.method { name = "isAiSdr2HdrSupport" }.ignored().hook {
+                    replaceToFalse()
+                }
+            }
+            clazz.method { name = "isOplusVolumeKeyInRight" }.ignored().hook {
+                before {
+                    when (volumePosition) {
+                        "1" -> result = false
+                        "2" -> result = true
+                    }
+                }
+            }
+            clazz.method { name = "areVolumeAndPowerKeysInRight" }.ignored().hook {
+                before {
+                    when (volumePosition) {
+                        "1" -> result = false
+                        "2" -> result = true
+                    }
+                }
+            }
+            clazz.method { name = "isSupportFullScreenChargeAnim" }.ignored().hook {
+                before {
+                    when (fullScreenChargeAnim) {
+                        "1" -> result = true
+                        "2" -> result = false
+                    }
+                }
+            }
+            if (warpCharge == "2" && showWattage) {
+                clazz.method { name = "isSupportShowWattage" }.ignored().hook {
+                    replaceToTrue()
+                }
+            }
+            if (SDK == A13) {
+                clazz.method { name = "isUseWarpCharge" }.ignored().hook {
+                    before {
+                        when (warpCharge) {
+                            "1" -> result = true
+                            "2" -> result = false
                         }
                     }
                 }
-                if (hasMethod { name = "isOriginNotificationBehavior" }) {
-                    method { name = "isOriginNotificationBehavior" }.hook {
-                        if (notifyImportance) replaceToTrue()
-                    }
+            }
+            if (removeMyDevice) {
+                clazz.method { name = "isSupportMyDevice" }.ignored().hook {
+                    replaceToFalse()
                 }
-                if (hasMethod { name = "isVolumeBlurDisabled" }) {
-                    method { name = "isVolumeBlurDisabled" }.hook {
-                        if (volumeBlur > -1) replaceToFalse()
-                    }
-                }
-                if (hasMethod { name = "isAiSdr2HdrSupport" }) {
-                    method { name = "isAiSdr2HdrSupport" }.hook {
-                        if (enableBlur) replaceToFalse()
-                    }
-                }
-                if (hasMethod { name = "isOplusVolumeKeyInRight" }) {
-                    method { name = "isOplusVolumeKeyInRight" }.hook {
-                        before {
-                            when (volumePosition) {
-                                "1" -> resultFalse()
-                                "2" -> resultTrue()
-                            }
-                        }
-                    }
-                }
-                if (hasMethod { name = "areVolumeAndPowerKeysInRight" }) {
-                    method { name = "areVolumeAndPowerKeysInRight" }.hook {
-                        before {
-                            when (volumePosition) {
-                                "1" -> resultFalse()
-                                "2" -> resultTrue()
-                            }
-                        }
-                    }
-                }
-                if (hasMethod { name = "isSupportFullScreenChargeAnim" }) {
-                    method { name = "isSupportFullScreenChargeAnim" }.hook {
-                        before {
-                            when (fullScreenChargeAnim) {
-                                "1" -> resultTrue()
-                                "2" -> resultFalse()
-                            }
-                        }
-                    }
-                }
-                if (hasMethod { name = "isSupportShowWattage" }) {
-                    method { name = "isSupportShowWattage" }.hook {
-                        if (warpCharge == "2" && showWattage) replaceToTrue()
-                    }
-                }
-                if (SDK == A13 && hasMethod { name = "isUseWarpCharge" }) {
-                    method { name = "isUseWarpCharge" }.hook {
-                        before {
-                            when (warpCharge) {
-                                "1" -> resultTrue()
-                                "2" -> resultFalse()
-                            }
-                        }
-                    }
-                }
-                if (hasMethod { name = "isSupportMyDevice" }) {
-                    method { name = "isSupportMyDevice" }.hook {
-                        if (removeMyDevice) replaceToFalse()
-                    }
+            }
+            if (forceClockStyle && SDK < A13) {
+                clazz.method { name = "isSupportLandClock" }.ignored().hook {
+                    replaceToTrue()
                 }
             }
         }
@@ -134,13 +133,21 @@ object HookSystemUIFeature : YukiBaseHooker() {
         override fun onHook() {
             val hideSignalLabels =
                 prefs(ModulePrefs).getBoolean("hide_inactive_signal_labels_gen2x2", false)
+            if (!hideSignalLabels) return
 
-            VariousClass(
+            val clazz = VariousClass(
                 "com.oplusos.systemui.statusbar.feature.StatusBarFeatureOption",
-                "com.oplusos.systemui.common.feature.StatusBarFeatureOption"
-            ).toClass().apply {
-                method { name = "isSystemUiExpSignalUi" }.hook {
-                    if (hideSignalLabels) replaceToTrue()
+                "com.oplusos.systemui.common.feature.StatusBarFeatureOption",
+            ).toClassOrNull(appClassLoader) ?: return
+
+            clazz.method { name = "loadAppFeature" }.ignored().hook {
+                after {
+                    runCatching {
+                        val field = clazz.declaredFields.firstOrNull { it.name == "isSystemUiExpSignalUi" }
+                            ?: clazz.superclass?.declaredFields?.firstOrNull { it.name == "isSystemUiExpSignalUi" }
+                        field?.isAccessible = true
+                        field?.set(instance, true)
+                    }
                 }
             }
         }
@@ -154,28 +161,25 @@ object HookSystemUIFeature : YukiBaseHooker() {
             val enableBlur =
                 prefs(ModulePrefs).getBoolean("force_enable_systemui_blur_feature", false)
 
-            VariousClass(
+            val clazz = VariousClass(
                 "com.oplusos.systemui.common.util.NotificationAppFeatureOption",
-                "com.oplusos.systemui.common.feature.NotificationFeatureOption"
-            ).toClass().apply {
-                method {
-                    name = if (SDK >= A14) "isOriginNotificationBehavior"
-                    else "originNotificationBehavior"
-                }.hook {
-                    if (notifyImportance) replaceToTrue()
-                }
+                "com.oplusos.systemui.common.feature.NotificationFeatureOption",
+            ).toClassOrNull(appClassLoader) ?: return
 
-                if (SDK >= A13) method {
-                    name = if (SDK >= A14) "isGaussBlurDisabled"
-                    else "getGaussBlurDisabled"
-                }.hook {
-                    if (enableBlur) replaceToFalse()
+            val notifyMethod = if (SDK >= A14) "isOriginNotificationBehavior"
+            else "originNotificationBehavior"
+            if (notifyImportance) {
+                clazz.method { name = notifyMethod }.ignored().hook {
+                    replaceToTrue()
                 }
-
-                if (hasMethod { name = "isPanViewBlurDisabled" }) {
-                    method { name = "isPanViewBlurDisabled" }.hook {
-                        if (enableBlur) replaceToFalse()
-                    }
+            }
+            if (enableBlur && SDK >= A13) {
+                val blurMethod = if (SDK >= A14) "isGaussBlurDisabled" else "getGaussBlurDisabled"
+                clazz.method { name = blurMethod }.ignored().hook {
+                    replaceToFalse()
+                }
+                clazz.method { name = "isPanViewBlurDisabled" }.ignored().hook {
+                    replaceToFalse()
                 }
             }
         }
@@ -185,17 +189,32 @@ object HookSystemUIFeature : YukiBaseHooker() {
         override fun onHook() {
             val searchBtnMode =
                 prefs(ModulePrefs).getString("set_control_center_search_button_mode", "0")
+            var showWattage =
+                prefs(ModulePrefs).getBoolean("force_lock_screen_charging_show_wattage", false)
+            dataChannel.wait<Boolean>("force_lock_screen_charging_show_wattage") {
+                showWattage = it
+            }
+            val appMediaVolume =
+                prefs(ModulePrefs).getBoolean("enable_app_specific_media_volume", false)
 
-            "com.oplusos.systemui.common.feature.FlavorOneFeatureOption".toClass().apply {
-                if (hasMethod { name = "isSupportSearch" }) {
-                    method { name = "isSupportSearch" }.hook {
-                        before {
-                            when (searchBtnMode) {
-                                "1" -> resultTrue()
-                                "2" -> resultFalse()
-                            }
-                        }
+            val clazz = "com.oplusos.systemui.common.feature.FlavorOneFeatureOption".toClassOrNull(appClassLoader) ?: return
+
+            clazz.method { name = "isSupportSearch" }.ignored().hook {
+                before {
+                    when (searchBtnMode) {
+                        "1" -> result = true
+                        "2" -> result = false
                     }
+                }
+            }
+            if (showWattage) {
+                clazz.method { name = "isShowChargingWattage" }.ignored().hook {
+                    replaceToTrue()
+                }
+            }
+            if (appMediaVolume) {
+                clazz.method { name = "isFlavorOneMultiMediaDevice" }.ignored().hook {
+                    replaceToTrue()
                 }
             }
         }
@@ -205,13 +224,33 @@ object HookSystemUIFeature : YukiBaseHooker() {
         override fun onHook() {
             val autoBrightnessMode =
                 prefs(ModulePrefs).getString("set_auto_brightness_button_mode", "0")
+            val seekbarMode =
+                prefs(ModulePrefs).getString("set_control_center_volume_seekbar_mode", "0")
 
-            "com.oplusos.systemui.common.feature.QSFeatureOption".toClass().apply {
-                method { name = "getShouldRemoveAutoBrightness" }.hook {
+            val clazz = "com.oplusos.systemui.common.feature.QSFeatureOption".toClassOrNull(appClassLoader) ?: return
+
+            clazz.method { name = "getShouldRemoveAutoBrightness" }.ignored().hook {
+                before {
+                    when (autoBrightnessMode) {
+                        "1" -> result = false
+                        "2" -> result = true
+                    }
+                }
+            }
+            clazz.method { name = "shouldRemoveAutoBrightness" }.ignored().hook {
+                before {
+                    when (autoBrightnessMode) {
+                        "1" -> result = false
+                        "2" -> result = true
+                    }
+                }
+            }
+            if (seekbarMode != "0") {
+                clazz.method { name = "isSupportVolumeSeekBar" }.ignored().hook {
                     before {
-                        when (autoBrightnessMode) {
-                            "1" -> resultFalse()
-                            "2" -> resultTrue()
+                        when (seekbarMode) {
+                            "1" -> result = true
+                            "2" -> result = false
                         }
                     }
                 }
@@ -226,13 +265,11 @@ object HookSystemUIFeature : YukiBaseHooker() {
             dataChannel.wait<Int>("custom_volume_dialog_background_transparency") {
                 volumeBlur = it
             }
+            if (volumeBlur <= -1) return
 
-            "com.oplusos.systemui.common.feature.VolumeFeatureOption".toClass().apply {
-                if (hasMethod { name = "isVolumeBlurDisabled" }) {
-                    method { name = "isVolumeBlurDisabled" }.hook {
-                        if (volumeBlur > -1) replaceToFalse()
-                    }
-                }
+            val clazz = "com.oplusos.systemui.common.feature.VolumeFeatureOption".toClassOrNull(appClassLoader) ?: return
+            clazz.method { name = "isVolumeBlurDisabled" }.ignored().hook {
+                replaceToFalse()
             }
         }
     }

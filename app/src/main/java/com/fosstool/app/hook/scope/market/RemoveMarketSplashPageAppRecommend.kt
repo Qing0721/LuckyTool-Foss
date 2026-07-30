@@ -1,7 +1,6 @@
 package com.fosstool.app.hook.scope.market
 
 import com.highcapable.yukihookapi.hook.entity.YukiBaseHooker
-import com.highcapable.yukihookapi.hook.factory.method
 import com.highcapable.yukihookapi.hook.type.java.AtomicBooleanClass
 import com.highcapable.yukihookapi.hook.type.java.BooleanType
 import com.highcapable.yukihookapi.hook.type.java.IntType
@@ -10,16 +9,33 @@ import com.highcapable.yukihookapi.hook.type.java.StringClass
 import com.highcapable.yukihookapi.hook.type.java.UnitType
 import com.fosstool.app.utils.DexkitUtils
 import com.fosstool.app.utils.DexkitUtils.checkDataList
+import com.fosstool.app.utils.DexkitUtils.firstOrNullSafe
+import com.highcapable.yukihookapi.hook.factory.method
+import com.highcapable.yukihookapi.hook.factory.toClassOrNull
 
 object RemoveMarketSplashPageAppRecommend : YukiBaseHooker() {
     override fun onHook() {
-        val splashDto = "com.heytap.cdo.splash.domain.dto.v2.SplashDto"
-        val mediaDto = "com.heytap.cdo.splash.domain.dto.v2.MediaComponentDto"
-        val imageDto = "com.heytap.cdo.splash.domain.dto.v2.ImageComponentDto"
+
+        val useV4 = "com.heytap.cdo.splash.domain.dto.v4.SplashDtoV4"
+            .toClassOrNull(appClassLoader) != null
+        val splashDto = if (useV4) {
+            "com.heytap.cdo.splash.domain.dto.v4.SplashDtoV4"
+        } else {
+            "com.heytap.cdo.splash.domain.dto.v2.SplashDto"
+        }
+        val mediaDto = if (useV4) {
+            "com.heytap.cdo.splash.domain.dto.v4.MediaComponentDtoV4"
+        } else {
+            "com.heytap.cdo.splash.domain.dto.v2.MediaComponentDto"
+        }
+        val imageDto = if (useV4) {
+            "com.heytap.cdo.splash.domain.dto.v4.ImageComponentDtoV4"
+        } else {
+            "com.heytap.cdo.splash.domain.dto.v2.ImageComponentDto"
+        }
 
         DexkitUtils.create(appInfo.sourceDir) { dexKitBridge ->
             dexKitBridge.findClass {
-                searchPackages("com.nearme.splash.net")
                 matcher {
                     fields {
                         addForType(IntType.name)
@@ -41,12 +57,13 @@ object RemoveMarketSplashPageAppRecommend : YukiBaseHooker() {
                 }
             }.apply {
                 checkDataList("RemoveMarketSplashPageAppRecommend")
-                val member = first()
-                member.name.toClass().apply {
-                    method { param(BooleanType);returnType(splashDto) }.hook {
-                        replaceTo(null)
+                firstOrNullSafe()?.name?.toClassOrNull(appClassLoader)
+                    ?.method {
+                        param(BooleanType)
+                        returnType = splashDto
                     }
-                }
+                    ?.ignored()
+                    ?.hook { intercept() }
             }
         }
     }

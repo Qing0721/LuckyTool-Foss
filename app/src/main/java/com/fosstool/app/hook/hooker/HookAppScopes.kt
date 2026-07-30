@@ -6,54 +6,140 @@ import android.content.Intent
 import android.net.ConnectivityManager
 import android.net.wifi.WifiManager
 import com.highcapable.yukihookapi.hook.entity.YukiBaseHooker
-import com.highcapable.yukihookapi.hook.factory.constructor
 import com.highcapable.yukihookapi.hook.factory.current
 import com.highcapable.yukihookapi.hook.factory.field
 import com.highcapable.yukihookapi.hook.factory.method
-import com.highcapable.yukihookapi.hook.type.android.ActivityClass
+import com.highcapable.yukihookapi.hook.factory.toClassOrNull
 import com.highcapable.yukihookapi.hook.type.android.ContextClass
-import com.highcapable.yukihookapi.hook.type.java.BooleanType
 import com.highcapable.yukihookapi.hook.type.java.LongType
 import com.highcapable.yukihookapi.hook.type.java.StringClass
+import com.fosstool.app.hook.utils.OplusBuildUtlils
+import com.fosstool.app.hook.utils.SystemPropertiesOverrideEngineHooker
+import com.fosstool.app.hook.utils.SystemPropertiesUtils
 import com.fosstool.app.utils.A13
 import com.fosstool.app.utils.DexkitUtils
 import com.fosstool.app.utils.DexkitUtils.checkDataList
+import com.fosstool.app.utils.DexkitUtils.firstOrNullSafe
 import com.fosstool.app.utils.ModulePrefs
 import com.fosstool.app.utils.SDK
-import com.fosstool.app.hook.utils.OplusBuildUtlils
+import com.fosstool.app.utils.getAppSet
+import de.robv.android.xposed.XC_MethodHook
+import de.robv.android.xposed.XC_MethodReplacement
+import de.robv.android.xposed.XposedBridge
+import java.lang.reflect.Field
+import java.lang.reflect.Method
 import java.net.Inet4Address
 import java.net.Inet6Address
 import org.json.JSONObject
 
+private fun Class<*>.findMethod(name: String, paramCount: Int? = null): Method? {
+    var c: Class<*>? = this
+    while (c != null && c != Any::class.java) {
+        c.declaredMethods.firstOrNull {
+            it.name == name && (paramCount == null || it.parameterCount == paramCount)
+        }?.let { return it.apply { isAccessible = true } }
+        c = c.superclass
+    }
+    return null
+}
+
+private fun Class<*>.findMethods(name: String, paramCount: Int? = null): List<Method> {
+    val result = mutableListOf<Method>()
+    var c: Class<*>? = this
+    while (c != null && c != Any::class.java) {
+        c.declaredMethods.filter {
+            it.name == name && (paramCount == null || it.parameterCount == paramCount)
+        }.forEach { result.add(it.apply { isAccessible = true }) }
+        c = c.superclass
+    }
+    return result
+}
+
+private fun Class<*>.findField(name: String): Field? {
+    var c: Class<*>? = this
+    while (c != null && c != Any::class.java) {
+        c.declaredFields.firstOrNull { it.name == name }?.let { return it.apply { isAccessible = true } }
+        c = c.superclass
+    }
+    return null
+}
+
+private fun Method.hookBefore(block: (XC_MethodHook.MethodHookParam) -> Unit) {
+    runCatching {
+        XposedBridge.hookMethod(this, object : XC_MethodHook() {
+            override fun beforeHookedMethod(param: MethodHookParam) = block(param)
+        })
+    }
+}
+
+private fun Method.hookAfter(block: (XC_MethodHook.MethodHookParam) -> Unit) {
+    runCatching {
+        XposedBridge.hookMethod(this, object : XC_MethodHook() {
+            override fun afterHookedMethod(param: MethodHookParam) = block(param)
+        })
+    }
+}
+
+private fun Method.replaceConst(value: Any?) {
+    runCatching { XposedBridge.hookMethod(this, XC_MethodReplacement.returnConstant(value)) }
+}
+
+private fun Method.interceptNull() {
+    hookBefore { it.result = null }
+}
+
 object HookBeaconLink : YukiBaseHooker() {
     override fun onHook() {
         if (!prefs(ModulePrefs).getBoolean("remove_beacon_link_time_limit", false)) return
-        if (SDK < A13) return
+        val os = try {
+            OplusBuildUtlils(appClassLoader).getOSVersionCode ?: 0
+        } catch (_: Throwable) {
+            0
+        }
+        if (os < 33) return
         DexkitUtils.create(appInfo.sourceDir) { dexKitBridge ->
-            dexKitBridge.findMethod {
+
+            val cls = dexKitBridge.findClass {
                 matcher {
-                    returnType = BooleanType.name
-                    usingStrings("beaconlink", "time_limit")
-                }
-            }.apply {
-                checkDataList("HookBeaconLink")
-                first().apply {
-                    val cls = className.toClass()
-                    cls.method {
-                        name = methodName
-                        returnType = BooleanType
-                    }.hook { replaceToTrue() }
-                    runCatching {
-                        cls.constructor {
-                            param(StringClass, LongType)
-                        }.hook {
-                            before {
-                                args(1).set(0L)
+                    fields {
+                        add {
+                            type = StringClass.name
+                            addReadMethod { returnType = "java.util.HashMap" }
+                        }
+                        add {
+                            type = LongType.name
+                            addWriteMethod {
+                                paramTypes(ContextClass.name, StringClass.name, StringClass.name)
+                            }
+                            addReadMethod {
+                                paramTypes(ContextClass.name, StringClass.name, StringClass.name)
                             }
                         }
+                        count = 2
                     }
                 }
+            }.checkDataList("HookBeaconLink.class")
+                .firstOrNullSafe()?.name?.toClassOrNull(appClassLoader) ?: return@create
+
+            val boolStr = cls.declaredMethods.firstOrNull {
+                it.parameterCount == 1 &&
+                    it.parameterTypes[0] == String::class.java &&
+                    (it.returnType == java.lang.Boolean.TYPE || it.returnType == Boolean::class.java)
             }
+            if (boolStr != null) {
+                boolStr.replaceConst(true)
+                return@create
+            }
+            val ctor = cls.declaredConstructors.firstOrNull {
+                it.parameterCount == 2 &&
+                    it.parameterTypes[0] == String::class.java &&
+                    (it.parameterTypes[1] == java.lang.Long.TYPE || it.parameterTypes[1] == Long::class.java)
+            } ?: return@create
+            XposedBridge.hookMethod(ctor, object : XC_MethodHook() {
+                override fun beforeHookedMethod(param: MethodHookParam) {
+                    if (param.args.isNotEmpty()) param.args[param.args.lastIndex] = 0L
+                }
+            })
         }
     }
 }
@@ -69,53 +155,45 @@ object HookCalendar : YukiBaseHooker() {
         if (!removeHoliday && !removeAlmanac && !removeHoroscope) return
 
         if (removeHoliday) {
-            runCatching {
-                "com.coloros.calendar.app.specialholiday.SpecialHolidayWebViewDetailViewModel"
-                    .toClass().apply {
-                        method { name = "buildHolidayH5UrlInner" }.hookAll {
-                            after { result = "" }
-                        }
-                    }
-            }
+            "com.coloros.calendar.app.specialholiday.SpecialHolidayWebViewDetailViewModel"
+                .toClassOrNull(appClassLoader)
+                ?.let { cls ->
+                    val m = cls.findMethod("buildHolidayH5UrlInner")
+                    if (m != null) m.hookAfter { it.result = "" }
+                    else cls.findMethods("buildHolidayH5UrlInner").forEach { it.hookAfter { p -> p.result = "" } }
+                }
         }
         if (removeAlmanac) {
-            runCatching {
-                "com.android.calendar.module.subscription.almanac.adapter.AlmanacPagesAdapter"
-                    .toClass().apply {
-                        method { name = "onCreateViewHolder" }.hookAll {
-                            before {
-                                for (i in 3 downTo 0) {
-                                    val v = runCatching { args(i).any() }.getOrNull()
-                                    if (v is Int) {
-                                        args(i).set(0)
-                                        break
-                                    }
-                                }
+            "com.android.calendar.module.subscription.almanac.adapter.AlmanacPagesAdapter".toClassOrNull(appClassLoader)?.let { cls ->
+                cls.findMethods("onCreateViewHolder").forEach { m ->
+                    m.hookBefore { param ->
+                        for (i in 3 downTo 0) {
+                            val v = param.args.getOrNull(i)
+                            if (v is Int) {
+                                param.args[i] = 0
+                                break
                             }
                         }
-                        method { name = "getItemCount" }.hookAll {
-                            after { result = 0 }
-                        }
                     }
+                }
+                cls.findMethods("getItemCount").forEach { it.hookAfter { p -> p.result = 0 } }
             }
         }
         if (removeHoroscope) {
-            runCatching {
-                "com.android.calendar.module.subscription.horoscope.HoroscopeFragment"
-                    .toClass().apply {
-                        method { name = "onViewCreated" }.hookAll {
-                            after {
-                                runCatching {
-                                    val v = instance as? android.view.View
-                                        ?: instance?.javaClass?.methods
-                                            ?.firstOrNull { it.name == "getView" && it.parameterCount == 0 }
-                                            ?.invoke(instance) as? android.view.View
-                                    v?.visibility = android.view.View.GONE
-                                }
-                            }
+            "com.android.calendar.module.subscription.horoscope.HoroscopeFragment".toClassOrNull(appClassLoader)
+                ?.findMethods("onViewCreated")
+                ?.forEach { m ->
+                    m.hookAfter { param ->
+                        runCatching {
+                            val inst = param.thisObject
+                            val v = inst as? android.view.View
+                                ?: inst?.javaClass?.methods
+                                    ?.firstOrNull { it.name == "getView" && it.parameterCount == 0 }
+                                    ?.invoke(inst) as? android.view.View
+                            v?.visibility = android.view.View.GONE
                         }
                     }
-            }
+                }
         }
     }
 }
@@ -125,36 +203,11 @@ object HookEngineerMode : YukiBaseHooker() {
         if (!prefs(ModulePrefs).getBoolean("unlock_some_hidden_options", false) &&
             !prefs(ModulePrefs).getBoolean("unlock_engineer_mode_hidden_options", false)
         ) return
-        val hooked = runCatching {
-            "com.oplus.engineermode.impl.SecrecyServiceHelper".toClass().apply {
-                method {
-                    name = "isSecrecySupported"
-                    returnType = BooleanType
-                }.hook { replaceToTrue() }
-                method {
-                    name = "getSecrecyState"
-                    returnType = BooleanType
-                }.hook { replaceToFalse() }
-            }
-            true
-        }.getOrDefault(false)
-        if (hooked) return
-        DexkitUtils.create(appInfo.sourceDir) { dexKitBridge ->
-            dexKitBridge.findMethod {
-                matcher {
-                    returnType = BooleanType.name
-                    usingStrings("hidden", "engineer_mode")
-                }
-            }.apply {
-                checkDataList("HookEngineerMode")
-                first().apply {
-                    className.toClass().method {
-                        name = methodName
-                        returnType = BooleanType
-                    }.hook { replaceToTrue() }
-                }
-            }
-        }
+
+        val helper = "com.oplus.engineermode.impl.SecrecyServiceHelper".toClassOrNull(appClassLoader)
+            ?: return
+        helper.findMethod("isSecrecySupported")?.replaceConst(true)
+        helper.findMethod("getSecrecyState")?.replaceConst(false)
     }
 }
 
@@ -162,70 +215,115 @@ object HookEyeProtect : YukiBaseHooker() {
     override fun onHook() {
         if (!prefs(ModulePrefs).getBoolean("enable_eyeprotect_paper_texture_support", false)) return
         if (SDK < A13) return
+        loadHooker(SystemPropertiesOverrideEngineHooker(mode = SystemPropertiesOverrideEngineHooker.Mode.RM0_Q))
         val featureMap = mapOf(
             "oplus.software.display.eyeprotect_paper_texture_support" to true,
             "oplus.software.display.smart_color_temperature_rhythm_health_support" to true,
         )
-        runCatching {
-            "com.oplus.content.OplusFeatureConfigManager".toClass().apply {
-                method {
-                    name = "hasFeature"
-                    param(StringClass)
-                    returnType = BooleanType
-                }.hook {
-                    before {
-                        val key = args().first().string()
-                        featureMap[key]?.let { result = it }
-                    }
-                }
+        "com.oplus.content.OplusFeatureConfigManager".toClassOrNull(appClassLoader)
+            ?.findMethod("hasFeature", 1)
+            ?.hookBefore { param ->
+                val key = param.args.getOrNull(0) as? String ?: return@hookBefore
+                featureMap[key]?.let { param.result = it }
             }
-        }
     }
 }
 
 object HookFileManager : YukiBaseHooker() {
     override fun onHook() {
-        val removeSave = prefs(ModulePrefs).getBoolean("remove_word_limit_for_saving_files", false) ||
-            prefs(ModulePrefs).getBoolean("remove_file_save_word_limit", false)
-        val removeCompress = prefs(ModulePrefs).getBoolean("remove_word_limit_for_compress_files", false) ||
-            prefs(ModulePrefs).getBoolean("remove_compress_file_word_limit", false)
-        val removeRename = prefs(ModulePrefs).getBoolean("remove_word_limit_for_label_name_files", false) ||
-            prefs(ModulePrefs).getBoolean("remove_rename_file_word_limit", false)
+        val removeSave = prefs(ModulePrefs).getBoolean("remove_word_limit_for_saving_files", false)
+        val removeCompress = prefs(ModulePrefs).getBoolean("remove_word_limit_for_compress_files", false)
+        val removeRename = prefs(ModulePrefs).getBoolean("remove_word_limit_for_label_name_files", false)
         if (!removeSave && !removeCompress && !removeRename) return
+        val os = try {
+            OplusBuildUtlils(appClassLoader).getOSVersionCode ?: 0
+        } catch (_: Throwable) {
+            0
+        }
+        if (os < 37) return
         DexkitUtils.create(appInfo.sourceDir) { dexKitBridge ->
-            dexKitBridge.findMethod {
-                matcher {
-                    paramTypes(StringClass.name)
-                    returnType = BooleanType.name
-                    usingStrings("invalid", "file_name")
-                }
-            }.apply {
-                checkDataList("HookFileManager")
-                first().apply {
-                    className.toClass().method {
-                        name = methodName
-                        param(StringClass)
-                        returnType = BooleanType
-                    }.hook {
-                        before { result = false }
-                        after {
-                            if (removeSave) hideWelfareView(instance)
+            if (removeSave) {
+
+                dexKitBridge.findClass {
+                    matcher {
+                        className = "com.oplus.filemanager.picker.controller.ActionModeController"
+                    }
+                }.checkDataList("HookFileManager.save", onlyOne = false).findField {
+                    matcher {
+                        type = "int"
+                        addReadMethod {
+                            paramCount = 0
+                            returnType = "void"
+                        }
+                        addReadMethod {
+                            paramCount = 4
+                            returnType = "void"
                         }
                     }
+                }.firstOrNull()?.let { fd ->
+                    val cls = fd.declaredClassName.toClassOrNull(appClassLoader) ?: return@let
+                    val maxField = cls.findField(fd.fieldName) ?: return@let
+                    for (ctor in cls.declaredConstructors) {
+                        if (ctor.parameterCount != 1) continue
+                        XposedBridge.hookMethod(ctor, object : XC_MethodHook() {
+                            override fun afterHookedMethod(param: MethodHookParam) {
+                                val inst = param.thisObject ?: return
+                                runCatching { maxField.set(inst, 9999) }
+                            }
+                        })
+                    }
                 }
+            }
+            if (removeCompress) {
+                hookDialogMaxCount(
+                    dexKitBridge.findClass {
+                        matcher {
+                            methods {
+                                add { name = "onTextChanged" }
+                                add {
+                                    paramTypes("android.widget.EditText", "android.text.InputFilter")
+                                }
+                            }
+                            usingStrings("CompressConfirmDialog")
+                        }
+                    }.checkDataList("HookFileManager.compress", onlyOne = false),
+                    "HookFileManager.compress",
+                )
+            }
+            if (removeRename) {
+                hookDialogMaxCount(
+                    dexKitBridge.findClass {
+                        matcher {
+                            methods {
+                                add { name = "onActivityResume" }
+                                add { name = "onTextChanged" }
+                            }
+                            usingStrings("BaseFileNameDialog")
+                        }
+                    }.checkDataList("HookFileManager.rename", onlyOne = false),
+                    "HookFileManager.rename",
+                )
             }
         }
     }
 
-    private fun hideWelfareView(target: Any?) {
-        target ?: return
-        runCatching {
-            for (f in target.javaClass.declaredFields) {
-                if (!android.view.View::class.java.isAssignableFrom(f.type)) continue
-                f.isAccessible = true
-                val v = f.get(target) as? android.view.View ?: continue
-                v.visibility = 8
+    private fun hookDialogMaxCount(
+        classList: org.luckypray.dexkit.result.ClassDataList,
+        tag: String,
+    ) {
+        if (classList.isEmpty()) return
+        classList.findMethod {
+            matcher {
+                paramCount = 0
+                returnType = "int"
+                usingNumbers(50)
             }
+        }.apply {
+            checkDataList("$tag.maxCount")
+            val member = firstOrNullSafe() ?: return@apply
+            member.className.toClassOrNull(appClassLoader)
+                ?.findMethod(member.methodName, 0)
+                ?.replaceConst(9999)
         }
     }
 }
@@ -235,32 +333,18 @@ object HookHealth : YukiBaseHooker() {
         if (!prefs(ModulePrefs).getBoolean("remove_health_root_check_dialog", false) &&
             !prefs(ModulePrefs).getBoolean("remove_health_root_detection_dialog", false)
         ) return
-        val hooked = runCatching {
-            "com.heytap.health.safety.safetycheck.SafetyCheckManager".toClass().apply {
-                method { param(ActivityClass) }.hookAll { intercept() }
-            }
-            true
-        }.getOrDefault(false)
-        if (hooked) return
-        DexkitUtils.create(appInfo.sourceDir) { dexKitBridge ->
-            dexKitBridge.findMethod {
-                matcher {
-                    returnType = BooleanType.name
-                    usingStrings("root", "magisk")
-                }
-            }.apply {
-                checkDataList("HookHealth")
-                first().apply {
-                    className.toClass().method {
-                        name = methodName
-                        returnType = BooleanType
-                    }.hook { replaceToFalse() }
-                }
+
+        val safety = "com.heytap.health.safety.safetycheck.SafetyCheckManager".toClassOrNull(appClassLoader)
+            ?: return
+        for (m in safety.declaredMethods) {
+            if (m.parameterCount == 1 &&
+                android.app.Activity::class.java.isAssignableFrom(m.parameterTypes[0])
+            ) {
+                m.interceptNull()
             }
         }
     }
 }
-
 
 object HookContactsScope : YukiBaseHooker() {
     override fun onHook() {
@@ -319,42 +403,19 @@ object HookMyDevices : YukiBaseHooker() {
             !prefs(ModulePrefs).getBoolean("support_fn_nas", false)
         ) return
         val propKey = "ro.oplus.feiniunas.support"
-        listOf(
-            "android.os.SystemProperties",
-            "com.oplus.wrapper.os.SystemProperties",
-        ).forEach { cls ->
-            runCatching {
-                cls.toClass().apply {
-                    method {
-                        name = "get"
-                        param(StringClass, StringClass)
-                        returnType = StringClass
-                    }.hook {
-                        after {
-                            if (args().first().string() == propKey) result = "true"
-                        }
-                    }
-                    method {
-                        name = "get"
-                        param(StringClass)
-                        returnType = StringClass
-                    }.hook {
-                        after {
-                            if (args().first().string() == propKey) result = "true"
-                        }
-                    }
-                    method {
-                        name = "getBoolean"
-                        param(StringClass, BooleanType)
-                        returnType = BooleanType
-                    }.hook {
-                        before {
-                            if (args().first().string() == propKey) resultTrue()
-                        }
-                    }
-                }
+        fun hookProps(cls: Class<*>) {
+            cls.findMethod("get", 2)?.hookAfter { param ->
+                if (param.args.getOrNull(0) as? String == propKey) param.result = "true"
+            }
+            cls.findMethod("get", 1)?.hookAfter { param ->
+                if (param.args.getOrNull(0) as? String == propKey) param.result = "true"
+            }
+            cls.findMethod("getBoolean", 2)?.hookBefore { param ->
+                if (param.args.getOrNull(0) as? String == propKey) param.result = true
             }
         }
+        "android.os.SystemProperties".toClassOrNull(appClassLoader)?.let { hookProps(it) }
+        "com.oplus.wrapper.os.SystemProperties".toClassOrNull(appClassLoader)?.let { hookProps(it) }
     }
 }
 
@@ -364,116 +425,86 @@ object HookNfc : YukiBaseHooker() {
             !prefs(ModulePrefs).getBoolean("scan_nfc_tag_auto_click_button", false)
         ) return
         val action = "com.oplus.nfc.dispatch.TagDetectedNotification.ACTION_PROCESS_TAG"
-        val hooked = runCatching {
-            "com.oplus.nfc.dispatch.TagDetectedNotification".toClass().apply {
-                method { name = "show" }.hookAll {
-                    before {
-                        val ctx = args().first().cast<Context>() ?: return@before
-                        val dispatcherIntent = runCatching {
-                            args(1).cast<Intent>()
-                        }.getOrNull() ?: return@before
-                        val componentType = runCatching {
-                            args(2).cast<Int>()
-                        }.getOrNull() ?: 0
-                        val intent = Intent().apply {
-                            setAction(action)
-                            putExtra("dispatcherIntent", dispatcherIntent)
-                            putExtra("componentType", componentType)
-                            setPackage("com.android.nfc")
-                        }
-                        PendingIntent.getBroadcast(
-                            ctx,
-                            System.currentTimeMillis().toInt(),
-                            intent,
-                            201326592,
-                        ).send()
-                    }
-                }
+        fun nfcShowBefore(param: XC_MethodHook.MethodHookParam) {
+            val ctx = param.args.getOrNull(0) as? Context ?: return
+            val dispatcherIntent = param.args.getOrNull(1) as? Intent ?: return
+            val componentType = param.args.getOrNull(2) as? Int ?: 0
+            val intent = Intent().apply {
+                setAction(action)
+                putExtra("dispatcherIntent", dispatcherIntent)
+                putExtra("componentType", componentType)
+                setPackage("com.android.nfc")
             }
-            true
-        }.getOrDefault(false)
-        if (hooked) return
-        DexkitUtils.create(appInfo.sourceDir) { dexKitBridge ->
-            dexKitBridge.findMethod {
-                matcher {
-                    name = "show"
-                    usingStrings("dispatch")
-                }
-            }.apply {
-                checkDataList("HookNfc")
-                first().apply {
-                    className.toClass().method {
-                        name = methodName
-                    }.hook {
-                        before {
-                            val ctx = args().first().cast<Context>() ?: return@before
-                            val dispatcherIntent = runCatching {
-                                args(1).cast<Intent>()
-                            }.getOrNull() ?: return@before
-                            val componentType = runCatching {
-                                args(2).cast<Int>()
-                            }.getOrNull() ?: 0
-                            val intent = Intent().apply {
-                                setAction(action)
-                                putExtra("dispatcherIntent", dispatcherIntent)
-                                putExtra("componentType", componentType)
-                                setPackage("com.android.nfc")
-                            }
-                            runCatching {
-                                PendingIntent.getBroadcast(
-                                    ctx,
-                                    System.currentTimeMillis().toInt(),
-                                    intent,
-                                    201326592,
-                                ).send()
-                            }
-                        }
-                    }
-                }
+            runCatching {
+                PendingIntent.getBroadcast(
+                    ctx,
+                    System.currentTimeMillis().toInt(),
+                    intent,
+                    201326592,
+                ).send()
             }
         }
+
+        val nfcCls = "com.oplus.nfc.dispatch.TagDetectedNotification".toClassOrNull(appClassLoader)
+            ?: return
+        val show = nfcCls.findMethod("show")
+        if (show != null) show.hookBefore { nfcShowBefore(it) }
+        else nfcCls.findMethods("show").forEach { it.hookBefore { p -> nfcShowBefore(p) } }
     }
 }
 
 object HookOShare : YukiBaseHooker() {
     override fun onHook() {
         if (!prefs(ModulePrefs).getBoolean("remove_oshare_close_countdown", false)) return
-        fun hookTimeout(className: String): Boolean = runCatching {
-            className.toClass().apply {
-                method {
-                    name = "getSwitchTimeOut"
-                    param(ContextClass)
-                    returnType = LongType
-                }.hook { replaceTo(0L) }
-            }
-            true
-        }.getOrDefault(false)
-        if (hookTimeout("com.coloros.oshare.OShareFeatureConfig")) return
-        if (hookTimeout("com.coloros.oshare.config.OShareFeatureConfig")) return
-        if (hookTimeout("com.oplus.oshare.OShareFeatureConfig")) return
+        val os = try {
+            OplusBuildUtlils(appClassLoader).getOSVersionCode ?: 0
+        } catch (_: Throwable) {
+            0
+        }
         DexkitUtils.create(appInfo.sourceDir) { dexKitBridge ->
-            dexKitBridge.findClass {
-                matcher { usingStrings("OShareFeatureConfig") }
-            }.apply {
-                checkDataList("HookOShare.class", onlyOne = false)
-                for (data in this) {
-                    if (hookTimeout(data.name)) return@create
+
+            if (os >= 27) {
+
+                val configClasses = dexKitBridge.findClass {
+                    matcher { usingStrings("OShareFeatureConfig") }
+                }.checkDataList("HookOShare.OShareFeatureConfig")
+                if (configClasses.isNotEmpty()) {
+                    dexKitBridge.findMethod {
+                        searchInClass(configClasses)
+                        matcher {
+                            paramTypes(ContextClass.name)
+                            returnType = LongType.name
+                            usingStrings("getSwitchTimeOut")
+                        }
+                    }.apply {
+                        checkDataList("HookOShare.getSwitchTimeOut")
+                        firstOrNullSafe()?.let { data ->
+                            data.className.toClassOrNull(appClassLoader)
+                                ?.findMethod(data.methodName, 1)
+                                ?.replaceConst(0L)
+                        }
+                    }
                 }
             }
+
+            val spClasses = dexKitBridge.findClass {
+                matcher { usingStrings("SpUtils", "share_config") }
+            }.checkDataList("HookOShare.SpUtils")
+            if (spClasses.isEmpty()) return@create
             dexKitBridge.findMethod {
+                searchInClass(spClasses)
                 matcher {
-                    name = "getSwitchTimeOut"
-                    paramTypes(ContextClass.name)
-                    returnType = LongType.name
+                    paramTypes(ContextClass.name, LongType.name)
+                    usingStrings("updateLastTurnOnTime", "key_last_turn_on_time")
                 }
             }.apply {
-                checkDataList("HookOShare.getSwitchTimeOut", onlyOne = false)
-                firstOrNull()?.apply {
-                    className.toClass().method {
-                        name = methodName
-                        param(ContextClass)
-                        returnType = LongType
-                    }.hook { replaceTo(0L) }
+                checkDataList("HookOShare.updateLastTurnOnTime")
+                firstOrNullSafe()?.let { data ->
+                    data.className.toClassOrNull(appClassLoader)
+                        ?.findMethod(data.methodName, 2)
+                        ?.hookBefore { param ->
+                            if (param.args.isNotEmpty()) param.args[param.args.lastIndex] = 0L
+                        }
                 }
             }
         }
@@ -482,214 +513,291 @@ object HookOShare : YukiBaseHooker() {
 
 object HookSecurityPermission : YukiBaseHooker() {
     override fun onHook() {
-        val disableIntercept = prefs(ModulePrefs).getBoolean("disable_malicious_app_intercept", false)
         val useOldDialog = prefs(ModulePrefs).getBoolean("app_start_dialog_use_old_version", false) ||
             prefs(ModulePrefs).getBoolean("use_old_version_app_jump_dialog", false)
         val enableAlwaysAllow = prefs(ModulePrefs).getBoolean("enable_always_allow_app_start_dialog", false)
-        val autoUnlock = prefs(ModulePrefs).getBoolean("auto_unlock_app_ecm_permission_restrict", false) ||
-            prefs(ModulePrefs).getBoolean("auto_unlock_app_permission_management_limit", false)
-        if (!disableIntercept && !useOldDialog && !enableAlwaysAllow && !autoUnlock) return
-        DexkitUtils.create(appInfo.sourceDir) { dexKitBridge ->
-            if (disableIntercept) {
-                dexKitBridge.findMethod {
+        val autoUnlock = prefs(ModulePrefs).getBoolean("auto_unlock_app_ecm_permission_restrict", false)
+        if (!useOldDialog && !enableAlwaysAllow && !autoUnlock) return
+
+        if (useOldDialog) {
+            "com.oplusos.securitypermission.permission.ui.AppStartConfirmDialogActivity"
+                .toClassOrNull(appClassLoader)
+                ?.let { cls ->
+                    val m = cls.findMethod("onCreate") ?: cls.findMethods("onCreate").firstOrNull()
+                    m?.hookBefore { param ->
+                        val activity = param.thisObject as? android.app.Activity ?: return@hookBefore
+                        activity.intent?.putExtra("activity_start_confirm_version", 0)
+                    }
+                }
+        }
+
+        if (autoUnlock) {
+            "com.oplusos.securitypermission.permission.PermissionGroupsActivity"
+                .toClassOrNull(appClassLoader)
+                ?.let { cls ->
+                    val m = cls.findMethod("onCreate") ?: cls.findMethods("onCreate").firstOrNull()
+                    m?.hookAfter { param ->
+                        val activity = param.thisObject as? android.app.Activity ?: return@hookAfter
+                        val pkg = activity.intent?.getStringExtra("packageName")
+                            ?: activity.intent?.getStringExtra("mPackageName")
+                            ?: return@hookAfter
+                        clearEcmRestriction(activity, pkg)
+                    }
+                }
+        }
+
+        if (enableAlwaysAllow) {
+            val source = appInfo.sourceDir ?: return
+            DexkitUtils.create(source) { dexKitBridge ->
+
+                val permissionClasses = dexKitBridge.findClass {
                     matcher {
-                        returnType = BooleanType.name
-                        usingStrings("malicious", "intercept")
+                        fields { addForType("android.os.ISecurityPermissionService") }
+                        usingStrings("OplusPermissionManager")
+                    }
+                }.checkDataList("HookSecurityPermission.enableAlwaysAllow.scope", onlyOne = false)
+                if (permissionClasses.isNotEmpty()) {
+                    dexKitBridge.findMethod {
+                        searchInClass(permissionClasses)
+                        matcher {
+                            paramTypes("android.os.Bundle")
+                            usingStrings("OplusPermissionManager", "putActivityStartWhiteList")
+                        }
+                    }.apply {
+                        checkDataList("HookSecurityPermission.enableAlwaysAllow.whitelist")
+                        firstOrNullSafe()?.let { data ->
+                            data.className.toClassOrNull(appClassLoader)?.findMethod(data.methodName, 1)
+                                ?.hookBefore { param ->
+                                    (param.args.getOrNull(0) as? android.os.Bundle)?.remove("valid_time")
+                                }
+                        }
+                    }
+                }
+
+                val dialogClasses = dexKitBridge.findClass {
+                    matcher {
+                        fields {
+                            addForType("android.content.res.Configuration")
+                            addForType("android.content.ComponentCallbacks")
+                            addForType("android.content.DialogInterface\$OnClickListener")
+                        }
+                        usingStrings("COUIAlertDialogBuilder")
+                    }
+                }.checkDataList("HookSecurityPermission.enableAlwaysAllow.dialog", onlyOne = false)
+                dialogClasses.findMethod {
+                    matcher {
+                        paramTypes(
+                            "int",
+                            "android.content.DialogInterface\$OnClickListener",
+                            "boolean",
+                        )
+                        addUsingField { type("int") }
+                        usingNumbers(android.R.id.button3)
                     }
                 }.apply {
-                    checkDataList("HookSecurityPermission.disableIntercept")
-                    first().apply {
-                        className.toClass().method {
-                            name = methodName
-                            returnType = BooleanType
-                        }.hook { replaceToFalse() }
+                    checkDataList("HookSecurityPermission.enableAlwaysAllow.setButton")
+                    firstOrNullSafe()?.let { data ->
+                        data.className.toClassOrNull(appClassLoader)?.findMethod(data.methodName, 3)
+                            ?.hookBefore { param ->
+                                val ctx = (param.thisObject as? Context)
+                                    ?: param.args.filterIsInstance<Context>().firstOrNull()
+                                    ?: appContext
+                                    ?: return@hookBefore
+                                val allow30 = ctx.resources.getIdentifier(
+                                    "app_start_dialog_allow_30", "string", ctx.packageName,
+                                )
+                                val always = ctx.resources.getIdentifier(
+                                    "app_start_dialog_always_allow", "string", ctx.packageName,
+                                )
+                                if (allow30 <= 0 || always <= 0) return@hookBefore
+                                for (i in param.args.indices) {
+                                    if (param.args[i] is Int && param.args[i] == allow30) {
+                                        param.args[i] = always
+                                    }
+                                }
+                            }
                     }
                 }
             }
-            if (useOldDialog) {
-                dexKitBridge.findMethod {
-                    matcher {
-                        returnType = BooleanType.name
-                        usingStrings("old_version", "jump_dialog")
-                    }
-                }.apply {
-                    checkDataList("HookSecurityPermission.useOldDialog")
-                    first().apply {
-                        className.toClass().method {
-                            name = methodName
-                            returnType = BooleanType
-                        }.hook { replaceToTrue() }
-                    }
+        }
+    }
+
+    private fun clearEcmRestriction(context: Context, packageName: String) {
+        runCatching {
+            val appOps = context.getSystemService(android.app.AppOpsManager::class.java) ?: return
+            val opStr = runCatching {
+                android.app.AppOpsManager::class.java.getField("OPSTR_ACCESS_RESTRICTED_SETTINGS")
+                    .get(null) as? String
+            }.getOrNull()
+            if (opStr != null) {
+                val uid = runCatching {
+                    context.packageManager.getApplicationInfo(packageName, 0).uid
+                }.getOrNull() ?: return@runCatching
+                runCatching {
+                    appOps.javaClass.getMethod(
+                        "setMode",
+                        String::class.java,
+                        Int::class.javaPrimitiveType,
+                        String::class.java,
+                        Int::class.javaPrimitiveType,
+                    ).invoke(appOps, opStr, uid, packageName, android.app.AppOpsManager.MODE_ALLOWED)
                 }
             }
-            if (enableAlwaysAllow) {
-                dexKitBridge.findMethod {
-                    matcher {
-                        returnType = BooleanType.name
-                        usingStrings("always_allow", "app_start")
-                    }
-                }.apply {
-                    checkDataList("HookSecurityPermission.enableAlwaysAllow")
-                    first().apply {
-                        className.toClass().method {
-                            name = methodName
-                            returnType = BooleanType
-                        }.hook { replaceToTrue() }
-                    }
-                }
+        }
+        runCatching {
+            val ecm = context.getSystemService("ecm_enhanced_confirmation") ?: return@runCatching
+            val cls = ecm.javaClass
+            val isRestricted = cls.methods.firstOrNull {
+                it.name == "isRestricted" && it.parameterCount == 2
             }
-            if (autoUnlock) {
-                dexKitBridge.findMethod {
-                    matcher {
-                        returnType = BooleanType.name
-                        usingStrings("permission_management", "limit")
-                    }
-                }.apply {
-                    checkDataList("HookSecurityPermission.autoUnlock")
-                    first().apply {
-                        className.toClass().method {
-                            name = methodName
-                            returnType = BooleanType
-                        }.hook { replaceToFalse() }
-                    }
+            val restricted = isRestricted?.invoke(ecm, packageName, "android:bind_accessibility_service") as? Boolean
+            if (restricted == true) {
+                val isClearAllowed = cls.methods.firstOrNull {
+                    it.name == "isClearRestrictionAllowed" && it.parameterCount == 1
+                }?.invoke(ecm, packageName) as? Boolean
+                if (isClearAllowed != true) {
+                    cls.methods.firstOrNull {
+                        it.name == "setClearRestrictionAllowed" && it.parameterCount == 1
+                    }?.invoke(ecm, packageName)
                 }
+                cls.methods.firstOrNull {
+                    it.name == "clearRestriction" && it.parameterCount == 1
+                }?.invoke(ecm, packageName)
             }
         }
     }
 }
 
 object HookSmartSidebar : YukiBaseHooker() {
+    private const val CLS_FEATURE =
+        "com.coloros.edgepanel.utils.EdgePanelFeatureOption"
+    private const val CLS_UTILS =
+        "com.coloros.edgepanel.utils.EdgePanelUtils"
+    private const val CLS_TOOL_HELPER =
+        "com.oplus.smartsidebar.panelview.edgepanel.data.entrybeans.ToolEntryHelper"
+    private val TOOL_CLASSES = arrayOf(
+        "com.oplus.smartsidebar.panelview.edgepanel.data.entrybeans.models.tools.BackgroundRunTool",
+        "com.oplus.smartsidebar.panelview.edgepanel.data.entrybeans.models.tools.GTModelTool",
+        "com.oplus.smartsidebar.panelview.edgepanel.data.entrybeans.models.tools.CleanStorageTool",
+    )
+
     override fun onHook() {
         loadHooker(
             com.fosstool.app.hook.utils.SystemPropertiesOverrideEngineHooker(
                 mode = com.fosstool.app.hook.utils.SystemPropertiesOverrideEngineHooker.Mode.RM0_Q
             )
         )
-        val autoHide = prefs(ModulePrefs).getBoolean("force_enable_buoy_automatically_hides", false) ||
-            prefs(ModulePrefs).getBoolean("force_enable_sidebar_auto_hide", false)
-        val transferStation = prefs(ModulePrefs).getBoolean("unlock_transfer_dock", false) ||
-            prefs(ModulePrefs).getBoolean("unlock_transfer_station", false)
+        val autoHide = prefs(ModulePrefs).getBoolean("force_enable_buoy_automatically_hides", false)
+        val transferDock = prefs(ModulePrefs).getBoolean("unlock_transfer_dock", false)
         val recentFiles = prefs(ModulePrefs).getBoolean("unlock_recent_files", false)
+        val fluidCloud = prefs(ModulePrefs).getBoolean("unlock_fluid_cloud", false)
         val runInBg = prefs(ModulePrefs).getBoolean("enable_run_in_background", false)
-        if (!autoHide && !transferStation && !recentFiles && !runInBg) return
-        DexkitUtils.create(appInfo.sourceDir) { dexKitBridge ->
-            if (autoHide) {
-                dexKitBridge.findMethod {
-                    matcher {
-                        returnType = BooleanType.name
-                        usingStrings("sidebar", "auto_hide")
-                    }
-                }.apply {
-                    checkDataList("HookSmartSidebar.autoHide")
-                    first().apply {
-                        className.toClass().method {
-                            name = methodName
-                            returnType = BooleanType
-                        }.hook { replaceToTrue() }
-                    }
+        val os = try {
+            OplusBuildUtlils(appClassLoader).getOSVersionCode ?: 0
+        } catch (_: Throwable) {
+            0
+        }
+
+        val sidebarVersionCode = getAppSet(ModulePrefs, packageName)[1].toLongOrNull() ?: 0L
+
+        if ((transferDock || recentFiles || fluidCloud) && SDK == 33 &&
+            sidebarVersionCode >= 14000000L
+        ) {
+            CLS_FEATURE.toClassOrNull(appClassLoader)?.let { cls ->
+                cls.findMethod("loadFeatureOption")?.hookAfter {
+                    if (recentFiles) setStaticBool(cls, "IS_SHIELD_FILE_BAG", false)
+                    if (fluidCloud) setStaticBool(cls, "IS_SHIELD_FLUID_CLOUD", false)
+                    if (transferDock) setStaticBool(cls, "IS_SHIELD_TRANSFER_DOCK", false)
                 }
             }
-            if (transferStation) {
-                dexKitBridge.findMethod {
-                    matcher {
-                        returnType = BooleanType.name
-                        usingStrings("transfer_station", "transfer_dock")
-                    }
-                }.apply {
-                    checkDataList("HookSmartSidebar.transferStation")
-                    first().apply {
-                        className.toClass().method {
-                            name = methodName
-                            returnType = BooleanType
-                        }.hook { replaceToTrue() }
-                    }
-                }
-            }
-            if (recentFiles) {
-                dexKitBridge.findMethod {
-                    matcher {
-                        returnType = BooleanType.name
-                        usingStrings("recent_files")
-                    }
-                }.apply {
-                    checkDataList("HookSmartSidebar.recentFiles")
-                    first().apply {
-                        className.toClass().method {
-                            name = methodName
-                            returnType = BooleanType
-                        }.hook { replaceToTrue() }
+        }
+
+        if (autoHide && SDK == 31) {
+            CLS_UTILS.toClassOrNull(appClassLoader)?.let { cls ->
+                cls.findMethods("isMetaDataSupportByPackage", 2).forEach { m ->
+                    m.hookAfter { param ->
+                        val pkg = param.args.getOrNull(0) as? String ?: return@hookAfter
+                        val key = param.args.getOrNull(1) as? String
+                            ?: param.args.lastOrNull() as? String
+                            ?: return@hookAfter
+                        if (pkg == "com.android.systemui" && key == "sidebar_gesture_support") {
+                            param.result = true
+                        }
                     }
                 }
-            }
-            if (runInBg) {
-                dexKitBridge.findMethod {
-                    matcher {
-                        returnType = BooleanType.name
-                        usingStrings("run_in_background", "sidebar")
-                    }
-                }.apply {
-                    checkDataList("HookSmartSidebar.runInBg")
-                    first().apply {
-                        className.toClass().method {
-                            name = methodName
-                            returnType = BooleanType
-                        }.hook { replaceToTrue() }
+                cls.findMethods("isMetaDataSupportByPackage").forEach { m ->
+                    m.hookAfter { param ->
+                        if (param.args.size < 2) return@hookAfter
+                        val strs = param.args.filterIsInstance<String>()
+                        if (strs.contains("com.android.systemui") && strs.contains("sidebar_gesture_support")) {
+                            param.result = true
+                        }
                     }
                 }
             }
         }
+
+        if (runInBg && os >= 27) {
+            for (name in TOOL_CLASSES) {
+                name.toClassOrNull(appClassLoader)?.let { cls ->
+                    cls.findMethod("isToolAvailable")?.replaceConst(true)
+                }
+            }
+        }
+    }
+
+    private fun setStaticBool(cls: Class<*>, fieldName: String, value: Boolean) {
+        runCatching {
+            val f = cls.findField(fieldName) ?: return
+            f.isAccessible = true
+            f.set(null, value)
+        }
     }
 }
 
-object HookSoundRecorder : YukiBaseHooker() {
+class HookSoundRecorder : YukiBaseHooker() {
     override fun onHook() {
         loadHooker(
             com.fosstool.app.hook.utils.SystemPropertiesOverrideEngineHooker(
                 mode = com.fosstool.app.hook.utils.SystemPropertiesOverrideEngineHooker.Mode.RM0_T
             )
         )
+        val enableRecord = prefs(ModulePrefs).getBoolean("enable_record_calls_on_third_party_apps", false)
+        val os = try {
+            OplusBuildUtlils(appClassLoader).getOSVersionCode ?: 0
+        } catch (_: Throwable) {
+            0
+        }
+        if (enableRecord && os == 30) {
+            "com.soundrecorder.base.utils.BaseUtil".toClassOrNull(appClassLoader)
+                ?.let { cls ->
+                    cls.findMethod("isRealme")?.replaceConst(true)
+                }
+        }
     }
 }
 
 object HookSpeechAssist : YukiBaseHooker() {
     override fun onHook() {
-        if (!prefs(ModulePrefs).getBoolean("force_enable_ai_speechassist_call", false) &&
-            !prefs(ModulePrefs).getBoolean("force_enable_xiaobu_call", false)
-        ) return
-        val hooked = runCatching {
-            "com.heytap.speechassist.aicall.setting.config.AiCallCommonBean".toClass().apply {
-                method {
-                    name = "getSupportAiCall"
-                    returnType = BooleanType
-                }.hook { replaceToTrue() }
-                method {
-                    name = "getSupportAiCallV2"
-                    returnType = BooleanType
-                }.hook { replaceToTrue() }
-            }
-            true
-        }.getOrDefault(false)
-        if (hooked) return
-        DexkitUtils.create(appInfo.sourceDir) { dexKitBridge ->
-            dexKitBridge.findMethod {
-                matcher {
-                    returnType = BooleanType.name
-                    usingStrings("xiaobu", "call")
-                }
-            }.apply {
-                checkDataList("HookSpeechAssist")
-                first().apply {
-                    className.toClass().method {
-                        name = methodName
-                        returnType = BooleanType
-                    }.hook { replaceToTrue() }
-                }
-            }
+        if (!prefs(ModulePrefs).getBoolean("force_enable_ai_speechassist_call", false)) return
+
+        val os = try {
+            OplusBuildUtlils(appClassLoader).getOSVersionCode ?: 0
+        } catch (_: Throwable) {
+            0
         }
+        if (os < 30) return
+
+        val bean = "com.heytap.speechassist.aicall.setting.config.AiCallCommonBean"
+            .toClassOrNull(appClassLoader) ?: return
+        bean.findMethod("getSupportAiCall")?.replaceConst(true)
+        bean.findMethod("getSupportAiCallV2")?.replaceConst(true)
     }
 }
 
-object HookTeleService : YukiBaseHooker() {
+class HookTeleService : YukiBaseHooker() {
+    private val propHideNr = "ro.oplus.radio.hide_nr_switch"
+
     override fun onHook() {
         val force5G = prefs(ModulePrefs).getBoolean("force_display_five_g_switch", false) ||
             prefs(ModulePrefs).getBoolean("force_display_5g_switch", false)
@@ -698,73 +806,81 @@ object HookTeleService : YukiBaseHooker() {
         val forceNetworkType = prefs(ModulePrefs).getBoolean("force_display_preferred_network_type", false)
         if (!force5G && !forceVoLTE && !forceNetworkType) return
 
+        if (force5G) {
+            fun hookHideNr(cls: Class<*>) {
+                cls.findMethod("getInt", 2)?.hookBefore { param ->
+                    if (param.args.getOrNull(0) as? String == propHideNr) param.result = -1
+                }
+                cls.findMethod("get", 2)?.hookAfter { param ->
+                    if (param.args.getOrNull(0) as? String == propHideNr) param.result = "-1"
+                }
+            }
+            "android.os.SystemProperties".toClassOrNull(appClassLoader)?.let { hookHideNr(it) }
+            "com.oplus.wrapper.os.SystemProperties".toClassOrNull(appClassLoader)?.let { hookHideNr(it) }
+        }
+
         if (forceVoLTE || forceNetworkType) {
-            runCatching {
-                "com.android.simsettings.activity.OplusSimInfoActivity".toClass().apply {
-                    if (forceVoLTE) {
-                        method { name = "changeVolteSwitchConfig"; paramCount = 3 }.hookAll {
-                            before {
-                                if (!forceVoLTE) return@before
-                                val first = runCatching { args(0).any() as? Int }.getOrNull() ?: return@before
-                                if (first != 1) return@before
-                                for (i in 1..2) {
-                                    runCatching { if (args(i).any() is Boolean) { args(i).set(true); return@before } }
-                                }
+            "com.android.simsettings.activity.OplusSimInfoActivity".toClassOrNull(appClassLoader)?.let { sim ->
+                if (forceVoLTE) {
+                    val hook: (XC_MethodHook.MethodHookParam) -> Unit = hook@{ param ->
+                        val first = param.args.getOrNull(0) as? Int ?: return@hook
+                        if (first != 1) return@hook
+                        for (i in 1..2) {
+                            if (param.args.getOrNull(i) is Boolean) {
+                                param.args[i] = true
+                                return@hook
                             }
                         }
                     }
-                    if (forceNetworkType) {
-                        method { name = "changeNetworkModeConfig"; paramCount = 3 }.hookAll {
-                            before {
-                                if (!forceNetworkType) return@before
-                                val first = runCatching { args(0).any() as? Int }.getOrNull() ?: return@before
-                                if (first != 1) return@before
-                                for (i in 1..2) {
-                                    runCatching { if (args(i).any() is Boolean) { args(i).set(true); return@before } }
-                                }
+                    val methods = sim.findMethods("changeVolteSwitchConfig", 3)
+                    methods.forEach { it.hookBefore(hook) }
+                }
+                if (forceNetworkType) {
+                    val hook: (XC_MethodHook.MethodHookParam) -> Unit = hook@{ param ->
+                        val first = param.args.getOrNull(0) as? Int ?: return@hook
+                        if (first != 1) return@hook
+                        for (i in 1..2) {
+                            if (param.args.getOrNull(i) is Boolean) {
+                                param.args[i] = true
+                                return@hook
                             }
                         }
                     }
+                    val methods = sim.findMethods("changeNetworkModeConfig", 3)
+                    methods.forEach { it.hookBefore(hook) }
                 }
             }
         }
     }
 }
 
-object HookWirelessSettings : YukiBaseHooker() {
+class HookWirelessSettings : YukiBaseHooker() {
     override fun onHook() {
         if (!prefs(ModulePrefs).getBoolean("enable_wifi_details_display_gateway", false) &&
             !prefs(ModulePrefs).getBoolean("enable_wifi_detail_show_gateway", false)
         ) return
-        val classes = listOf(
+
+        val cls = listOf(
             "com.oplus.wirelesssettings.wifi.detail.WifiAddressController",
             "com.oplus.wirelesssettings.wifi.detail2.WifiAddressController",
-        )
-        var any = false
-        for (cls in classes) {
-            any = runCatching {
-                cls.toClass().apply {
-                    method { name = "updateIpInfo" }.hookAll {
-                        after { injectWifiGateway(instance) }
-                    }
-                }
-                true
-            }.getOrDefault(false) || any
-        }
-        if (any) return
+        ).firstNotNullOfOrNull { it.toClassOrNull(appClassLoader) } ?: return
         DexkitUtils.create(appInfo.sourceDir) { dexKitBridge ->
+            val classes = dexKitBridge.findClass {
+                matcher { className = cls.name }
+            }.checkDataList("HookWirelessSettings.WifiAddressController")
+            if (classes.isEmpty()) return@create
             dexKitBridge.findMethod {
-                matcher { name = "updateIpInfo" }
+                searchInClass(classes)
+                matcher {
+                    paramCount = 0
+                    usingStrings("updateIpInfo")
+                }
             }.apply {
-                checkDataList("HookWirelessSettings", onlyOne = false)
-                forEach { data ->
-                    runCatching {
-                        data.className.toClass().method {
-                            name = data.methodName
-                        }.hook {
-                            after { injectWifiGateway(instance) }
-                        }
-                    }
+                checkDataList("HookWirelessSettings.updateIpInfo")
+                firstOrNullSafe()?.let { data ->
+                    data.className.toClassOrNull(appClassLoader)
+                        ?.findMethod(data.methodName, 0)
+                        ?.hookAfter { injectWifiGateway(it.thisObject) }
                 }
             }
         }
@@ -845,75 +961,29 @@ object HookMediaController : YukiBaseHooker() {
         if (!forceRipple) return
         val osVersionCode = try { OplusBuildUtlils().getOSVersionCode ?: 0 } catch (_: Throwable) { 0 }
         if (osVersionCode < 33) return
-        runCatching {
-            "com.oplus.pantanal.seedling.util.SeedlingTool".toClass().apply {
-                method {
-                    name { it.isNotEmpty() }
-                    modifiers { isStatic }
-                    paramCount(1..8)
-                }.hookAll {
-                    before {
-                        val json = runCatching { args(1).any() as? JSONObject }.getOrNull()
-                            ?: run {
-                                var found: JSONObject? = null
-                                for (i in 0 until 6) {
-                                    val v = runCatching { args(i).any() }.getOrNull()
-                                    if (v is JSONObject) { found = v; break }
-                                }
-                                found
-                            } ?: return@before
-                        if (json.optBoolean(KEY_STATIC_VOICE_PRINT_SHOW, true)) {
-                            runCatching { json.put(KEY_STATIC_VOICE_PRINT_SHOW, false) }
+        "com.oplus.pantanal.seedling.util.SeedlingTool".toClassOrNull(appClassLoader)?.let { cls ->
+            for (m in cls.declaredMethods) {
+                if (!java.lang.reflect.Modifier.isStatic(m.modifiers)) continue
+                if (m.parameterCount !in 1..8) continue
+                m.hookBefore { param ->
+                    var json: JSONObject? = null
+                    if (param.args.size > 1 && param.args[1] is JSONObject) {
+                        json = param.args[1] as JSONObject
+                    } else {
+                        for (i in 0 until minOf(6, param.args.size)) {
+                            val v = param.args[i]
+                            if (v is JSONObject) { json = v; break }
                         }
+                    }
+                    json ?: return@hookBefore
+                    if (json.optBoolean(KEY_STATIC_VOICE_PRINT_SHOW, true)) {
+                        runCatching { json.put(KEY_STATIC_VOICE_PRINT_SHOW, false) }
                     }
                 }
             }
         }
     }
 }
-
-object HookContacts : YukiBaseHooker() {
-    override fun onHook() {
-        DexkitUtils.create(appInfo.sourceDir) { dexKitBridge ->
-            dexKitBridge.findMethod {
-                matcher {
-                    returnType = BooleanType.name
-                    usingStrings("contacts", "oplus_feature")
-                }
-            }.apply {
-                checkDataList("HookContacts")
-                first().apply {
-                    className.toClass().method {
-                        name = methodName
-                        returnType = BooleanType
-                    }.hook { replaceToTrue() }
-                }
-            }
-        }
-    }
-}
-
-object HookBluetooth : YukiBaseHooker() {
-    override fun onHook() {
-        DexkitUtils.create(appInfo.sourceDir) { dexKitBridge ->
-            dexKitBridge.findMethod {
-                matcher {
-                    returnType = BooleanType.name
-                    usingStrings("bluetooth", "oplus_feature")
-                }
-            }.apply {
-                checkDataList("HookBluetooth")
-                first().apply {
-                    className.toClass().method {
-                        name = methodName
-                        returnType = BooleanType
-                    }.hook { replaceToTrue() }
-                }
-            }
-        }
-    }
-}
-
 
 object HookSau : YukiBaseHooker() {
     override fun onHook() {
@@ -925,9 +995,276 @@ object HookSau : YukiBaseHooker() {
     }
 }
 
-object HookAudioMonitor : YukiBaseHooker() {
+class HookAudioMonitor : YukiBaseHooker() {
+    private data class VoipApp(val packageName: String, val displayName: String, val activity: String? = null)
+
+    private val voipApps = listOf(
+        VoipApp("com.tencent.mobileqq", "QQ"),
+        VoipApp("com.tencent.mm", "微信"),
+        VoipApp("com.tencent.wework", "企业微信"),
+        VoipApp("com.tencent.tim", "Tim"),
+        VoipApp("com.ss.android.lark", "飞书"),
+        VoipApp(
+            "com.ss.android.ugc.aweme",
+            "抖音",
+            "com.bytedance.android.xr.fusion.XrAvCallActivity",
+        ),
+    )
+    private val voipWhitelistPkgs = voipApps.map { it.packageName }
+
+    companion object {
+        private const val CLS_VOIP =
+            "com.oplus.audiomonitor.voiprecord.OplusVoipRecorderService"
+        private const val CLS_APP = "com.oplus.audiomonitor.AudioApplication"
+        private const val PROP_VOIP_WHITE =
+            "ro.oplus.audio.voip_record_white_app_support"
+        private const val PREF_RECORD_CALLS = "enable_record_calls_on_third_party_apps"
+        private const val PREF_EXPAND_VOIP = "expand_voip_recorder_whitelist"
+        private const val UNKNOWN_RECORD = "未知应用录音"
+        private const val SP_SUFFIX = "_preferences"
+        private const val SP_KEY_ENABLE = "enable_record_app"
+        private const val PKG_MOBILEQQ = "com.tencent.mobileqq"
+        private const val PKG_MM = "com.tencent.mm"
+        private const val ACT_AV = "com.tencent.av.ui.AVActivity"
+        private const val ACT_DOUYIN = "com.bytedance.android.xr.fusion.XrAvCallActivity"
+    }
+
     override fun onHook() {
-        return
+        val os = try {
+            OplusBuildUtlils(appClassLoader).getOSVersionCode ?: 0
+        } catch (_: Throwable) {
+            0
+        }
+        val enableRecord = prefs(ModulePrefs).getBoolean(PREF_RECORD_CALLS, false)
+        val expandVoip = prefs(ModulePrefs).getBoolean(PREF_EXPAND_VOIP, false)
+
+        if (enableRecord && os == 30) {
+            hookPathAOnStartCommand()
+        }
+        if (expandVoip && os >= 31) {
+            hookPathBOnCreate()
+            hookPathBBooleanAllow()
+            hookPathBUnknownName()
+            hookPathBRecordWrapperList()
+        }
+    }
+
+    private fun hookPathAOnStartCommand() {
+        val cls = CLS_VOIP.toClassOrNull(appClassLoader) ?: return
+        val m = cls.findMethod("onStartCommand")
+        m?.hookBefore { param ->
+            val supported = runCatching {
+                SystemPropertiesUtils(appClassLoader)
+                    .getBoolean(PROP_VOIP_WHITE, false) == true
+            }.getOrDefault(false)
+            if (supported) return@hookBefore
+            val cmd = "setprop $PROP_VOIP_WHITE true"
+            val rootOk = runCatching {
+                com.fosstool.app.utils.ShellUtils.checkRootPermission()
+            }.getOrDefault(false)
+            if (rootOk) {
+                runCatching {
+                    com.fosstool.app.utils.ShellUtils.execCommand(cmd, true, false)
+                }
+            } else {
+                val ctx = param.thisObject as? android.content.Context
+                    ?: appContext
+                ctx?.let {
+                    runCatching {
+                        android.widget.Toast.makeText(it, "No Root!", android.widget.Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+        }
+    }
+
+    private fun hookPathBOnCreate() {
+        val cls = CLS_VOIP.toClassOrNull(appClassLoader) ?: return
+        val m = cls.findMethod("onCreate")
+        if (m != null) {
+            m.hookBefore { param ->
+                val inst = param.thisObject ?: return@hookBefore
+                injectVoipArrayLists(inst)
+            }
+        } else {
+            cls.findMethods("onCreate").forEach { mm ->
+                mm.hookBefore { param ->
+                    val inst = param.thisObject ?: return@hookBefore
+                    injectVoipArrayLists(inst)
+                }
+            }
+        }
+    }
+
+    private fun hookPathBBooleanAllow() {
+        val cls = CLS_VOIP.toClassOrNull(appClassLoader) ?: return
+        cls.declaredMethods.filter {
+            it.returnType == java.lang.Boolean.TYPE || it.returnType == Boolean::class.java
+        }.forEach { m ->
+            m.hookAfter { param ->
+                val pkg = readStringField(param.thisObject) ?: return@hookAfter
+                if (voipWhitelistPkgs.contains(pkg)) {
+                    param.result = true
+                }
+            }
+        }
+    }
+
+    private fun hookPathBUnknownName() {
+        val cls = CLS_VOIP.toClassOrNull(appClassLoader) ?: return
+        cls.declaredMethods.filter { it.returnType == String::class.java }.forEach { m ->
+            m.hookAfter { param ->
+                val result = param.result as? String ?: return@hookAfter
+                if (!result.contains(UNKNOWN_RECORD)) return@hookAfter
+                val pkg = readStringField(param.thisObject) ?: return@hookAfter
+                val name = voipApps.firstOrNull { it.packageName == pkg }?.displayName
+                    ?: return@hookAfter
+                param.result = result.replace(UNKNOWN_RECORD, name)
+            }
+        }
+    }
+
+    private fun hookPathBRecordWrapperList() {
+        val source = appInfo.sourceDir ?: return
+        DexkitUtils.create(source) { bridge ->
+            val wrapperData = bridge.findClass {
+                matcher { usingStrings("OplusRecordWrapper") }
+            }.checkDataList("HookAudioMonitor.OplusRecordWrapper", onlyOne = false)
+                .firstOrNull()
+            val wrapperCls = wrapperData?.let { it.name.toClassOrNull(appClassLoader) }
+                ?: "com.oplus.audiomonitor.voiprecord.OplusRecordWrapper".toClassOrNull(appClassLoader)
+                ?: return@create
+
+            val appNameField = wrapperCls.declaredFields.firstOrNull {
+                it.type == String::class.java && !java.lang.reflect.Modifier.isStatic(it.modifiers)
+            }?.also { it.isAccessible = true }
+            val statusField = wrapperCls.declaredFields.firstOrNull {
+                (it.type == java.lang.Boolean.TYPE || it.type == Boolean::class.java) &&
+                    !java.lang.reflect.Modifier.isStatic(it.modifiers)
+            }?.also { it.isAccessible = true }
+
+            val listMethods = bridge.findMethod {
+                matcher {
+                    paramTypes("java.util.List")
+                    returnType = "java.util.List"
+                    usingStrings("enable_record_app", "com.tencent.mobileqq", "com.tencent.mm")
+                }
+            }.checkDataList("HookAudioMonitor.SwitchAppList", onlyOne = false)
+
+            val hookTargets = if (listMethods.isNotEmpty()) {
+                listMethods.mapNotNull { data ->
+                    data.className.toClassOrNull(appClassLoader)?.findMethod(data.methodName, 1)
+                }
+            } else {
+                listOfNotNull(
+                    CLS_APP.toClassOrNull(appClassLoader),
+                    CLS_VOIP.toClassOrNull(appClassLoader)
+                ).flatMap { c ->
+                    c.declaredMethods.filter {
+                        it.parameterCount == 1 &&
+                            java.util.List::class.java.isAssignableFrom(it.parameterTypes[0]) &&
+                            java.util.List::class.java.isAssignableFrom(it.returnType)
+                    }
+                }
+            }
+
+            hookTargets.forEach { method ->
+                method.hookBefore { param ->
+                    val ctx = appContext ?: return@hookBefore
+                    val sp = ctx.getSharedPreferences(
+                        ctx.packageName + SP_SUFFIX,
+                        Context.MODE_PRIVATE,
+                    )
+                    val enabled = sp.getString(SP_KEY_ENABLE, "")
+                        ?.split("#")
+                        ?.filter { it.isNotEmpty() }
+                        ?: emptyList()
+                    val out = ArrayList<Any>()
+                    val enabledJoined = StringBuilder()
+                    for ((index, app) in voipApps.withIndex()) {
+                        val on = enabled.contains(app.packageName)
+                        val wrapper = createRecordWrapper(wrapperCls, ctx, app.packageName, on)
+                            ?: continue
+                        appNameField?.set(wrapper, app.displayName)
+                        statusField?.set(wrapper, true)
+                        out.add(wrapper)
+                        if (on) {
+                            if (enabledJoined.isNotEmpty()) enabledJoined.append("#")
+                            enabledJoined.append(app.packageName)
+                        } else if (index == 0 && enabled.isEmpty()) {
+                        }
+                    }
+                    if (enabledJoined.isNotEmpty()) {
+                        sp.edit().putString(SP_KEY_ENABLE, enabledJoined.toString()).apply()
+                    }
+                    if (out.isNotEmpty()) param.result = out
+                }
+            }
+        }
+    }
+
+    private fun createRecordWrapper(
+        wrapperCls: Class<*>,
+        ctx: Context,
+        packageName: String,
+        enabled: Boolean,
+    ): Any? {
+        val ctors = wrapperCls.declaredConstructors
+        for (ctor in ctors) {
+            ctor.isAccessible = true
+            val types = ctor.parameterTypes
+            val args: Array<Any?> = when {
+                types.size == 3 &&
+                    Context::class.java.isAssignableFrom(types[0]) &&
+                    types[1] == String::class.java &&
+                    (types[2] == java.lang.Boolean.TYPE || types[2] == Boolean::class.java) ->
+                    arrayOf(ctx, packageName, enabled)
+
+                types.size == 2 &&
+                    types[0] == String::class.java &&
+                    (types[1] == java.lang.Boolean.TYPE || types[1] == Boolean::class.java) ->
+                    arrayOf(packageName, enabled)
+
+                types.size == 1 && types[0] == String::class.java ->
+                    arrayOf(packageName)
+
+                types.isEmpty() -> emptyArray()
+                else -> continue
+            }
+            val inst = runCatching { ctor.newInstance(*args) }.getOrNull() ?: continue
+            return inst
+        }
+        return null
+    }
+
+    private fun readStringField(inst: Any?): String? {
+        if (inst == null) return null
+        for (f in inst.javaClass.declaredFields) {
+            if (f.type != String::class.java) continue
+            f.isAccessible = true
+            val v = runCatching { f.get(inst) as? String }.getOrNull() ?: continue
+            if (v.contains('.') && v.split('.').size >= 2) return v
+        }
+        return null
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    private fun injectVoipArrayLists(inst: Any) {
+        val fields = inst.javaClass.declaredFields
+        for (f in fields) {
+            if (!java.util.ArrayList::class.java.isAssignableFrom(f.type)) continue
+            f.isAccessible = true
+            val list = runCatching { f.get(inst) as? java.util.ArrayList<Any?> }.getOrNull()
+                ?: continue
+            val asStrings = list.mapNotNull { it as? String }
+            if (asStrings.contains(PKG_MOBILEQQ) && asStrings.contains(PKG_MM)) {
+                list.clear()
+                list.addAll(voipWhitelistPkgs)
+            }
+            if (list.any { it == ACT_AV }) {
+                if (!list.contains(ACT_DOUYIN)) list.add(ACT_DOUYIN)
+            }
+        }
     }
 }
 
@@ -947,47 +1284,46 @@ object HookAudioEffectCenter : YukiBaseHooker() {
         }
         if (!enable || os != 30) return
 
-        runCatching {
-            CLASS_MGR.toClass().method { name = "setSpkVolParam" }.hook {
-                before {
-                    val arg0 = runCatching { args().first().int() }.getOrNull() ?: return@before
-                    val mode = runCatching {
-                        instance.current().field { name = "mSpatializerMode" }.any()
-                            as? java.util.concurrent.atomic.AtomicBoolean
-                    }.getOrNull() ?: return@before
-                    val spkVol = runCatching {
-                        instance.current().field { name = "mSpatializerSpkVol" }.any()
-                            as? java.util.concurrent.atomic.AtomicInteger
-                    }.getOrNull() ?: return@before
-                    val spatDev = runCatching {
-                        instance.current().field { name = "mSpatDeviceManager" }.any()
-                    }.getOrNull() ?: return@before
+        CLASS_MGR.toClassOrNull(appClassLoader)?.let { mgr ->
+            val setSpk = mgr.findMethod("setSpkVolParam")
+            setSpk?.hookBefore { param ->
+                val inst = param.thisObject ?: return@hookBefore
+                val arg0 = param.args.getOrNull(0) as? Int ?: return@hookBefore
+                val mode = runCatching {
+                    inst.current().field { name = "mSpatializerMode" }.any()
+                        as? java.util.concurrent.atomic.AtomicBoolean
+                }.getOrNull() ?: return@hookBefore
+                val spkVol = runCatching {
+                    inst.current().field { name = "mSpatializerSpkVol" }.any()
+                        as? java.util.concurrent.atomic.AtomicInteger
+                }.getOrNull() ?: return@hookBefore
+                val spatDev = runCatching {
+                    inst.current().field { name = "mSpatDeviceManager" }.any()
+                }.getOrNull() ?: return@hookBefore
 
-                    val device = runCatching {
-                        spatDev.current().method {
-                            name = "getDeviceForMusicStream"
-                            emptyParam()
-                        }.invoke<Int>()
-                    }.getOrNull() ?: return@before
+                val device = runCatching {
+                    spatDev.current().method {
+                        name = "getDeviceForMusicStream"
+                        emptyParam()
+                    }.invoke<Int>()
+                }.getOrNull() ?: return@hookBefore
 
-                    if (arg0 == spkVol.get()) return@before
-                    if (device != 2 && mode.get()) return@before
+                if (arg0 == spkVol.get()) return@hookBefore
+                if (device != 2 && mode.get()) return@hookBefore
 
-                    val paramIdx = runCatching {
-                        CLASS_DEF.toClass().field {
-                            name = "PARAM_SET_SPAT_VOLUME_INDEX"
-                            modifiers { isStatic }
-                        }.get().int()
-                    }.getOrNull() ?: return@before
+                val defCls = CLASS_DEF.toClassOrNull(appClassLoader) ?: return@hookBefore
+                val paramIdx = defCls.findField("PARAM_SET_SPAT_VOLUME_INDEX")?.let { f ->
+                    f.isAccessible = true
+                    f.get(null) as? Int
+                } ?: return@hookBefore
 
-                    runCatching {
-                        instance.current().method {
-                            name = "setParameterImp"
-                            paramCount = 3
-                        }.call(paramIdx, arg0, spkVol.get())
-                    }
-                    resultNull()
+                runCatching {
+                    inst.current().method {
+                        name = "setParameterImp"
+                        paramCount = 3
+                    }.call(paramIdx, arg0, spkVol.get())
                 }
+                param.result = null
             }
         }
     }

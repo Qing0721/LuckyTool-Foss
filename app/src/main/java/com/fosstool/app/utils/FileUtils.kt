@@ -20,7 +20,6 @@ import java.io.FileOutputStream
 import java.io.InputStream
 import java.io.InputStreamReader
 
-
 @Suppress("unused", "MemberVisibilityCanBePrivate")
 object FileUtils {
     fun getDocumentPath(context: Context, uri: Uri): String? {

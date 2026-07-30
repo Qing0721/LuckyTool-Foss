@@ -13,7 +13,6 @@ object SQLiteUtils {
         return SQLiteDatabase.openDatabase(dbPath, null, mode)
     }
 
-
     fun openOrCreateDataBase(dbPath: String): SQLiteDatabase? {
         return SQLiteDatabase.openOrCreateDatabase(dbPath, null)
     }

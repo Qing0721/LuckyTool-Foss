@@ -216,8 +216,8 @@ class XposedFragment : ModulePreferenceFragment(), MenuProvider {
                 }
                 title = getString(R.string.Screenshot)
                 summary = arraySummaryDot(
-                    getString(R.string.remove_system_screenshot_delay),
-                    getString(R.string.remove_screenshot_privacy_limit)
+                    getString(R.string.disable_flag_secure),
+                    getString(R.string.remove_page_limit_for_long_screenshots)
                 )
                 isVisible = context.checkPackName(key)
                 setOnPreferenceClickListener {
@@ -327,8 +327,7 @@ class XposedFragment : ModulePreferenceFragment(), MenuProvider {
                 }
                 title = context.getAppLabel(key)
                 summary = arraySummaryDot(
-                    getString(R.string.remove_ads_from_download_dialog),
-                    getString(R.string.remove_ads_from_weather_page),
+                    getString(R.string.remove_ads_from_download_dialog)
                 )
                 isVisible = context.checkPackName(key)
                 setOnPreferenceClickListener {
@@ -442,8 +441,8 @@ class XposedFragment : ModulePreferenceFragment(), MenuProvider {
                 }
                 title = context.getAppLabel(key)
                 summary = arraySummaryDot(
-                    getString(R.string.unlock_local_upgrade),
-                    getString(R.string.restore_ota_update_verity)
+                    getString(R.string.enable_opex_local_install),
+                    getString(R.string.remove_ota_notify_install_success)
                 )
                 isVisible = context.checkPackName(key)
                 setOnPreferenceClickListener {

@@ -1,35 +1,36 @@
-package com.fosstool.app.hook.scope.settings
+﻿package com.fosstool.app.hook.scope.settings
 
+import com.fosstool.app.hook.utils.OplusBuildUtlils
 import com.highcapable.yukihookapi.hook.entity.YukiBaseHooker
 import com.highcapable.yukihookapi.hook.factory.method
-import com.highcapable.yukihookapi.hook.log.YLog
-import com.fosstool.app.hook.utils.OplusBuildUtlils
+import com.highcapable.yukihookapi.hook.factory.toClassOrNull
 
 object ForceDisplayPasswordManagementSetting : YukiBaseHooker() {
     override fun onHook() {
-        val osVersionCode = try { OplusBuildUtlils().getOSVersionCode ?: 0 } catch (_: Throwable) { 0 }
-        val className = "com.oplus.settings.feature.password.controller.PasswordManagerPreferenceController"
-        try {
-            className.toClass().apply {
-                if (osVersionCode >= 30) {
-                    method { name = "isPreferenceNotAvailable" }.hook {
-                        replaceToFalse()
-                    }
-                } else {
-                    method { name = "displayPreference" }.hook {
-                        after {
-                            val prefScreen = args().first().any() ?: return@after
-                            val pmPref = invokeFindPreference(prefScreen, "key_password_manager")
-                            if (pmPref != null) invokeSetVisible(pmPref, true)
-                        }
-                    }
+        val osVersionCode = try {
+            OplusBuildUtlils().getOSVersionCode ?: 0
+        } catch (_: Throwable) {
+            0
+        }
+        val clazz = "com.oplus.settings.feature.password.controller.PasswordManagerPreferenceController"
+            .toClassOrNull(appClassLoader) ?: return
+        if (osVersionCode >= 30) {
+            clazz.method { name = "isPreferenceNotAvailable" }.ignored().hook { replaceToFalse() }
+        } else {
+            clazz.method { name = "displayPreference" }.ignored().hook {
+                after {
+                    val prefScreen = args.getOrNull(0) ?: return@after
+                    val pmPref = invokeFindPreference(prefScreen, "key_password_manager")
+                    if (pmPref != null) invokeSetVisible(pmPref, true)
                 }
             }
-        } catch (e: Throwable) {
-            YLog.error(
-                "ForceDisplayPasswordManagementSetting: $className not found",
-                tag = "LuckyTool"
-            )
+
+            clazz.method { name = "updateState" }.ignored().hook {
+                after {
+                    val preference = args.getOrNull(0) ?: return@after
+                    invokeSetVisible(preference, true)
+                }
+            }
         }
     }
 
@@ -43,7 +44,9 @@ object ForceDisplayPasswordManagementSetting : YukiBaseHooker() {
             }
             method?.isAccessible = true
             method?.invoke(host, key)
-        } catch (_: Throwable) { null }
+        } catch (_: Throwable) {
+            null
+        }
     }
 
     private fun invokeSetVisible(preference: Any, visible: Boolean) {
@@ -55,6 +58,7 @@ object ForceDisplayPasswordManagementSetting : YukiBaseHooker() {
             }
             method?.isAccessible = true
             method?.invoke(preference, visible)
-        } catch (_: Throwable) {}
+        } catch (_: Throwable) {
+        }
     }
 }

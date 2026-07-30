@@ -4,6 +4,7 @@ import android.graphics.drawable.ShapeDrawable
 import com.highcapable.yukihookapi.hook.bean.VariousClass
 import com.highcapable.yukihookapi.hook.entity.YukiBaseHooker
 import com.highcapable.yukihookapi.hook.factory.method
+import com.highcapable.yukihookapi.hook.factory.toClassOrNull
 import com.fosstool.app.utils.ModulePrefs
 import com.fosstool.app.utils.safeOfNan
 
@@ -19,16 +20,15 @@ object TileBackgroundTransparency : YukiBaseHooker() {
             "com.oplusos.systemui.qs.qstileimpl.OplusQSHighlightTileView",
             "com.oplus.systemui.qs.qstileimpl.OplusQSHighlightTileView",
             "com.oplus.systemui.qs.base.tile.OplusQSHighlightTileView"
-        ).toClass().apply {
-            method { name = "generateDrawable" }.hook {
+        ).toClassOrNull(appClassLoader)
+            ?.method { name = "generateDrawable" }?.ignored()?.hook {
                 after {
                     if (alpha < 0) return@after
-                    val drawable = result<ShapeDrawable>() ?: return@after
+                    val drawable = result as? ShapeDrawable ?: return@after
                     val paint = drawable.paint
                     paint.color = paint.color.colorAlphaOf(alpha / 10.0F)
                 }
             }
-        }
     }
 
     private fun Int.colorAlphaOf(value: Float) =

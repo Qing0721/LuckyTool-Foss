@@ -4,18 +4,19 @@ import android.os.IBinder
 import androidx.annotation.DeprecatedSinceApi
 import com.highcapable.yukihookapi.hook.bean.VariousClass
 import com.highcapable.yukihookapi.hook.factory.method
+import com.highcapable.yukihookapi.hook.factory.toClass
 import com.highcapable.yukihookapi.hook.type.android.IBinderClass
-import com.fosstool.app.hook.scope.systemui.StatusBarBatteryInfoNotify.toClass
 
 @Suppress("MemberVisibilityCanBePrivate", "unused")
 class IChargerUtils(val classLoader: ClassLoader?) {
 
-    val clazz = VariousClass(
-        "vendor.oplus.hardware.charger.V1_0.ICharger",
+    val clazz: Class<*> = VariousClass(
+        HIDL_CLASS_NAME,
         "vendor.oplus.hardware.charger.ICharger"
-    ).toClass(classLoader)
+    ).get(classLoader)
 
-    val stub = "${clazz.canonicalName}\$Stub".toClass(classLoader)
+    val stub: Class<*> by lazy { STUB_CLASS_NAME.toClass(classLoader) }
+
     val serviceName = "vendor.oplus.hardware.charger.ICharger/default"
 
     @DeprecatedSinceApi(34, "不支持在ColorOS14中使用")
@@ -31,6 +32,8 @@ class IChargerUtils(val classLoader: ClassLoader?) {
     }
 
     fun getInstance(): Any? {
+
+        if (clazz.name == HIDL_CLASS_NAME) return getInstanceC13()
         return stub.method {
             name = "asInterface"
             param(IBinderClass)
@@ -49,5 +52,10 @@ class IChargerUtils(val classLoader: ClassLoader?) {
             name = "getUIsohValue"
             emptyParam()
         }.get(ins).invoke<Int>()
+    }
+
+    private companion object {
+        const val HIDL_CLASS_NAME = "vendor.oplus.hardware.charger.V1_0.ICharger"
+        const val STUB_CLASS_NAME = "vendor.oplus.hardware.charger.ICharger\$Stub"
     }
 }

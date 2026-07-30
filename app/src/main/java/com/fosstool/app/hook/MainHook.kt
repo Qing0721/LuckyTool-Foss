@@ -63,6 +63,7 @@ import com.fosstool.app.hook.hooker.HookScreenshot
 import com.fosstool.app.hook.hooker.HookSecurityPermission
 import com.fosstool.app.hook.hooker.HookSettings
 import com.fosstool.app.hook.hooker.HookSmartSidebar
+import com.fosstool.app.hook.hooker.HookAudioMonitor
 import com.fosstool.app.hook.hooker.HookSoundRecorder
 import com.fosstool.app.hook.hooker.HookSau
 import com.fosstool.app.hook.hooker.HookSpeechAssist
@@ -80,10 +81,10 @@ import com.fosstool.app.hook.scope.CorePatch.CorePatchForU
 import com.fosstool.app.hook.scope.CorePatch.CorePatchForV
 import com.fosstool.app.hook.scope.alarmclock.AlarmClockWidget
 import com.fosstool.app.hook.scope.android.DisableFlagSecure
-import com.fosstool.app.hook.scope.exsystemservice.EnableGameRunInBackground
+import com.fosstool.app.hook.scope.otherapp.HookGpsJoyStick
 import com.fosstool.app.hook.scope.systemui.HookSystemUIFeature
 import com.fosstool.app.hook.scope.systemui.LockScreenClock
-import com.fosstool.app.hook.scope.wirelesssettings.WlanSla
+import com.fosstool.app.hook.scope.systemui.RemoveControlCenterCarriers
 import com.fosstool.app.hook.statusbar.StatusBarBattery
 import com.fosstool.app.hook.statusbar.StatusBarClock
 import com.fosstool.app.hook.statusbar.StatusBarControlCenter
@@ -92,6 +93,7 @@ import com.fosstool.app.hook.statusbar.StatusBarLayout
 import com.fosstool.app.hook.statusbar.StatusBarNetWorkSpeed
 import com.fosstool.app.hook.statusbar.StatusBarNotify
 import com.fosstool.app.hook.statusbar.StatusBarTile
+import com.fosstool.app.BuildConfig
 import com.fosstool.app.utils.SDK
 import de.robv.android.xposed.IXposedHookZygoteInit
 import de.robv.android.xposed.callbacks.XC_LoadPackage
@@ -101,7 +103,7 @@ object MainHook : IYukiHookXposedInit {
     override fun onInit() = configs {
         debugLog {
             tag = "LuckyTool"
-            isEnable = true
+            isEnable = BuildConfig.DEBUG
             isRecord = true
             elements(TAG, PRIORITY, PACKAGE_NAME, USER_ID)
         }
@@ -126,47 +128,49 @@ object MainHook : IYukiHookXposedInit {
         loadApp("com.android.systemui", StatusBarTile)
         loadApp("com.android.systemui", StatusBarLayout)
         loadApp("com.android.systemui", StatusBarBattery)
+        loadApp("com.android.systemui", RemoveControlCenterCarriers)
 
         loadApp("com.coloros.alarmclock", AlarmClockWidget)
         loadApp("com.oppo.launcher", "com.android.launcher") {
-            loadHooker(HookLauncher)
+            loadHooker(HookLauncher())
         }
 
         loadApp("com.oplus.aod", HookAod)
         loadApp("com.oplus.uiengine", HookUIEngine)
         loadApp("com.android.systemui", HookLockScreen)
-        loadApp("com.oplus.keyguard.clock.base", LockScreenClock)
+        loadApp("com.android.systemui", "com.oplus.keyguard.clock.base") {
+            loadHooker(LockScreenClock())
+        }
         loadApp("com.oplus.screenshot", HookScreenshot)
-        loadApp("com.oplus.screenshot", DisableFlagSecure)
-        loadApp("com.android.systemui", DisableFlagSecure)
-        loadApp("com.oplus.appplatform", DisableFlagSecure)
+        loadApp("com.oplus.screenshot", DisableFlagSecure())
+        loadApp("com.android.systemui", DisableFlagSecure())
+        loadApp("com.oplus.appplatform", DisableFlagSecure())
 
         loadApp("com.oplus.safecenter", "com.coloros.safecenter") {
-            loadHooker(HookSafeCenter)
+            loadHooker(HookSafeCenter())
         }
         loadApp("com.android.packageinstaller", HookPackageInstaller)
         loadApp("com.android.systemui", "com.coloros.securepay", "com.oplus.exsystemservice") {
-            loadHooker(HookDialogRelated)
+            loadHooker(HookDialogRelated())
         }
         loadApp("com.android.systemui", HookGestureRelated)
         loadApp("com.android.systemui", HookFingerPrintRelated)
         loadApp("com.android.systemui", "com.android.externalstorage", "com.oplus.exsystemservice") {
-            loadHooker(HookMiscellaneous)
+            loadHooker(HookMiscellaneous())
         }
-        loadApp("com.oplus.exsystemservice", EnableGameRunInBackground)
 
         loadApp("com.oplus.battery", HookBattery)
         loadApp("com.android.settings", HookSettings)
         loadApp("com.oneplus.camera", "com.oplus.camera") {
-            loadHooker(HookCamera)
+            loadHooker(HookCamera())
         }
         loadApp("com.coloros.gallery3d", HookGallery)
         loadApp("com.heytap.themestore", "com.oplus.themestore") {
-            loadHooker(HookThemeStore)
+            loadHooker(HookThemeStore())
         }
         loadApp("com.heytap.cloud", HookCloudService)
         loadApp("com.oplus.games", "com.oplus.cosa") {
-            loadHooker(HookOplusGames)
+            loadHooker(HookOplusGames())
         }
         loadApp("com.oplus.ota", HookOplusOta)
         loadApp("com.heytap.pictorial", HookPictorial)
@@ -174,13 +178,16 @@ object MainHook : IYukiHookXposedInit {
         loadApp("com.heytap.browser", HookBrowser)
         loadApp("com.oplus.gesture", HookGesture)
         loadApp("com.android.permissioncontroller", HookPermissionController)
-        loadApp("com.coloros.directui", HookDirectUI)
+        loadApp("com.coloros.directui", "com.coloros.colordirectservice") {
+            loadHooker(HookDirectUI)
+        }
         loadApp("com.heytap.quicksearchbox", HookQuickSearchBox)
         loadApp("com.heytap.market", HookMarket)
         loadApp("com.coloros.weather2", HookWeather)
         loadApp("com.ruet_cse_1503050.ragib.appbackup.pro", "ru.kslabs.ksweb", "com.dv.adm") {
-            loadHooker(HookOtherApp)
+            loadHooker(HookOtherApp())
         }
+        loadApp("com.theappninjas.fakegpsjoystick", HookGpsJoyStick)
 
         loadApp("com.oplus.beaconlink", HookBeaconLink)
         loadApp("com.coloros.calendar", HookCalendar)
@@ -199,11 +206,12 @@ object MainHook : IYukiHookXposedInit {
         loadApp("com.oplus.securitypermission", HookSecurityPermission)
         loadApp("com.coloros.smartsidebar", HookSmartSidebar)
         loadApp("com.coloros.soundrecorder", "com.oplus.audiomonitor") {
-            loadHooker(HookSoundRecorder)
+            loadHooker(HookSoundRecorder())
+            loadHooker(HookAudioMonitor())
         }
         loadApp("com.heytap.speechassist", HookSpeechAssist)
         loadApp("com.android.phone", "com.android.incallui") {
-            loadHooker(HookTeleService)
+            loadHooker(HookTeleService())
         }
         loadApp("com.android.phone") {
             loadHooker(HookPhone)
@@ -212,9 +220,9 @@ object MainHook : IYukiHookXposedInit {
             loadHooker(HookIncallUI)
         }
         loadApp("com.oplus.wirelesssettings", "com.android.bluetooth") {
-            loadHooker(HookWirelessSettings)
+            loadHooker(HookWirelessSettings())
         }
-        loadApp("com.oplus.wirelesssettings", WlanSla)
+
         loadApp("com.oplus.multiapp", HookMultiApp)
         loadApp("com.oplus.sau", HookSau)
         loadApp("com.oplus.mediacontroller", HookMediaController)

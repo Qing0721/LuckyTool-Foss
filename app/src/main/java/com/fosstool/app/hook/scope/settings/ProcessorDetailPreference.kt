@@ -12,8 +12,8 @@ import androidx.core.graphics.drawable.RoundedBitmapDrawableFactory
 import com.fosstool.app.hook.utils.appcompat.dialog.COUIAlertDialogBuilder
 import com.fosstool.app.utils.ModulePrefs
 import com.highcapable.yukihookapi.hook.entity.YukiBaseHooker
-import com.highcapable.yukihookapi.hook.factory.field
 import com.highcapable.yukihookapi.hook.factory.method
+import com.highcapable.yukihookapi.hook.factory.toClassOrNull
 
 object ProcessorDetailPreference : YukiBaseHooker() {
     @SuppressLint("DiscouragedApi")
@@ -29,26 +29,29 @@ object ProcessorDetailPreference : YukiBaseHooker() {
         val hasValidPath = !imagePath.isNullOrEmpty() &&
             imagePath != "null" && imagePath != "Null"
 
-        "com.oplus.settings.feature.deviceinfo.processordetail.ProcessorDetailPreference".toClass()
-            .apply {
-                method { name = "onBindViewHolder"; paramCount = 1 }.hook {
-                    after {
-                        val holder = args().first().any() ?: return@after
-                        val itemView = field { name = "itemView" }.get(holder).cast<View>()
-                            ?: return@after
-                        val context = itemView.context
-                        val settingsPkg = context.packageName
-                        val textPrefs = context.getSharedPreferences(
-                            "${settingsPkg}_lt_preferences", Context.MODE_PRIVATE
-                        )
+        "com.oplus.settings.feature.deviceinfo.processordetail.ProcessorDetailPreference"
+            .toClassOrNull(appClassLoader)
+            ?.method { name = "onBindViewHolder"; paramCount = 1 }
+            ?.ignored()
+            ?.hook {
+                after {
+                    val holder = args.getOrNull(0) ?: return@after
+                    val itemView = runCatching {
+                        holder.javaClass.getDeclaredField("itemView").apply { isAccessible = true }
+                            .get(holder) as? View
+                    }.getOrNull() ?: return@after
+                    val context = itemView.context
+                    val settingsPkg = context.packageName
+                    val textPrefs = context.getSharedPreferences(
+                        "${settingsPkg}_lt_preferences", Context.MODE_PRIVATE
+                    )
 
-                        if (isImageSwitch && hasValidPath) {
-                            applyImage(itemView, context, settingsPkg, imagePath!!)
-                        }
+                    if (isImageSwitch && hasValidPath) {
+                        applyImage(itemView, context, settingsPkg, imagePath!!)
+                    }
 
-                        if (isTextSwitch) {
-                            applyText(itemView, context, settingsPkg, textPrefs)
-                        }
+                    if (isTextSwitch) {
+                        applyText(itemView, context, settingsPkg, textPrefs)
                     }
                 }
             }

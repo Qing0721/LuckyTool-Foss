@@ -4,8 +4,10 @@ import android.graphics.Typeface
 import android.widget.TextView
 import com.highcapable.yukihookapi.hook.entity.YukiBaseHooker
 import com.highcapable.yukihookapi.hook.factory.constructor
+import com.highcapable.yukihookapi.hook.factory.current
 import com.highcapable.yukihookapi.hook.factory.field
 import com.highcapable.yukihookapi.hook.factory.method
+import com.highcapable.yukihookapi.hook.log.YLog
 import com.fosstool.app.utils.ModulePrefs
 import java.io.BufferedReader
 import java.io.File
@@ -17,6 +19,7 @@ import java.nio.charset.StandardCharsets
 import java.util.concurrent.CopyOnWriteArrayList
 import kotlin.concurrent.thread
 import kotlin.random.Random
+import com.highcapable.yukihookapi.hook.factory.toClassOrNull
 
 object AodRandomTextAndTypeface : YukiBaseHooker() {
 
@@ -34,18 +37,50 @@ object AodRandomTextAndTypeface : YukiBaseHooker() {
 
         if (mode != "0") {
             preloadLines(mode, randomFile, randomApi)
-            runCatching {
-                "com.oplus.aodimpl.AodRootLayout".toClass().apply {
+            val root = "com.oplus.aodimpl.AodRootLayout".toClassOrNull(appClassLoader)
+            if (root == null) {
+                YLog.error("AodRandomTextAndTypeface: AodRootLayout not found", tag = "LuckyTool")
+            } else runCatching {
+                root.apply {
+
                     constructor { paramCount = 2 }.hook {
-                        after { preloadLines(mode, randomFile, randomApi) }
+                        before { preloadLines(mode, randomFile, randomApi) }
                     }
+
                     method {
                         name = "getCustomView"
                     }.hookAll {
-                        after {
-                            val view = result as? android.view.View ?: return@after
-                            val text = pickLine() ?: return@after
-                            applyTextToViewTree(view, text)
+                        before {
+                            runCatching {
+                                val bean = args(0).any() ?: return@before
+                                val viewType = bean.current().method {
+                                    name = "getViewType"
+                                    emptyParam()
+                                }.call() as? String
+                                if (viewType != "AodTextView") return@before
+                                val methodBeans = bean.current().field {
+                                    name = "mMethodBeanList"
+                                }.any() as? List<*> ?: return@before
+                                val target = methodBeans.filterNotNull().firstOrNull { mb ->
+                                    (mb.current().method {
+                                        name = "getXmlAttribute"
+                                        emptyParam()
+                                    }.call() as? String) == "text" &&
+                                        (mb.current().method {
+                                            name = "getMethodName"
+                                            emptyParam()
+                                        }.call() as? String) == "setText"
+                                } ?: return@before
+                                val line = pickLine() ?: return@before
+                                target.current().method {
+                                    name = "setXmlValue"
+                                    paramCount = 1
+                                }.call(line)
+                                target.current().method {
+                                    name = "setValue"
+                                    paramCount = 1
+                                }.call(line)
+                            }
                         }
                     }
                 }
@@ -66,7 +101,7 @@ object AodRandomTextAndTypeface : YukiBaseHooker() {
                     "com.oplusos.systemui.aod.AodTextView",
                 ).forEach { cls ->
                     runCatching {
-                        cls.toClass().apply {
+                        cls.toClassOrNull(appClassLoader)?.apply {
                             constructor { paramCount = 3 }.hookAll {
                                 after { instance<TextView>()?.typeface = typeface }
                             }
@@ -81,7 +116,7 @@ object AodRandomTextAndTypeface : YukiBaseHooker() {
                         "com.oplusos.systemui.aod.TimeView",
                     ).forEach { cls ->
                         runCatching {
-                            cls.toClass().apply {
+                            cls.toClassOrNull(appClassLoader)?.apply {
                                 method { name = "setTextWidget" }.hookAll {
                                     after {
                                         runCatching {
@@ -143,21 +178,6 @@ object AodRandomTextAndTypeface : YukiBaseHooker() {
     private fun pickLine(): String? {
         if (lines.isEmpty()) return null
         return lines[Random.nextInt(lines.size)]
-    }
-
-    private fun applyTextToViewTree(view: android.view.View, text: String) {
-        if (view is TextView) {
-            val cur = view.text?.toString().orEmpty()
-            if (cur.any { it.isLetter() } || cur.isEmpty() || cur.length > 8) {
-                view.text = text
-            }
-            return
-        }
-        if (view is android.view.ViewGroup) {
-            for (i in 0 until view.childCount) {
-                applyTextToViewTree(view.getChildAt(i), text)
-            }
-        }
     }
 
     private fun applyTypefaceTree(group: android.view.ViewGroup, tf: Typeface) {

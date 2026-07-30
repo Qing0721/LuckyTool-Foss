@@ -3,8 +3,7 @@ package com.fosstool.app.hook.scope.android
 import android.util.ArraySet
 import com.highcapable.yukihookapi.hook.entity.YukiBaseHooker
 import com.highcapable.yukihookapi.hook.factory.method
-import com.highcapable.yukihookapi.hook.type.java.IntType
-import com.highcapable.yukihookapi.hook.type.java.ListClass
+import com.highcapable.yukihookapi.hook.factory.toClassOrNull
 import com.fosstool.app.utils.ModulePrefs
 import com.fosstool.app.utils.getOSVersionCode
 
@@ -19,26 +18,21 @@ object MultiApp : YukiBaseHooker() {
         val removeLimit = prefs(ModulePrefs).getBoolean("remove_multi_app_created_num_limit_for_users", false) ||
             prefs(ModulePrefs).getBoolean("remove_multi_app_created_num_limit_for_apps", false)
 
-        "com.oplus.multiapp.OplusMultiAppConfig".toClass().apply {
-            method { name = "getAllowedPkgList";returnType = ListClass }.hook {
-                before {
-                    if (!isEnable || enabledMulti.isEmpty()) return@before
-                    result = java.util.ArrayList(enabledMulti)
-                }
+        val cfg = "com.oplus.multiapp.OplusMultiAppConfig".toClassOrNull(appClassLoader) ?: return
+        cfg.method { name = "getAllowedPkgList" }.ignored().hook {
+            before {
+                if (!isEnable || enabledMulti.isEmpty()) return@before
+                result = java.util.ArrayList(enabledMulti)
             }
-            if (getOSVersionCode >= 31) {
-                method { name = "getMaxCreatedNum";returnType = IntType }.hook {
-                    before {
-                        if (removeLimit) result = 1000
-                    }
-                }
+        }
+        if (getOSVersionCode >= 31) {
+            cfg.method { name = "getMaxCreatedNum" }.ignored().hook {
+                before { if (removeLimit) result = 1000 }
             }
-            if (getOSVersionCode >= 38) {
-                method { name = "getMaxCloneUserNum";returnType = IntType }.hook {
-                    before {
-                        if (removeLimit) result = 10
-                    }
-                }
+        }
+        if (getOSVersionCode >= 38) {
+            cfg.method { name = "getMaxCloneUserNum" }.ignored().hook {
+                before { if (removeLimit) result = 10 }
             }
         }
     }

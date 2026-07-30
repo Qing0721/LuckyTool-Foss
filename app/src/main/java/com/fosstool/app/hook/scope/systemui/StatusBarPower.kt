@@ -4,11 +4,13 @@ import android.graphics.Typeface
 import android.util.TypedValue
 import android.widget.TextView
 import com.highcapable.yukihookapi.hook.entity.YukiBaseHooker
-import com.highcapable.yukihookapi.hook.factory.field
 import com.highcapable.yukihookapi.hook.factory.method
+import com.highcapable.yukihookapi.hook.factory.toClassOrNull
 import com.fosstool.app.utils.A14
 import com.fosstool.app.utils.ModulePrefs
 import com.fosstool.app.utils.SDK
+import de.robv.android.xposed.XposedHelpers
+import java.lang.reflect.Field
 
 object StatusBarPower : YukiBaseHooker() {
     override fun onHook() {
@@ -26,20 +28,19 @@ object StatusBarPower : YukiBaseHooker() {
                     prefs(ModulePrefs).getBoolean("statusbar_power_use_bold_font_style", false)
             val customFontSize = prefs(ModulePrefs).getInt("statusbar_power_font_size", 0)
 
-            "com.oplus.systemui.statusbar.pipeline.battery.ui.binder.BatteryViewBinder".toClass()
-                .apply {
-                    method { name = "bind\$initView" }.hook {
-                        after {
-                            args(1).cast<TextView>()?.apply {
-                                if (removePercent) text = text.toString().replace("%", "")
-                                if (userTypeface) {
-                                    typeface = if (boldTypeface) Typeface.DEFAULT_BOLD else Typeface.DEFAULT
-                                    setTextSize(
-                                        TypedValue.COMPLEX_UNIT_DIP,
-                                        if (customFontSize == 0) 12F else customFontSize.toFloat() * 2
-                                    )
-                                }
-                            }
+            "com.oplus.systemui.statusbar.pipeline.battery.ui.binder.BatteryViewBinder"
+                .toClassOrNull(appClassLoader)
+                ?.method { name = "bind\$initView" }?.ignored()?.hook {
+                    after {
+                        val tv = args.getOrNull(1) as? TextView ?: return@after
+                        if (removePercent) tv.text = tv.text.toString().replace("%", "")
+                        if (userTypeface) {
+                            tv.typeface =
+                                if (boldTypeface) Typeface.DEFAULT_BOLD else Typeface.DEFAULT
+                            tv.setTextSize(
+                                TypedValue.COMPLEX_UNIT_DIP,
+                                if (customFontSize == 0) 12F else customFontSize.toFloat() * 2
+                            )
                         }
                     }
                 }
@@ -58,28 +59,41 @@ object StatusBarPower : YukiBaseHooker() {
                     prefs(ModulePrefs).getBoolean("statusbar_power_use_bold_font_style", false)
             val customFontSize = prefs(ModulePrefs).getInt("statusbar_power_font_size", 0)
 
-            "com.oplusos.systemui.statusbar.widget.StatBatteryMeterView".toClass().apply {
-                method { name = "onConfigChanged" }.hook {
-                    after {
-                        method { name = "updatePercentText" }.get(instance).call()
-                    }
-                }
-                method { name = "updatePercentText" }.hook {
-                    after {
-                        field { name = "batteryPercentText" }.get(instance).cast<TextView>()
-                            ?.apply {
-                                if (removePercent) text = text.toString().replace("%", "")
-                                if (userTypeface || powerApplyToBatteryIcon) {
-                                    typeface = if (boldTypeface) Typeface.DEFAULT_BOLD else Typeface.DEFAULT
-                                    setTextSize(
-                                        TypedValue.COMPLEX_UNIT_DIP,
-                                        if (customFontSize == 0) 12F else customFontSize.toFloat() * 2
-                                    )
-                                }
+            "com.oplusos.systemui.statusbar.widget.StatBatteryMeterView"
+                .toClassOrNull(appClassLoader)?.let { c ->
+                    c.method { name = "onConfigChanged" }.ignored().hook {
+                        after {
+                            runCatching {
+                                XposedHelpers.callMethod(instance, "updatePercentText")
                             }
+                        }
+                    }
+                    c.method { name = "updatePercentText" }.ignored().hook {
+                        after {
+                            val tv =
+                                c.findField("batteryPercentText")?.get(instance) as? TextView
+                                    ?: return@after
+                            if (removePercent) tv.text = tv.text.toString().replace("%", "")
+                            if (userTypeface || powerApplyToBatteryIcon) {
+                                tv.typeface =
+                                    if (boldTypeface) Typeface.DEFAULT_BOLD else Typeface.DEFAULT
+                                tv.setTextSize(
+                                    TypedValue.COMPLEX_UNIT_DIP,
+                                    if (customFontSize == 0) 12F else customFontSize.toFloat() * 2
+                                )
+                            }
+                        }
                     }
                 }
-            }
         }
+    }
+
+    private fun Class<*>.findField(name: String): Field? {
+        var cls: Class<*>? = this
+        while (cls != null) {
+            runCatching { return cls.getDeclaredField(name).also { it.isAccessible = true } }
+            cls = cls.superclass
+        }
+        return null
     }
 }

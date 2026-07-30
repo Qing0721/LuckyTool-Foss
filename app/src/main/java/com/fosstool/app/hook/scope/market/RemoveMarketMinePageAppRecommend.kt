@@ -1,95 +1,66 @@
 package com.fosstool.app.hook.scope.market
 
 import com.highcapable.yukihookapi.hook.entity.YukiBaseHooker
+import com.highcapable.yukihookapi.hook.factory.current
 import com.highcapable.yukihookapi.hook.factory.method
+import com.highcapable.yukihookapi.hook.type.android.BundleClass
+import com.highcapable.yukihookapi.hook.type.android.ContextClass
+import com.highcapable.yukihookapi.hook.type.java.BooleanType
+import com.highcapable.yukihookapi.hook.type.java.MapClass
+import com.highcapable.yukihookapi.hook.type.java.StringClass
 import com.highcapable.yukihookapi.hook.type.java.UnitType
 import com.fosstool.app.utils.DexkitUtils
 import com.fosstool.app.utils.DexkitUtils.checkDataList
+import com.fosstool.app.utils.DexkitUtils.firstOrNullSafe
+import com.highcapable.yukihookapi.hook.factory.toClassOrNull
 
 object RemoveMarketMinePageAppRecommend : YukiBaseHooker() {
     override fun onHook() {
-        DexkitUtils.create(appInfo.sourceDir) { bridge ->
-            runCatching {
-                bridge.findMethod {
-                    searchPackages("com.heytap.market.mine", "com.heytap.cdo.client")
-                    matcher {
-                        declaredClass {
-                            usingStrings("MineFragment", "MineActionBarView")
-                        }
-                        paramCount = 2
-                        returnType(UnitType.name)
+        DexkitUtils.create(appInfo.sourceDir) { dexKitBridge ->
+            val viewLayerWrapDto = "com.heytap.cdo.card.domain.dto.ViewLayerWrapDto"
+
+            dexKitBridge.findClass {
+                matcher {
+                    fields {
+                        addForType(MapClass.name)
+                        addForType(StringClass.name)
+                        addForType(BooleanType.name)
+                        addForType(BundleClass.name)
+                        addForType(ContextClass.name)
+                        addForType("com.heytap.market.mine.view.MineActionBarView")
                     }
-                }.apply {
-                    if (isNotEmpty()) {
-                        forEach {
-                            it.className.toClass().method {
-                                name = it.methodName
-                                paramCount = 2
-                            }.hookAll {
-                                before {
-                                    result = null
-                                }
-                            }
+                    methods {
+                        add { name = "onCreate" }
+                        add { name = "onCreateView" }
+                        add { name = "onDestroy" }
+                        add { name = "onDestroyView" }
+                        add { name = "onConfigurationChanged" }
+                        add {
+                            paramTypes(viewLayerWrapDto)
+                            returnType(MapClass.name)
                         }
-                        return@create
+                        add {
+                            paramTypes(viewLayerWrapDto, BooleanType.name)
+                            returnType(UnitType.name)
+                        }
                     }
+                    usingStrings("MineFragment")
                 }
-            }
-            runCatching {
-                bridge.findClass {
-                    matcher {
-                        usingStrings("MineActionBarView")
-                    }
-                }.apply {
-                    checkDataList("RemoveMarketMinePageAppRecommend", false)
-                    forEach { classData ->
-                        classData.name.toClass().apply {
-                            method {
-                                paramCount = 2
-                                returnType = UnitType
-                            }.hookAll {
-                                before {
-                                    val p0 = args().first().any()
-                                    val typeName = p0?.javaClass?.name.orEmpty()
-                                    if (typeName.contains("ViewLayerWrapDto") ||
-                                        typeName.contains("ViewLayer")
-                                    ) {
-                                        result = null
-                                    }
-                                }
-                            }
-                            method {
-                                paramCount = 2
-                                returnType = UnitType
-                            }.hookAll {
-                                before {
-                                    if (args().last().any() is Boolean) {
-                                        args().last().set(false)
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            runCatching {
-                bridge.findMethod {
-                    searchPackages("com.heytap.market.mine")
-                    matcher {
-                        addParamType("java.util.List")
-                        returnType(UnitType.name)
-                    }
-                }.forEach {
-                    it.className.toClass().method {
-                        name = it.methodName
-                        paramCount(1..3)
-                    }.hookAll {
+            }.apply {
+                checkDataList("RemoveMarketMinePageAppRecommend")
+                firstOrNullSafe()?.name?.toClassOrNull(appClassLoader)?.apply {
+                    method {
+                        param(viewLayerWrapDto, BooleanType)
+                        returnType = UnitType
+                    }.hook {
+
                         before {
-                            for (i in 0 until 4) {
-                                if (runCatching { args(i).any() }.getOrNull() is List<*>) {
-                                    args(i).set(ArrayList<Any>())
-                                }
-                            }
+                            val dto = args().first().any() ?: return@before
+                            val cards = dto.current().method { name = "getCards" }.list<Any>()
+                            if (cards.isEmpty()) return@before
+                            val kept = ArrayList<Any>(cards)
+                            kept.removeIf { kept.indexOf(it) != 0 }
+                            dto.current().method { name = "setCards" }.call(ArrayList(kept))
                         }
                     }
                 }

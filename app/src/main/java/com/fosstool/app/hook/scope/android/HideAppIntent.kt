@@ -4,10 +4,8 @@ import android.content.Intent
 import android.content.pm.ResolveInfo
 import com.highcapable.yukihookapi.hook.entity.YukiBaseHooker
 import com.highcapable.yukihookapi.hook.factory.method
+import com.highcapable.yukihookapi.hook.factory.toClassOrNull
 import com.highcapable.yukihookapi.hook.log.YLog
-import com.highcapable.yukihookapi.hook.type.java.IntType
-import com.highcapable.yukihookapi.hook.type.java.LongType
-import com.highcapable.yukihookapi.hook.type.java.StringClass
 import com.fosstool.app.utils.AppIntentInfo
 import com.fosstool.app.utils.IntentAppUpdate
 import com.fosstool.app.utils.IntentPrefs
@@ -49,29 +47,12 @@ object HideAppIntent : YukiBaseHooker() {
         } else {
             "com.android.server.pm.PackageManagerService"
         }
-        targetClass.toClass().apply {
-            if (useIPackageManagerBase) {
-                method {
-                    name = "queryIntentActivities"
-                    param(Intent::class.java, StringClass, LongType, IntType)
-                }.hook {
-                    after {
-                        val intent = args().first().cast<Intent>() ?: return@after
-                        val slice = result ?: return@after
-                        filterResult(intent, slice)
-                    }
-                }
-            } else {
-                method {
-                    name = "queryIntentActivities"
-                    param(Intent::class.java, StringClass, IntType, IntType)
-                }.hook {
-                    after {
-                        val intent = args().first().cast<Intent>() ?: return@after
-                        val slice = result ?: return@after
-                        filterResult(intent, slice)
-                    }
-                }
+        val cls = targetClass.toClassOrNull(appClassLoader) ?: return
+        cls.method { name = "queryIntentActivities"; paramCount = 4 }.ignored().hook {
+            after {
+                val intent = args(0).any() as? Intent ?: return@after
+                val slice = result ?: return@after
+                filterResult(intent, slice)
             }
         }
     }
@@ -82,7 +63,7 @@ object HideAppIntent : YukiBaseHooker() {
         if (intent.getBooleanExtra(EXTRA_RESULT_ORIGIN_DATA, false)) return
         if (slice == null) return
         val list = runCatching {
-            slice.javaClass.getMethod("getList").invoke(slice) as? java.util.List<*>
+            slice.javaClass.getMethod("getList")?.invoke(slice) as? java.util.List<*>
         }.getOrNull() ?: return
         for (type in IntentType.values()) {
             if (type == IntentType.UNKNOWN) continue

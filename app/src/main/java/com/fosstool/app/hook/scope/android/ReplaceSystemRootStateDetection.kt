@@ -2,7 +2,7 @@ package com.fosstool.app.hook.scope.android
 
 import com.highcapable.yukihookapi.hook.entity.YukiBaseHooker
 import com.highcapable.yukihookapi.hook.factory.method
-import com.highcapable.yukihookapi.hook.type.java.BooleanType
+import com.highcapable.yukihookapi.hook.factory.toClassOrNull
 import com.fosstool.app.utils.A12
 import com.fosstool.app.utils.ModulePrefs
 import com.fosstool.app.utils.SDK
@@ -14,27 +14,15 @@ object ReplaceSystemRootStateDetection : YukiBaseHooker() {
         if (!prefs(ModulePrefs).getBoolean("replace_system_root_state_detection", false)) return
 
         if (getOSVersionCode > 26) {
-            runCatching {
-                "com.android.server.oplus.heimdall.HeimdallService".toClass().apply {
-                    method { name = "isRootEnable"; returnType = BooleanType }.hook {
-                        replaceToFalse()
-                    }
-                }
+            "com.android.server.oplus.heimdall.HeimdallService".toClassOrNull(appClassLoader)?.apply {
+                method { name = "isRootEnable" }.ignored().hook { replaceToFalse() }
             }
         }
-        runCatching {
-            "com.android.server.oplus.heimdall.service.RootService".toClass().apply {
-                method { name = "isRoot"; returnType = BooleanType }.hook {
-                    replaceToFalse()
-                }
-            }
+        "com.android.server.oplus.heimdall.service.RootService".toClassOrNull(appClassLoader)?.apply {
+            method { name = "isRoot" }.ignored().hook { replaceToFalse() }
         }
-        runCatching {
-            "com.android.server.oplus.heimdall.root.RootDetector".toClass().apply {
-                method { name = "checkDeviceRootStatus" }.hook {
-                    intercept()
-                }
-            }
+        "com.android.server.oplus.heimdall.root.RootDetector".toClassOrNull(appClassLoader)?.apply {
+            method { name = "checkDeviceRootStatus" }.ignored().hook { intercept() }
         }
     }
 }

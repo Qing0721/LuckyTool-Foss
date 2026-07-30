@@ -163,13 +163,6 @@ class Android : BaseScopePreferenceFeagment() {
                     isIconSpaceReserved = false
                 })
             }
-            add(SwitchPreference(ctx).apply {
-                title = ctx.getString(R.string.disable_dynamic_refresh_rate)
-                summary = ctx.getString(R.string.disable_dynamic_refresh_rate_summary)
-                key = "disable_dynamic_refresh_rate"
-                setDefaultValue(false)
-                isIconSpaceReserved = false
-            })
         }
     }
 }
@@ -968,13 +961,6 @@ class StatusBarNotifyRemoval : BaseScopePreferenceFeagment() {
                 summary = ctx.getString(R.string.remove_hotspot_power_consumption_notification_summary)
                 key = "remove_hotspot_power_consumption_notification"
                 setDefaultValue(false)
-                isIconSpaceReserved = false
-            })
-            add(SwitchPreference(ctx).apply {
-                title = ctx.getString(R.string.remove_smart_rapid_charging_notification)
-                key = "remove_smart_rapid_charging_notification"
-                setDefaultValue(false)
-                isVisible = false
                 isIconSpaceReserved = false
             })
             add(SwitchPreference(ctx).apply {
@@ -2068,24 +2054,11 @@ class StatusBarBattery : BaseScopePreferenceFeagment() {
 
 class Launcher : BaseScopePreferenceFeagment() {
     override val navAction = R.id.action_nav_xposed_to_launcher
-    override val scopes = arrayOf("com.coloros.alarmclock", "com.android.launcher")
+
+    override val scopes = arrayOf("com.android.launcher", "com.oppo.launcher")
 
     override fun h0(ctx: Context): ArrayList<Preference> {
         return ArrayList<Preference>().apply {
-            add(DropDownPreference(ctx).apply {
-                title = ctx.getString(R.string.alarmclock_widget_redone_mode)
-                summary = ctx.getString(R.string.common_words_current_mode) + ": %s"
-                key = "alarmclock_widget_redone_mode"
-                entries =
-                    ctx.resources.getStringArray(R.array.statusbar_control_center_clock_red_one_mode_entries)
-                entryValues = arrayOf("0", "1", "2")
-                setDefaultValue("0")
-                isIconSpaceReserved = false
-                setOnPreferenceChangeListener { _, newValue ->
-                    ctx.dataChannel("com.coloros.alarmclock").put(key, newValue)
-                    true
-                }
-            })
             add(SwitchPreference(ctx).apply {
                 title = ctx.getString(R.string.allow_app_names_display_multiple_lines)
                 key = "allow_app_names_display_multiple_lines"
@@ -2129,12 +2102,6 @@ class Launcher : BaseScopePreferenceFeagment() {
                     isIconSpaceReserved = false
                 })
             }
-            add(SwitchPreference(ctx).apply {
-                title = ctx.getString(R.string.remove_the_dot_after_app_update)
-                key = "remove_the_dot_after_app_update"
-                setDefaultValue(false)
-                isIconSpaceReserved = false
-            })
             add(SwitchPreference(ctx).apply {
                 title = ctx.getString(R.string.enable_display_app_update_dot)
                 key = "enable_display_app_update_dot"
@@ -2242,34 +2209,6 @@ class Launcher : BaseScopePreferenceFeagment() {
                 key = "RecentTaskListRelated"
                 isIconSpaceReserved = false
             })
-            add(SwitchPreference(ctx).apply {
-                title = ctx.getString(R.string.enable_stacked_task_layout)
-                key = "enable_stacked_task_layout"
-                setDefaultValue(false)
-                isIconSpaceReserved = false
-                setOnPreferenceChangeListener { _, _ ->
-                    (activity as MainActivity).restart()
-                    true
-                }
-            })
-            if (ctx.getBoolean(ModulePrefs, "enable_stacked_task_layout", false)) {
-                add(SeekBarPreference(ctx).apply {
-                    title = ctx.getString(R.string.set_task_stacking_level)
-                    key = "set_task_stacking_level"
-                    setDefaultValue(7)
-                    max = 10
-                    min = 5
-                    showSeekBarValue = true
-                    updatesContinuously = false
-                    isIconSpaceReserved = false
-                })
-                add(SwitchPreference(ctx).apply {
-                    title = ctx.getString(R.string.fix_current_task_to_the_top)
-                    key = "fix_current_task_to_the_top"
-                    setDefaultValue(false)
-                    isIconSpaceReserved = false
-                })
-            }
             add(SwitchPreference(ctx).apply {
                 title = ctx.getString(R.string.long_press_app_icon_open_app_details)
                 key = "long_press_app_icon_open_app_details"
@@ -2389,13 +2328,6 @@ class Launcher : BaseScopePreferenceFeagment() {
                 min = 0
                 showSeekBarValue = true
                 updatesContinuously = false
-                isIconSpaceReserved = false
-            })
-            add(SwitchPreference(ctx).apply {
-                title = ctx.getString(R.string.remove_launcher_high_tempreature_protection)
-                summary = ctx.getString(R.string.remove_launcher_high_tempreature_protection_summary)
-                key = "remove_launcher_high_tempreature_protection"
-                setDefaultValue(false)
                 isIconSpaceReserved = false
             })
             add(SwitchPreference(ctx).apply {
@@ -2900,20 +2832,6 @@ class Screenshot : BaseScopePreferenceFeagment() {
     override fun h0(ctx: Context): ArrayList<Preference> {
         return ArrayList<Preference>().apply {
             add(SwitchPreference(ctx).apply {
-                title = ctx.getString(R.string.remove_system_screenshot_delay)
-                summary = ctx.getString(R.string.remove_system_screenshot_delay_summary)
-                key = "remove_system_screenshot_delay"
-                setDefaultValue(false)
-                isIconSpaceReserved = false
-            })
-            add(SwitchPreference(ctx).apply {
-                title = ctx.getString(R.string.remove_screenshot_privacy_limit)
-                summary = ctx.getString(R.string.remove_screenshot_privacy_limit_summary)
-                key = "remove_screenshot_privacy_limit"
-                setDefaultValue(false)
-                isIconSpaceReserved = false
-            })
-            add(SwitchPreference(ctx).apply {
                 title = ctx.getString(R.string.disable_flag_secure)
                 summary = ctx.getString(R.string.disable_flag_secure_summary)
                 key = "disable_flag_secure"
@@ -3194,22 +3112,6 @@ class Application : BaseScopePreferenceFeagment() {
                 isIconSpaceReserved = false
             })
             add(SwitchPreference(ctx).apply {
-                title = ctx.getString(R.string.show_packagename_and_versioncode)
-                summary = ctx.getString(R.string.show_packagename_and_versioncode_summary)
-                key = "show_packagename_and_versioncode"
-                setDefaultValue(false)
-                isVisible = false
-                isIconSpaceReserved = false
-            })
-            add(SwitchPreference(ctx).apply {
-                title = ctx.getString(R.string.replase_aosp_installer)
-                summary = ctx.getString(R.string.replase_aosp_installer_summary)
-                key = "replase_aosp_installer"
-                setDefaultValue(false)
-                isVisible = false
-                isIconSpaceReserved = false
-            })
-            add(SwitchPreference(ctx).apply {
                 title = ctx.getString(R.string.remove_adb_install_confirm)
                 summary = ctx.getString(R.string.remove_adb_install_confirm_summary)
                 key = "remove_adb_install_confirm"
@@ -3417,13 +3319,6 @@ class DialogRelated : BaseScopePreferenceFeagment() {
                     true
                 }
             })
-            add(SwitchPreference(ctx).apply {
-                title = ctx.getString(R.string.reduce_power_menu_display_delay)
-                key = "reduce_power_menu_display_delay"
-                setDefaultValue(false)
-                isVisible = false
-                isIconSpaceReserved = false
-            })
         }
     }
 
@@ -3607,11 +3502,6 @@ class Settings : BaseScopePreferenceFeagment() {
     override fun h0(ctx: Context): ArrayList<Preference> {
         return ArrayList<Preference>().apply {
             add(PreferenceCategory(ctx).apply {
-                title = ctx.getString(R.string.settings_connection_sharing)
-                key = "settings_connection_sharing"
-                isIconSpaceReserved = false
-            })
-            add(PreferenceCategory(ctx).apply {
                 title = ctx.getString(R.string.settings_lock_screen)
                 key = "settings_status_bar"
                 isIconSpaceReserved = false
@@ -3691,17 +3581,6 @@ class Settings : BaseScopePreferenceFeagment() {
                 key = "enable_screen_color_temperature_rgb_ball"
                 setDefaultValue(false)
                 isVisible = false
-                isIconSpaceReserved = false
-            })
-            add(SwitchPreference(ctx).apply {
-                title = ctx.getString(R.string.enable_screen_color_temperature_rgb_palette)
-                summary = arraySummaryLine(
-                    ctx.getString(R.string.need_restart_system),
-                    ctx.getString(R.string.enable_screen_color_temperature_rgb_palette_summary)
-                )
-                key = "enable_screen_color_temperature_rgb_palette"
-                setDefaultValue(false)
-                isVisible = getOSVersionCode >= 27
                 isIconSpaceReserved = false
             })
             add(SwitchPreference(ctx).apply {
@@ -3811,6 +3690,12 @@ class Settings : BaseScopePreferenceFeagment() {
             add(PreferenceCategory(ctx).apply {
                 title = ctx.getString(R.string.settings_password_security)
                 key = "settings_password_security"
+                isIconSpaceReserved = false
+            })
+            add(SwitchPreference(ctx).apply {
+                title = ctx.getString(R.string.enable_google_auto_fill)
+                key = "enable_google_auto_fill"
+                setDefaultValue(false)
                 isIconSpaceReserved = false
             })
             add(SwitchPreference(ctx).apply {
@@ -4091,18 +3976,6 @@ class Battery : BaseScopePreferenceFeagment() {
                     key = "display_module_calculates_battery_health_data"
                     setDefaultValue(false)
                     isIconSpaceReserved = false
-                })
-                add(SwitchPreference(ctx).apply {
-                    title = ctx.getString(R.string.fix_battery_health_data_display)
-                    summary = ctx.getString(R.string.fix_battery_health_data_display_summary)
-                    key = "fix_battery_health_data_display"
-                    setDefaultValue(false)
-                    isVisible = SDK >= A13
-                    isIconSpaceReserved = false
-                    setOnPreferenceChangeListener { _, _ ->
-                        (activity as MainActivity).restart()
-                        true
-                    }
                 })
             }
             add(SwitchPreference(ctx).apply {
@@ -5224,13 +5097,6 @@ class OplusBrowser : BaseScopePreferenceFeagment() {
                 isIconSpaceReserved = false
             })
             add(SwitchPreference(ctx).apply {
-                title = ctx.getString(R.string.remove_ads_from_weather_page)
-                summary = ctx.getString(R.string.remove_ads_from_weather_page_summary)
-                key = "remove_ads_from_weather_page"
-                setDefaultValue(false)
-                isIconSpaceReserved = false
-            })
-            add(SwitchPreference(ctx).apply {
                 title = ctx.getString(R.string.remove_browser_window_limit_number)
                 key = "remove_browser_window_limit_number"
                 setDefaultValue(false)
@@ -5307,28 +5173,6 @@ class OplusGesture : BaseScopePreferenceFeagment() {
                     key = "custom_aon_gesture_scroll_page_whitelist"
                     setDefaultValue("None")
                     isEnabled = ctx.checkPackName("com.aiunit.aon")
-                    isIconSpaceReserved = false
-                    setOnBindEditTextListener {
-                        it.setText((summary as String).replaceBlankLine)
-                    }
-                    setOnPreferenceChangeListener { _, newValue ->
-                        val format = (newValue as String).replaceBlankLine
-                        summary = format.ifBlank { "None" }
-                        true
-                    }
-                })
-                add(EditTextPreference(ctx).apply {
-                    title = ctx.getString(R.string.custom_aon_gesture_video_whitelist)
-                    dialogTitle = title
-                    summary = ctx.getString(
-                        ModulePrefs, "custom_aon_gesture_video_whitelist", "None"
-                    )
-                    if (summary.isNullOrBlank()) summary = "None"
-                    dialogMessage = ctx.getString(R.string.custom_aon_gesture_whitelist_tips)
-                    key = "custom_aon_gesture_video_whitelist"
-                    setDefaultValue("None")
-                    isEnabled = ctx.checkPackName("com.aiunit.aon")
-                    isVisible = false
                     isIconSpaceReserved = false
                     setOnBindEditTextListener {
                         it.setText((summary as String).replaceBlankLine)

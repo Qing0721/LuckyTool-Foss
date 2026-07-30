@@ -1,52 +1,54 @@
 package com.fosstool.app.hook.scope.android
 
 import com.highcapable.yukihookapi.hook.entity.YukiBaseHooker
-import com.highcapable.yukihookapi.hook.factory.current
 import com.highcapable.yukihookapi.hook.factory.field
 import com.highcapable.yukihookapi.hook.factory.method
-import com.highcapable.yukihookapi.hook.type.java.StringClass
-import com.fosstool.app.utils.A13
+import com.highcapable.yukihookapi.hook.factory.toClassOrNull
+import com.highcapable.yukihookapi.hook.log.YLog
+import com.highcapable.yukihookapi.hook.type.java.ListClass
 import com.fosstool.app.utils.ModulePrefs
-import com.fosstool.app.utils.SDK
+import de.robv.android.xposed.XposedHelpers
 
 object SetAppUpdateDotDisplayMode : YukiBaseHooker() {
     override fun onHook() {
-        if (SDK < A13) return
         val mode = prefs(ModulePrefs).getString("set_app_update_dot_display_mode", "0") ?: "0"
-        if (mode != "1") return
+        if (mode == "0") return
 
-        runCatching {
-            val marketList = runCatching {
-                "com.android.server.pm.OplusOsPackageManagerHelper".toClass()
-                    .field { name = "DEFAULT_MARKET_LIST" }.get().any() as? List<*>
-            }.getOrNull().orEmpty()
+        val ext = "com.android.server.pm.PackageManagerServiceExtImpl".toClassOrNull(appClassLoader)
+        if (ext == null) {
+            YLog.error("SetAppUpdateDotDisplayMode: PackageManagerServiceExtImpl not found")
+            return
+        }
+        val helper = "com.android.server.pm.OplusOsPackageManagerHelper".toClassOrNull(appClassLoader)
+        if (helper == null) {
+            YLog.error("SetAppUpdateDotDisplayMode: OplusOsPackageManagerHelper not found")
+        }
 
-            "com.android.server.pm.PackageManagerServiceExtImpl".toClass().apply {
-                method {
-                    name = "handleSuccessAtEndInHPPI"
-                    paramCount = 6
-                }.hook {
-                    after {
-                        val pkgName = args(2).string().ifEmpty { return@after }
-                        val installerRaw = args(3).any()
-                        val isUpdate = args(4).boolean()
-                        val installer = when (installerRaw) {
-                            is String -> installerRaw
-                            null -> ""
-                            else -> runCatching {
-                                installerRaw.current().field { name = "mInstallerPackageName" }
-                                    .string()
-                            }.getOrNull().orEmpty()
-                        }
-                        if (!isUpdate && !marketList.contains(installer)) return@after
-                        runCatching {
-                            "com.android.server.pm.OplusOsPackageManagerHelper".toClass()
-                                .method {
-                                    name = "addPkgToNotLaunchedList"
-                                    param(StringClass)
-                                }.get().call(pkgName)
-                        }
-                    }
+        ext.method { name = "handleSuccessAtEndInHPPI"; paramCount = 6 }.ignored().hook {
+            after {
+                if (mode != "1") return@after
+                val pkgName = (args(2).any() as? String).orEmpty()
+                if (pkgName.isEmpty()) return@after
+                val installerRaw = args(3).any()
+                val isUpdate = args(4).any() as? Boolean ?: false
+                val installer = when (installerRaw) {
+                    is String -> installerRaw
+                    null -> ""
+                    else -> runCatching {
+                        XposedHelpers.getObjectField(installerRaw, "mInstallerPackageName") as? String
+                    }.getOrNull().orEmpty()
+                }
+
+                @Suppress("UNCHECKED_CAST")
+                val marketList: List<Any?> = runCatching {
+                    ext.field { name = "DEFAULT_MARKET_LIST"; type = ListClass }
+                        .ignored().get().any() as? List<Any?>
+                }.getOrNull() ?: emptyList()
+
+                if (!isUpdate && !marketList.contains(installer)) return@after
+                val helperCls = helper ?: return@after
+                runCatching {
+                    XposedHelpers.callStaticMethod(helperCls, "addPkgToNotLaunchedList", pkgName)
                 }
             }
         }

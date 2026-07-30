@@ -3,8 +3,8 @@ package com.fosstool.app.hook.utils
 import android.content.Context
 import com.highcapable.yukihookapi.hook.factory.buildOf
 import com.highcapable.yukihookapi.hook.factory.method
+import com.highcapable.yukihookapi.hook.factory.toClassOrNull
 import com.highcapable.yukihookapi.hook.type.android.ContextClass
-import com.fosstool.app.hook.scope.systemui.RemoveDoNotDisturbModeNotification.toClass
 import com.fosstool.app.utils.A13
 import com.fosstool.app.utils.SDK
 import com.fosstool.app.utils.safeOfNull
@@ -15,18 +15,18 @@ import kotlin.math.roundToInt
 @Suppress("unused")
 class PowerProfileUtils(val classLoader: ClassLoader?) {
 
-    val clazz = "com.android.internal.os.PowerProfile".toClass()
+    val clazz = "com.android.internal.os.PowerProfile".toClassOrNull(classLoader)
 
     fun buildInstance(context: Context?): Any? {
-        return clazz.buildOf(context) {
+        return clazz?.buildOf(context) {
             param(ContextClass)
         }
     }
 
     fun getBatteryCapacity(instance: Any?): Double? {
-        return clazz.method {
+        return clazz?.method {
             name = "getBatteryCapacity"
-        }.get(instance).invoke<Double>()
+        }?.get(instance)?.invoke<Double>()
     }
 
 }

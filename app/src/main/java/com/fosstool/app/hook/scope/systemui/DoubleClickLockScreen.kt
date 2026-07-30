@@ -4,6 +4,7 @@ import android.view.MotionEvent
 import android.view.ViewGroup
 import com.highcapable.yukihookapi.hook.entity.YukiBaseHooker
 import com.highcapable.yukihookapi.hook.factory.method
+import com.highcapable.yukihookapi.hook.factory.toClassOrNull
 import com.fosstool.app.utils.closeScreen
 import kotlin.math.abs
 
@@ -13,10 +14,11 @@ object DoubleClickLockScreen : YukiBaseHooker() {
         var curTouchX = 0F
         var curTouchY = 0F
 
-        "com.android.systemui.statusbar.phone.PhoneStatusBarView".toClass().apply {
-            method { name = "onFinishInflate" }.hook {
+        "com.android.systemui.statusbar.phone.PhoneStatusBarView"
+            .toClassOrNull(appClassLoader)
+            ?.method { name = "onFinishInflate" }?.ignored()?.hook {
                 before {
-                    val statusbar = instance<ViewGroup>()
+                    val statusbar = instance as? ViewGroup ?: return@before
                     statusbar.setOnTouchListener { v, event ->
                         if (event.action != MotionEvent.ACTION_DOWN) return@setOnTouchListener false
                         val lastTouchTime = curTouchTime
@@ -39,6 +41,5 @@ object DoubleClickLockScreen : YukiBaseHooker() {
                     }
                 }
             }
-        }
     }
 }

@@ -1,13 +1,21 @@
 package com.fosstool.app.hook.scope.wirelesssettings
 
 import android.util.ArraySet
+import com.fosstool.app.hook.scope.android.HookNotificationManager
+import com.fosstool.app.utils.ModulePrefs
+import com.highcapable.yukihookapi.hook.bean.VariousClass
 import com.highcapable.yukihookapi.hook.entity.YukiBaseHooker
 import com.highcapable.yukihookapi.hook.factory.method
-import com.highcapable.yukihookapi.hook.factory.toClass
+import com.highcapable.yukihookapi.hook.factory.toClassOrNull
 import com.highcapable.yukihookapi.hook.log.YLog
-import com.fosstool.app.utils.ModulePrefs
 
 object WlanSla : YukiBaseHooker() {
+
+    @Volatile
+    var wifiClassLoader: ClassLoader? = null
+
+    private val STRING_ARRAY: Class<*> = Array<String>::class.java
+
     override fun onHook() {
         var mode = prefs(ModulePrefs).getString("set_wlan_sla_whitelist_mode", "0")
         dataChannel.wait<String>("set_wlan_sla_whitelist_mode") { mode = it }
@@ -20,65 +28,69 @@ object WlanSla : YukiBaseHooker() {
 
         if (mode == "0") return
 
-        val targetClass = try {
-            "com.oplus.server.wifi.sla.OplusSlaApps".toClass()
-        } catch (e: Throwable) {
-            try {
-                "com.oplus.server.wifi.OplusSlaApps".toClass()
-            } catch (e2: Throwable) {
-                YLog.error("WlanSla: OplusSlaApps class not found", tag = "LuckyTool")
-                return
+        val wifiLoader = wifiClassLoader ?: loadOplusWifiClassLoader()
+        if (wifiLoader == null) {
+            YLog.error("WlanSla: oplus wifi service ClassLoader is null", tag = "LuckyTool")
+        }
+
+        val targetClass = VariousClass(
+            "com.oplus.server.wifi.OplusSlaApps",
+            "com.oplus.server.wifi.sla.OplusSlaApps",
+        ).toClassOrNull(wifiLoader ?: appClassLoader)
+        if (targetClass == null) {
+            YLog.error("WlanSla: OplusSlaApps class not found", tag = "LuckyTool")
+            return
+        }
+
+        targetClass.method {
+            name = "getSlaWhiteListAppsFromRus"
+            returnType = STRING_ARRAY
+        }.ignored().hook {
+            after {
+                if (mode == "0") return@after
+                val original = result as? Array<*> ?: return@after
+                val originalList = original.mapNotNull { it as? String }.toMutableList()
+                when (mode) {
+                    "1" -> {
+                        whitelist.forEach { pkg ->
+                            if (!originalList.contains(pkg)) originalList.add(pkg)
+                        }
+                        result = originalList.toTypedArray()
+                    }
+                    "2" -> result = whitelist.toTypedArray()
+                }
             }
         }
 
-        targetClass.apply {
-            method { name = "getSlaWhiteListAppsFromRus" }.hook {
-                after {
-                    if (mode == "0") return@after
-                    val original = result<Any>()
-                    if (original is Array<*>) {
-                        val originalList = original.mapNotNull { it as? String }.toMutableList()
-                        when (mode) {
-                            "1" -> {
-                                whitelist.forEach { pkg ->
-                                    if (!originalList.contains(pkg)) originalList.add(pkg)
-                                }
-                                result = originalList.toTypedArray()
-                            }
-                            "2" -> {
-                                result = whitelist.toTypedArray()
-                            }
+        targetClass.method {
+            name = "getSlaGameAppsFromRus"
+            returnType = STRING_ARRAY
+        }.ignored().hook {
+            after {
+                if (mode == "0") return@after
+                val original = result as? Array<*> ?: return@after
+                val originalList = original.mapNotNull { it as? String }.toMutableList()
+                when (mode) {
+                    "1" -> {
+                        gameWhitelist.forEach { pkg ->
+                            if (!originalList.contains(pkg)) originalList.add(pkg)
                         }
+                        result = originalList.toTypedArray()
                     }
-                }
-            }
-            method { name = "getSlaGameAppsFromRus" }.hook {
-                after {
-                    if (mode == "0") return@after
-                    val original = result<Any>()
-                    if (original is Array<*>) {
-                        val originalList = original.mapNotNull { it as? String }.toMutableList()
-                        when (mode) {
-                            "1" -> {
-                                gameWhitelist.forEach { pkg ->
-                                    if (!originalList.contains(pkg)) originalList.add(pkg)
-                                }
-                                result = originalList.toTypedArray()
-                            }
-                            "2" -> {
-                                result = gameWhitelist.toTypedArray()
-                            }
-                        }
-                    }
-                }
-            }
-            method { name = "getSlaBlackListAppsFromRus" }.hook {
-                after {
-                    if (mode != "0" && removeBlacklist) {
-                        result = null
-                    }
+                    "2" -> result = gameWhitelist.toTypedArray()
                 }
             }
         }
+
+        targetClass.method {
+            name = "getSlaBlackListAppsFromRus"
+        }.ignored().hook {
+            before {
+                if (mode != "0" && removeBlacklist) resultNull()
+            }
+        }
     }
+
+    private fun loadOplusWifiClassLoader(): ClassLoader? =
+        runCatching { HookNotificationManager.oplusWifiClassLoader(appClassLoader) }.getOrNull()
 }

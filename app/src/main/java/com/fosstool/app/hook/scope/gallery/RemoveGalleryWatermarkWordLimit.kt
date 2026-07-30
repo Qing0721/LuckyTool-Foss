@@ -1,13 +1,13 @@
-package com.fosstool.app.hook.scope.gallery
+﻿package com.fosstool.app.hook.scope.gallery
 
 import com.fosstool.app.utils.DexkitUtils
 import com.fosstool.app.utils.DexkitUtils.checkDataList
+import com.fosstool.app.utils.DexkitUtils.firstOrNullSafe
 import com.fosstool.app.utils.ModulePrefs
 import com.fosstool.app.utils.getOSVersionCode
 import com.highcapable.yukihookapi.hook.entity.YukiBaseHooker
 import com.highcapable.yukihookapi.hook.factory.method
-import com.highcapable.yukihookapi.hook.type.java.CharSequenceClass
-import com.highcapable.yukihookapi.hook.type.java.IntType
+import com.highcapable.yukihookapi.hook.factory.toClassOrNull
 
 object RemoveGalleryWatermarkWordLimit : YukiBaseHooker() {
     override fun onHook() {
@@ -17,38 +17,33 @@ object RemoveGalleryWatermarkWordLimit : YukiBaseHooker() {
 
         DexkitUtils.create(appInfo.sourceDir) { bridge ->
             runCatching {
+
                 bridge.findMethod {
                     matcher {
                         name = "filter"
-                        returnType = CharSequenceClass.name
+                        returnType = "java.lang.CharSequence"
                         paramTypes(
-                            CharSequenceClass.name,
-                            IntType.name,
-                            IntType.name,
+                            "java.lang.CharSequence",
+                            "int",
+                            "int",
                             "android.text.Spanned",
-                            IntType.name,
-                            IntType.name
+                            "int",
+                            "int"
                         )
+                        usingNumbers(0, 1, 2)
+                        usingStrings("")
                     }
                 }.apply {
                     checkDataList("RemoveGalleryWatermarkWordLimit")
-                    first().apply {
-                        className.toClass().method {
-                            name = "filter"
-                            returnType = CharSequenceClass
-                            param(
-                                CharSequenceClass,
-                                IntType,
-                                IntType,
-                                android.text.Spanned::class.java,
-                                IntType,
-                                IntType
-                            )
-                        }.hook {
-                            before {
-                                result = args().first().any()
+                    firstOrNullSafe()?.apply {
+                        className.toClassOrNull(appClassLoader)
+                            ?.method { name = "filter"; paramCount = 6 }
+                            ?.ignored()
+                            ?.hook {
+                                before {
+                                    result = args.getOrNull(0)
+                                }
                             }
-                        }
                     }
                 }
             }

@@ -13,7 +13,7 @@ import java.lang.reflect.Method
 import java.util.function.BiConsumer
 import java.util.function.BiPredicate
 
-object DisableFlagSecure : YukiBaseHooker() {
+class DisableFlagSecure : YukiBaseHooker() {
     private var deoptimizeMethod: Method? = null
     private var captureSecureField: Field? = null
 
@@ -29,7 +29,8 @@ object DisableFlagSecure : YukiBaseHooker() {
 
         when (packageName) {
             "com.oplus.screenshot" -> hookScreenshotApp()
-            "com.android.systemui", "com.oplus.appplatform" -> hookSecureBufferApps()
+            "com.oplus.appplatform" -> hookSecureBufferApps()
+            "com.android.systemui" -> hookScreenCaptureArgsTail()
             else -> hookSystemServer()
         }
     }
@@ -74,7 +75,11 @@ object DisableFlagSecure : YukiBaseHooker() {
                 }
             }
         }
-        if (packageName == "com.android.systemui" || Build.VERSION.SDK_INT in 31..33) {
+        hookScreenCaptureArgsTail()
+    }
+
+    private fun hookScreenCaptureArgsTail() {
+        if (packageName == "com.oplus.appplatform" || Build.VERSION.SDK_INT in 31..33) {
             runCatching { hookScreenCaptureArgs(appClassLoader) }
                 .onFailure { YLog.debug("DisableFlagSecure: hook ScreenCapture failed -> $it") }
         }

@@ -1,60 +1,37 @@
 package com.fosstool.app.hook.scope.settings
 
+import com.fosstool.app.utils.getOSVersionCode
 import com.highcapable.yukihookapi.hook.entity.YukiBaseHooker
 import com.highcapable.yukihookapi.hook.factory.method
-import com.highcapable.yukihookapi.hook.log.YLog
-import com.fosstool.app.utils.getOSVersionCode
+import com.highcapable.yukihookapi.hook.factory.toClassOrNull
 
 object RemoveDeviceNameChangeLimit : YukiBaseHooker() {
     override fun onHook() {
         if (getOSVersionCode < 30) return
 
-        try {
-            "com.oplus.settings.feature.deviceinfo.aboutphone.PhoneNameVerifyUtil".toClass()
-                .apply {
-                    method { name = "activeVerifyPhoneName" }.hook {
-                        before {
-                            callOnSuccess(args().last().any())
-                            intercept()
-                        }
-                    }
-                    method { name = "timeScheduleVerifyPhoneName" }.hook {
-                        intercept()
-                    }
-                }
-        } catch (e: Throwable) {
-            YLog.error(
-                "RemoveDeviceNameChangeLimit: PhoneNameVerifyUtil not found",
-                tag = "LuckyTool"
-            )
-        }
-        try {
-            "com.oplus.settings.utils.WirelessDeviceVerifyUtils".toClass().apply {
-                method { name = "activeVerifyPhoneName" }.hook {
-                    before {
-                        callOnSuccess(args().last().any())
-                        intercept()
-                    }
+        "com.oplus.settings.feature.deviceinfo.aboutphone.PhoneNameVerifyUtil".toClassOrNull(appClassLoader)?.apply {
+            method { name = "activeVerifyPhoneName" }.ignored().hook {
+                before {
+                    callOnSuccess(args.lastOrNull())
+                    result = null
                 }
             }
-        } catch (e: Throwable) {
-            YLog.error(
-                "RemoveDeviceNameChangeLimit: WirelessDeviceVerifyUtils not found",
-                tag = "LuckyTool"
-            )
+            method { name = "timeScheduleVerifyPhoneName" }.ignored().hook { intercept() }
         }
-        try {
-            "com.oplus.settings.utils.OplusDeviceInfoUtils".toClass().apply {
-                method { name = "getVerifyNameCondition" }.hook {
-                    intercept()
+        "com.oplus.settings.utils.WirelessDeviceVerifyUtils".toClassOrNull(appClassLoader)
+            ?.method { name = "activeVerifyPhoneName" }
+            ?.ignored()
+            ?.hook {
+                before {
+                    callOnSuccess(args.lastOrNull())
+                    result = null
                 }
             }
-        } catch (e: Throwable) {
-            YLog.error(
-                "RemoveDeviceNameChangeLimit: OplusDeviceInfoUtils not found",
-                tag = "LuckyTool"
-            )
-        }
+
+        "com.oplus.settings.utils.OplusDeviceInfoUtils".toClassOrNull(appClassLoader)
+            ?.method { name = "getVerifyNameCondition" }
+            ?.ignored()
+            ?.hook { replaceToFalse() }
     }
 
     private fun callOnSuccess(callback: Any?) {
@@ -65,6 +42,7 @@ object RemoveDeviceNameChangeLimit : YukiBaseHooker() {
             }
             method?.isAccessible = true
             method?.invoke(callback, null)
-        } catch (_: Throwable) {}
+        } catch (_: Throwable) {
+        }
     }
 }

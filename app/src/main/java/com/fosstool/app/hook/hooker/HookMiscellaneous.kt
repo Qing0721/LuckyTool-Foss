@@ -7,35 +7,32 @@ import com.fosstool.app.hook.scope.systemui.RemovePowerMenuSosButton
 import com.fosstool.app.hook.scope.systemui.ShowChargingRipple
 import com.fosstool.app.hook.scope.systemui.ShowManualLockButtonPowerMenu
 import com.fosstool.app.utils.A12
+import com.fosstool.app.utils.A13
+import com.fosstool.app.utils.A14
 import com.fosstool.app.utils.ModulePrefs
 import com.fosstool.app.utils.SDK
+import com.fosstool.app.utils.getOSVersionCode
 
-object HookMiscellaneous : YukiBaseHooker() {
+class HookMiscellaneous : YukiBaseHooker() {
     override fun onHook() {
         if (packageName == "com.android.systemui") {
             if (prefs(ModulePrefs).getBoolean("show_charging_ripple", false)) {
                 if (SDK >= A12) loadHooker(ShowChargingRipple)
             }
             if (prefs(ModulePrefs).getBoolean("disable_otg_auto_off", false)) {
-                loadHooker(DisableOTGAutoOff)
+                if (getOSVersionCode < 30) loadHooker(DisableOTGAutoOff)
             }
             if (prefs(ModulePrefs).getBoolean("remove_power_menu_sos_button", false)) {
-                loadHooker(RemovePowerMenuSosButton)
+                if (SDK >= A13) loadHooker(RemovePowerMenuSosButton)
             }
             if (prefs(ModulePrefs).getBoolean("show_manual_lock_button_power_menu", false)) {
-                loadHooker(ShowManualLockButtonPowerMenu)
+                if (SDK >= A14) loadHooker(ShowManualLockButtonPowerMenu)
             }
         }
 
         if (packageName == "com.android.externalstorage") {
             if (prefs(ModulePrefs).getBoolean("remove_storage_limit", false)) {
                 loadHooker(RemoveStorageLimit)
-            }
-        }
-
-        if (packageName == "com.oplus.exsystemservice") {
-            if (prefs(ModulePrefs).getBoolean("disable_otg_auto_off", false)) {
-                loadHooker(DisableOTGAutoOff)
             }
         }
     }

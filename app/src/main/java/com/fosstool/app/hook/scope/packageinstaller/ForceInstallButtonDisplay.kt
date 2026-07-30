@@ -1,9 +1,10 @@
 package com.fosstool.app.hook.scope.packageinstaller
 
-import com.highcapable.yukihookapi.hook.entity.YukiBaseHooker
-import com.highcapable.yukihookapi.hook.factory.current
-import com.highcapable.yukihookapi.hook.factory.method
 import com.fosstool.app.utils.ModulePrefs
+import com.highcapable.yukihookapi.hook.entity.YukiBaseHooker
+import com.highcapable.yukihookapi.hook.factory.method
+import com.highcapable.yukihookapi.hook.factory.toClassOrNull
+import de.robv.android.xposed.XposedHelpers
 import java.security.SecureRandom
 
 object ForceInstallButtonDisplay : YukiBaseHooker() {
@@ -15,17 +16,12 @@ object ForceInstallButtonDisplay : YukiBaseHooker() {
             "com.android.packageinstaller.oplus.view.ConfusedTextView",
         )
         for (clsName in targets) {
-            runCatching {
-                clsName.toClass().apply {
-                    method { name = "getAccessibilityViewId" }.hookAll {
-                        before { markCts(instance) }
-                    }
-                    runCatching {
-                        method { name = "getText" }.hookAll {
-                            before { markCts(instance) }
-                        }
-                    }
-                }
+            val clazz = clsName.toClassOrNull(appClassLoader) ?: continue
+            clazz.method { name = "getAccessibilityViewId" }.ignored().hook {
+                before { markCts(instance) }
+            }
+            clazz.method { name = "getText" }.ignored().hook {
+                before { markCts(instance) }
             }
         }
     }
@@ -33,14 +29,10 @@ object ForceInstallButtonDisplay : YukiBaseHooker() {
     private fun markCts(instance: Any?) {
         if (instance == null) return
         runCatching {
-            instance.current().method {
-                name = "setCts"
-                param(Boolean::class.javaPrimitiveType!!)
-            }.call(true)
+            XposedHelpers.callMethod(instance, "setCts", true)
         }
         runCatching {
-            val fields = instance.javaClass.declaredFields
-            for (f in fields) {
+            for (f in instance.javaClass.declaredFields) {
                 if (f.type == SecureRandom::class.java ||
                     f.type.name.contains("Random", ignoreCase = true)
                 ) {

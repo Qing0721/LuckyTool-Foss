@@ -8,9 +8,11 @@ object RemoveStatusBarTopNotification : YukiBaseHooker() {
     override fun onHook() {
         val isEnable = prefs(ModulePrefs).getBoolean("remove_statusbar_top_notification", false)
 
-        "com.android.server.wm.AlertWindowNotification".toClass().apply {
-            method { name = "onPostNotification" }.hook {
-                if (isEnable) intercept()
+        runCatching {
+            "com.android.server.wm.AlertWindowNotification".toClass().apply {
+                method { name = "onPostNotification" }.ignored().hook {
+                    if (isEnable) intercept()
+                }
             }
         }
     }

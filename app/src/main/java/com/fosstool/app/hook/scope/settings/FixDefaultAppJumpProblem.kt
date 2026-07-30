@@ -4,34 +4,28 @@ import android.content.Context
 import android.content.Intent
 import com.highcapable.yukihookapi.hook.entity.YukiBaseHooker
 import com.highcapable.yukihookapi.hook.factory.method
-import com.highcapable.yukihookapi.hook.log.YLog
+import com.highcapable.yukihookapi.hook.factory.toClassOrNull
 
 object FixDefaultAppJumpProblem : YukiBaseHooker() {
     override fun onHook() {
-        try {
-            "com.oplus.settings.feature.appmanager.controller.DefaultAppManagerPreferenceController".toClass()
-                .apply {
-                    method { name = "handlePreferenceTreeClick" }.hook {
-                        before {
-                            val preference = args().first().any() ?: return@before
-                            val key = invokeGetKey(preference)
-                            val context = invokeGetContext(preference)
-                            if (key == "default_apps_manager" && context != null) {
-                                try {
-                                    context.startActivity(
-                                        Intent("action.oplusos.safecenter.DefaultAppListActivity")
-                                    )
-                                } catch (_: Throwable) {}
-                            }
+        "com.oplus.settings.feature.appmanager.controller.DefaultAppManagerPreferenceController"
+            .toClassOrNull(appClassLoader)
+            ?.method { name = "handlePreferenceTreeClick" }
+            ?.ignored()
+            ?.hook {
+                before {
+                    val preference = args.getOrNull(0) ?: return@before
+                    val key = invokeGetKey(preference)
+                    val context = invokeGetContext(preference)
+                    if (key == "default_apps_manager" && context != null) {
+                        runCatching {
+                            context.startActivity(
+                                Intent("action.oplusos.safecenter.DefaultAppListActivity"),
+                            )
                         }
                     }
                 }
-        } catch (e: Throwable) {
-            YLog.error(
-                "FixDefaultAppJumpProblem: DefaultAppManagerPreferenceController not found",
-                tag = "LuckyTool"
-            )
-        }
+            }
     }
 
     private fun invokeGetKey(preference: Any): String? {
@@ -41,7 +35,9 @@ object FixDefaultAppJumpProblem : YukiBaseHooker() {
             }
             method?.isAccessible = true
             method?.invoke(preference) as? String
-        } catch (_: Throwable) { null }
+        } catch (_: Throwable) {
+            null
+        }
     }
 
     private fun invokeGetContext(preference: Any): Context? {
@@ -51,6 +47,8 @@ object FixDefaultAppJumpProblem : YukiBaseHooker() {
             }
             method?.isAccessible = true
             method?.invoke(preference) as? Context
-        } catch (_: Throwable) { null }
+        } catch (_: Throwable) {
+            null
+        }
     }
 }

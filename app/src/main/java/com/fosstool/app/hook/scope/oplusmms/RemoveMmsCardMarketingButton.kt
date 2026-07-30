@@ -1,9 +1,8 @@
 package com.fosstool.app.hook.scope.oplusmms
 
 import com.highcapable.yukihookapi.hook.entity.YukiBaseHooker
-import com.highcapable.yukihookapi.hook.factory.method
-import com.fosstool.app.utils.DexkitUtils
-import com.fosstool.app.utils.DexkitUtils.checkDataList
+import com.highcapable.yukihookapi.hook.factory.constructor
+import com.highcapable.yukihookapi.hook.type.java.StringClass
 import org.json.JSONArray
 import org.json.JSONObject
 
@@ -12,27 +11,11 @@ object RemoveMmsCardMarketingButton : YukiBaseHooker() {
     private val marketingActions = setOf(3, 4, 6, 12, 23)
 
     override fun onHook() {
-        DexkitUtils.create(appInfo.sourceDir) { dexKitBridge ->
-            dexKitBridge.findMethod {
-                matcher {
-                    returnType = JSONObject::class.java.name
-                    usingStrings("buttonText", "entities", "actions")
-                }
-            }.apply {
-                checkDataList("RemoveMmsCardMarketingButton", onlyOne = false)
-                forEach { data ->
-                    runCatching {
-                        data.className.toClass().method {
-                            name = data.methodName
-                            returnType = JSONObject::class.java
-                        }.hook {
-                            after {
-                                val json = result<JSONObject>() ?: return@after
-                                filterMarketing(json)
-                            }
-                        }
-                    }
-                }
+
+        JSONObject::class.java.constructor { param(StringClass) }.hook {
+            after {
+                val json = instance as? JSONObject ?: return@after
+                runCatching { filterMarketing(json) }
             }
         }
     }

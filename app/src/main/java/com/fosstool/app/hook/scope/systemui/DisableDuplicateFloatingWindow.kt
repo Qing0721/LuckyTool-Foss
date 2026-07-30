@@ -3,27 +3,41 @@ package com.fosstool.app.hook.scope.systemui
 import android.view.View
 import androidx.core.view.isVisible
 import com.highcapable.yukihookapi.hook.entity.YukiBaseHooker
-import com.highcapable.yukihookapi.hook.factory.field
-import com.highcapable.yukihookapi.hook.factory.hasMethod
 import com.highcapable.yukihookapi.hook.factory.method
+import com.highcapable.yukihookapi.hook.factory.toClassOrNull
+import com.fosstool.app.utils.getOSVersionCode
+import java.lang.reflect.Field
 
 object DisableDuplicateFloatingWindow : YukiBaseHooker() {
     override fun onHook() {
-        val controllerCls = "com.android.systemui.clipboardoverlay.ClipboardOverlayController"
-        val clazz = if (controllerCls.toClass().hasMethod { name = "showSinglePreview" }) {
-            "com.android.systemui.clipboardoverlay.ClipboardOverlayController"
-        } else "com.android.systemui.clipboardoverlay.ClipboardOverlayView"
-        clazz.toClass().apply {
-            method { name = "showSinglePreview" }.hook {
-                after {
-                    args().first().cast<View>()?.isVisible = false
-                    when (simpleName) {
-                        "ClipboardOverlayView" -> instance<View>().isVisible = false
-                        "ClipboardOverlayController" -> field { name = "mView" }.get(instance)
-                            .cast<View>()?.isVisible = false
+        "com.android.systemui.clipboardoverlay.ClipboardOverlayController"
+            .toClassOrNull(appClassLoader)?.let { c ->
+                c.method { name = "showSinglePreview"; superClass() }.ignored().hook {
+                    after {
+                        (args.getOrNull(0) as? View)?.isVisible = false
+                        (c.findField("mView")?.get(instance) as? View)?.isVisible = false
                     }
                 }
             }
+
+        if (getOSVersionCode < 30) return
+        "com.android.systemui.clipboardoverlay.ClipboardOverlayView"
+            .toClassOrNull(appClassLoader)?.let { c ->
+                c.method { name = "showSinglePreview"; superClass() }.ignored().hook {
+                    after {
+                        (args.getOrNull(0) as? View)?.isVisible = false
+                        (instance as? View)?.isVisible = false
+                    }
+                }
+            }
+    }
+
+    private fun Class<*>.findField(name: String): Field? {
+        var cls: Class<*>? = this
+        while (cls != null) {
+            runCatching { return cls.getDeclaredField(name).also { it.isAccessible = true } }
+            cls = cls.superclass
         }
+        return null
     }
 }

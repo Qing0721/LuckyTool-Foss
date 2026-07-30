@@ -13,117 +13,194 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
-import com.highcapable.yukihookapi.hook.entity.YukiBaseHooker
-import com.highcapable.yukihookapi.hook.factory.current
-import com.highcapable.yukihookapi.hook.factory.field
-import com.highcapable.yukihookapi.hook.factory.method
 import com.fosstool.app.utils.ModulePrefs
 import com.fosstool.app.utils.safeOf
 import com.fosstool.app.utils.safeOfNull
+import com.highcapable.yukihookapi.hook.entity.YukiBaseHooker
+import com.highcapable.yukihookapi.hook.factory.constructor
+import com.highcapable.yukihookapi.hook.factory.method
+import com.highcapable.yukihookapi.hook.factory.toClassOrNull
+import com.highcapable.yukihookapi.hook.log.YLog
 import java.io.File
+import java.lang.reflect.Field
+import java.util.WeakHashMap
 
 object ShowMoreApkPackageInformation : YukiBaseHooker() {
+
+    private const val APK_INFO_VIEW = "com.android.packageinstaller.oplus.view.ApkInfoView"
+    private const val APK_INFO = "com.android.packageinstaller.oplus.common.ApkInfo"
+    private const val SOURCE_INFO = "com.android.packageinstaller.oplus.common.SourceInfo"
+
+    private val apkInfoCache = WeakHashMap<Any, Map<String, Any?>>()
+    private val sourceInfoCache = WeakHashMap<Any, Map<String, Any?>>()
+
     @SuppressLint("DiscouragedApi", "SetTextIsSelectable")
     @Suppress("DEPRECATION")
     override fun onHook() {
         if (!prefs(ModulePrefs).getBoolean("show_more_apk_package_information", false)) return
 
-        "com.android.packageinstaller.oplus.view.ApkInfoView".toClass().apply {
-            method { name = "loadApkInfo" }.hook {
-                after {
-                    val context = field { name = "mContext" }.get(instance).cast<Context>()
-                        ?: return@after
-                    val mAppVersion = field { name = "mAppVersion" }.get(instance).cast<TextView>()
-                        ?: return@after
+        cacheApkInfo()
+        cacheSourceInfo()
 
-                    val apkInfo = args().first().any() ?: return@after
-                    val sourceInfo = args().last().any() ?: return@after
-                    val apkCur = apkInfo.current()
-                    val srcCur = sourceInfo.current()
-
-                    val packageName = safeOf("") { apkCur.field { name = "packageName" }.string() } ?: ""
-                    val versionName = safeOf("") { apkCur.field { name = "versionName" }.string() } ?: ""
-                    val versionCode = safeOf(0) { apkCur.field { name = "versionCode" }.int() } ?: 0
-                    val apkPath = safeOf("") { apkCur.field { name = "apkPath" }.string() } ?: ""
-                    val label = safeOf("") { apkCur.field { name = "label" }.string() } ?: ""
-                    val apkSize = safeOf(-1L) { apkCur.field { name = "size" }.long() } ?: -1L
-                    val sourceName = safeOf("") { srcCur.field { name = "sourceName" }.string() } ?: ""
-                    val sourcePackage =
-                        safeOf("") { srcCur.field { name = "sourcePackage" }.string() } ?: ""
-                    val actionType = safeOf(-1) { srcCur.field { name = "actionType" }.int() } ?: -1
-
-                    val isInstall = actionType == 0
-                    val isUninstall = actionType == 1
-
-                    val pm = context.packageManager
-                    val archivePkgInfo: PackageInfo? =
-                        if (apkPath.isEmpty()) null else safeOfNull {
-                            if (Build.VERSION.SDK_INT >= 33)
-                                pm.getPackageArchiveInfo(apkPath, PackageManager.PackageInfoFlags.of(0L))
-                            else pm.getPackageArchiveInfo(apkPath, 0)
-                        }
-                    val installedPkgInfo: PackageInfo? =
-                        if (packageName.isEmpty()) null else safeOfNull {
-                            if (Build.VERSION.SDK_INT >= 33)
-                                pm.getPackageInfo(packageName, PackageManager.PackageInfoFlags.of(0L))
-                            else pm.getPackageInfo(packageName, 0)
-                        }
-                    val isInstalled = installedPkgInfo != null
-
-                    val archiveIcon: Drawable? = archivePkgInfo?.applicationInfo
-                        ?.let { safeOfNull { it.loadIcon(pm) } }
-                    val archiveMinSdk = archivePkgInfo?.applicationInfo?.minSdkVersion
-                    val archiveTargetSdk = archivePkgInfo?.applicationInfo?.targetSdkVersion
-                    val installedIcon: Drawable? = installedPkgInfo?.applicationInfo
-                        ?.let { safeOfNull { it.loadIcon(pm) } }
-                    val installedVersionName = installedPkgInfo?.versionName
-                    val installedVersionCode: Long? = installedPkgInfo?.let {
-                        safeOfNull {
-                            if (Build.VERSION.SDK_INT >= 28) it.longVersionCode
-                            else it.versionCode.toLong()
-                        }
-                    }
-                    val installedMinSdk = installedPkgInfo?.applicationInfo?.minSdkVersion
-                    val installedTargetSdk = installedPkgInfo?.applicationInfo?.targetSdkVersion
-                    val installedSourceDir = installedPkgInfo?.applicationInfo?.sourceDir
-
-                    val sourceDisplay = sourceName.ifEmpty { sourcePackage }
-
-                    val sizeBytes = if (isUninstall && !installedSourceDir.isNullOrEmpty()) {
-                        safeOf(apkSize) { File(installedSourceDir).length() } ?: apkSize
-                    } else {
-                        apkSize
-                    }
-
-                    val container = mAppVersion.parent as? LinearLayout
-                    if (container == null) {
-                        fallbackAppend(mAppVersion, context, packageName, versionName, versionCode,
-                            apkPath, label, apkSize, sourceName, sourcePackage, isUninstall)
-                        return@after
-                    }
-
-                    val root = safeOfNull {
-                        buildRows(
-                            context, isInstall, isUninstall, isInstalled,
-                            archiveIcon, installedIcon,
-                            label, packageName, sourceDisplay,
-                            sizeBytes, versionName, versionCode,
-                            installedVersionName, installedVersionCode,
-                            archiveMinSdk, archiveTargetSdk,
-                            installedMinSdk, installedTargetSdk
-                        )
-                    }
-                    if (root == null) {
-                        fallbackAppend(mAppVersion, context, packageName, versionName, versionCode,
-                            apkPath, label, apkSize, sourceName, sourcePackage, isUninstall)
-                        return@after
-                    }
-                    container.removeAllViews()
-                    container.addView(root)
+        val clazz = APK_INFO_VIEW.toClassOrNull(appClassLoader)
+        if (clazz == null) {
+            YLog.error("ShowMoreApkPackageInformation -> $APK_INFO_VIEW not found", tag = "LuckyTool")
+            return
+        }
+        clazz.method { name = "loadApkInfo" }.ignored().hook {
+            after {
+                val container = runCatching { instance }.getOrNull() as? LinearLayout ?: run {
+                    YLog.error(
+                        "ShowMoreApkPackageInformation -> loadApkInfo instance is not LinearLayout",
+                        tag = "LuckyTool",
+                    )
+                    return@after
                 }
+                val context = container.context ?: return@after
+
+                val apkInfo = args.pickByClassName(APK_INFO) ?: return@after
+                val sourceInfo = args.pickByClassName(SOURCE_INFO) ?: return@after
+
+                val apk = apkInfoCache[apkInfo] ?: apkInfo.readApkInfoFields()
+                val source = sourceInfoCache[sourceInfo] ?: sourceInfo.readSourceInfoFields()
+
+                val packageName = apk["packageName"] as? String ?: ""
+                val versionName = apk["versionName"] as? String ?: ""
+                val versionCode = apk["versionCode"] as? Int ?: 0
+                val apkPath = apk["apkPath"] as? String ?: ""
+                val label = apk["label"] as? String ?: ""
+                val apkSize = apk["size"] as? Long ?: 0L
+                val sourceName = source["sourceName"] as? String ?: ""
+                val sourcePackage = source["sourcePackage"] as? String ?: ""
+                val actionType = source["actionType"] as? Int ?: -1
+
+                val isInstall = actionType == 0
+                val isUninstall = actionType == 1
+
+                val pm = context.packageManager
+                val archivePkgInfo: PackageInfo? =
+                    if (apkPath.isEmpty()) null else safeOfNull {
+                        if (Build.VERSION.SDK_INT >= 33)
+                            pm.getPackageArchiveInfo(apkPath, PackageManager.PackageInfoFlags.of(1L))
+                        else pm.getPackageArchiveInfo(apkPath, 1)
+                    }
+                val installedPkgInfo: PackageInfo? =
+                    if (packageName.isEmpty()) null else safeOfNull {
+                        if (Build.VERSION.SDK_INT >= 33)
+                            pm.getPackageInfo(packageName, PackageManager.PackageInfoFlags.of(0L))
+                        else pm.getPackageInfo(packageName, 0)
+                    }
+                val isInstalled = installedPkgInfo != null
+
+                val archiveIcon: Drawable? = archivePkgInfo?.applicationInfo
+                    ?.let { safeOfNull { it.loadIcon(pm) } }
+                val archiveMinSdk = archivePkgInfo?.applicationInfo?.minSdkVersion
+                val archiveTargetSdk = archivePkgInfo?.applicationInfo?.targetSdkVersion
+                val installedIcon: Drawable? = installedPkgInfo?.applicationInfo
+                    ?.let { safeOfNull { it.loadIcon(pm) } }
+                val installedVersionName = installedPkgInfo?.versionName
+                val installedVersionCode: Long? = installedPkgInfo?.let {
+                    safeOfNull {
+                        if (Build.VERSION.SDK_INT >= 28) it.longVersionCode
+                        else it.versionCode.toLong()
+                    }
+                }
+                val installedMinSdk = installedPkgInfo?.applicationInfo?.minSdkVersion
+                val installedTargetSdk = installedPkgInfo?.applicationInfo?.targetSdkVersion
+                val installedSourceDir = installedPkgInfo?.applicationInfo?.sourceDir
+
+                val sourceDisplay = sourceName.ifEmpty { sourcePackage }
+
+                val sizeBytes = if (isUninstall && !installedSourceDir.isNullOrEmpty()) {
+                    safeOf(apkSize) { File(installedSourceDir).length() } ?: apkSize
+                } else {
+                    apkSize
+                }
+
+                val root = safeOfNull {
+                    buildRows(
+                        context, isInstall, isUninstall, isInstalled,
+                        archiveIcon, installedIcon,
+                        label, packageName, sourceDisplay,
+                        sizeBytes, versionName, versionCode,
+                        installedVersionName, installedVersionCode,
+                        archiveMinSdk, archiveTargetSdk,
+                        installedMinSdk, installedTargetSdk
+                    )
+                } ?: return@after
+
+                container.removeAllViews()
+                container.addView(root)
+                apkInfoCache.remove(apkInfo)
+                sourceInfoCache.remove(sourceInfo)
             }
         }
     }
+
+    private fun cacheApkInfo() {
+        val cls = APK_INFO.toClassOrNull(appClassLoader)
+        if (cls == null) {
+            YLog.error("ShowMoreApkPackageInformation -> $APK_INFO not found", tag = "LuckyTool")
+            return
+        }
+        cls.constructor { paramCount = 7 }.ignored().hook {
+            after {
+                val target: Any = runCatching { instance }.getOrNull() ?: return@after
+                apkInfoCache[target] = mapOf(
+                    "icon" to (args.getOrNull(0) as? Int ?: 0),
+                    "apkPath" to (args.getOrNull(1) as? String ?: ""),
+                    "label" to (args.getOrNull(2) as? String ?: ""),
+                    "versionName" to (args.getOrNull(3) as? String ?: ""),
+                    "versionCode" to (args.getOrNull(4) as? Int ?: 0),
+                    "packageName" to (args.getOrNull(5) as? String ?: ""),
+                    "size" to (args.getOrNull(6) as? Long ?: 0L),
+                )
+            }
+        }
+    }
+
+    private fun cacheSourceInfo() {
+        val cls = SOURCE_INFO.toClassOrNull(appClassLoader)
+        if (cls == null) {
+            YLog.error("ShowMoreApkPackageInformation -> $SOURCE_INFO not found", tag = "LuckyTool")
+            return
+        }
+        cls.constructor { paramCount = 4 }.ignored().hook {
+            after {
+                val target: Any = runCatching { instance }.getOrNull() ?: return@after
+                sourceInfoCache[target] = mapOf(
+                    "sourcePackage" to (args.getOrNull(0) as? String ?: ""),
+                    "sourceName" to (args.getOrNull(1) as? String ?: ""),
+                    "bUnknownSource" to (args.getOrNull(2) as? Boolean ?: false),
+                    "actionType" to (args.getOrNull(3) as? Int ?: 0),
+                )
+            }
+        }
+    }
+
+    private fun Array<Any?>.pickByClassName(className: String): Any? {
+        firstOrNull { it != null && it.javaClass.name == className }?.let { return it }
+        val cls = className.toClassOrNull(appClassLoader) ?: return null
+        return firstOrNull { it != null && cls.isInstance(it) }
+    }
+
+    private fun Any.readApkInfoFields(): Map<String, Any?> = mapOf(
+        "apkPath" to fieldValue("apkPath"),
+        "label" to fieldValue("label"),
+        "versionName" to fieldValue("versionName"),
+        "versionCode" to fieldValue("versionCode"),
+        "packageName" to fieldValue("packageName"),
+        "size" to fieldValue("size"),
+    )
+
+    private fun Any.readSourceInfoFields(): Map<String, Any?> = mapOf(
+        "sourcePackage" to fieldValue("sourcePackage"),
+        "sourceName" to fieldValue("sourceName"),
+        "actionType" to fieldValue("actionType"),
+    )
+
+    private fun Any.fieldValue(name: String): Any? =
+        safeOfNull { javaClass.findField(name)?.get(this) }
 
     @Suppress("DEPRECATION")
     private fun buildRows(
@@ -194,6 +271,7 @@ object ShowMoreApkPackageInformation : YukiBaseHooker() {
         return root
     }
 
+    @SuppressLint("SetTextIsSelectable")
     private fun textRow(context: Context, text: String, sizeSp: Float?, gravity: Int): TextView =
         TextView(context).apply {
             setText(text)
@@ -207,42 +285,12 @@ object ShowMoreApkPackageInformation : YukiBaseHooker() {
 
     private fun Int?.str(): String = this?.toString() ?: "null"
 
-    @Suppress("DEPRECATION")
-    private fun fallbackAppend(
-        mAppVersion: TextView,
-        context: Context,
-        packName: String,
-        versionName: String,
-        versionCode: Int,
-        apkPath: String,
-        label: String,
-        size: Long,
-        sourceName: String,
-        sourcePackage: String,
-        isUninstall: Boolean
-    ) {
-        mAppVersion.apply {
-            (parent as? LinearLayout)?.orientation = LinearLayout.VERTICAL
-            (layoutParams as? LinearLayout.LayoutParams)?.width =
-                LinearLayout.LayoutParams.MATCH_PARENT
-            isSingleLine = false
-            setTextIsSelectable(true)
+    private fun Class<*>.findField(name: String): Field? {
+        var c: Class<*>? = this
+        while (c != null && c != Any::class.java) {
+            c.declaredFields.firstOrNull { it.name == name }?.let { return it.apply { isAccessible = true } }
+            c = c.superclass
         }
-        val versionStr = safeOf("Version: ") {
-            context.resources.getString(
-                context.resources.getIdentifier("app_info_version", "string", context.packageName)
-            )
-        } ?: "Version: "
-        mAppVersion.text = buildString {
-            append(packName)
-            append("\n").append(versionStr).append(versionName).append("(").append(versionCode).append(")")
-            if (label.isNotEmpty() && label != packName) append("\n").append("Label: ").append(label)
-            if (apkPath.isNotEmpty()) append("\n").append("Path: ").append(apkPath)
-            if (size > 0L) append("\n").append("Size: ").append(size).append(" B")
-            if (!isUninstall) {
-                if (sourceName.isNotEmpty()) append("\n").append("Source: ").append(sourceName)
-                if (sourcePackage.isNotEmpty()) append("\n").append("SourcePkg: ").append(sourcePackage)
-            }
-        }.trimEnd()
+        return null
     }
 }

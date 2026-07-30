@@ -1,11 +1,14 @@
-package com.fosstool.app.hook.scope.screenshot
+﻿package com.fosstool.app.hook.scope.screenshot
 
 import android.graphics.Bitmap
 import com.highcapable.yukihookapi.hook.entity.YukiBaseHooker
-import com.highcapable.yukihookapi.hook.factory.method
+import com.highcapable.yukihookapi.hook.factory.toClassOrNull
 import com.highcapable.yukihookapi.hook.type.java.StringClass
 import com.fosstool.app.utils.DexkitUtils
 import com.fosstool.app.utils.DexkitUtils.checkDataList
+import com.fosstool.app.utils.DexkitUtils.firstOrNullSafe
+import de.robv.android.xposed.XC_MethodHook
+import de.robv.android.xposed.XposedBridge
 
 object EnablePNGSaveFormat : YukiBaseHooker() {
 
@@ -26,22 +29,29 @@ object EnablePNGSaveFormat : YukiBaseHooker() {
                 }
             }.apply {
                 checkDataList("EnablePNGSaveFormat")
-                first().name.toClass().apply {
-                    method { returnType = StringClass }.hookAll {
-                        after {
-                            result = when (result<String>()) {
-                                "image/jpeg" -> "image/png"
-                                ".jpg" -> ".png"
-                                else -> return@after
-                            }
+                val cls = (firstOrNullSafe()?.name ?: return@apply).toClassOrNull(appClassLoader) ?: return@apply
+                for (m in cls.declaredMethods) {
+                    when (m.returnType) {
+                        String::class.java -> runCatching {
+                            XposedBridge.hookMethod(m, object : XC_MethodHook() {
+                                override fun afterHookedMethod(param: MethodHookParam) {
+                                    param.result = when (param.result as? String) {
+                                        "image/jpeg" -> "image/png"
+                                        ".jpg" -> ".png"
+                                        else -> return
+                                    }
+                                }
+                            })
                         }
-                    }
-                    method { returnType = Bitmap.CompressFormat::class.java }.hook {
-                        after {
-                            result = when (result<Bitmap.CompressFormat>()) {
-                                Bitmap.CompressFormat.JPEG -> Bitmap.CompressFormat.PNG
-                                else -> return@after
-                            }
+                        Bitmap.CompressFormat::class.java -> runCatching {
+                            XposedBridge.hookMethod(m, object : XC_MethodHook() {
+                                override fun afterHookedMethod(param: MethodHookParam) {
+                                    param.result = when (param.result as? Bitmap.CompressFormat) {
+                                        Bitmap.CompressFormat.JPEG -> Bitmap.CompressFormat.PNG
+                                        else -> return
+                                    }
+                                }
+                            })
                         }
                     }
                 }

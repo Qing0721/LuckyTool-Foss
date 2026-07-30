@@ -7,11 +7,10 @@ import android.graphics.Typeface
 import android.text.TextPaint
 import android.view.View
 import com.highcapable.yukihookapi.hook.entity.YukiBaseHooker
-import com.highcapable.yukihookapi.hook.factory.current
 import com.highcapable.yukihookapi.hook.factory.method
-import com.highcapable.yukihookapi.hook.factory.toClass
-import com.highcapable.yukihookapi.hook.type.android.CanvasClass
+import com.highcapable.yukihookapi.hook.factory.toClassOrNull
 import com.fosstool.app.utils.ModulePrefs
+import de.robv.android.xposed.XposedHelpers
 
 object VolumeBarPercent : YukiBaseHooker() {
     override fun onHook() {
@@ -20,25 +19,21 @@ object VolumeBarPercent : YukiBaseHooker() {
         var color = prefs(ModulePrefs).getString("custom_volume_bar_percent_color", "#FFFFFFFF")
         dataChannel.wait<String>("custom_volume_bar_percent_color") { color = it }
 
-        "com.oplus.systemui.volume.OplusVolumeSeekBar".toClass().apply {
-            method {
-                name = "drawActiveTrack"
-                param(CanvasClass)
-            }.hook {
+        "com.oplus.systemui.volume.OplusVolumeSeekBar"
+            .toClassOrNull(appClassLoader)
+            ?.method { name = "drawActiveTrack"; paramCount = 1 }?.ignored()?.hook {
                 before {
-                    val canvas = args().first().cast<Canvas>() ?: return@before
-                    val view = instance<View>() ?: return@before
+                    val canvas = args.getOrNull(0) as? Canvas ?: return@before
+                    val view = instance as? View ?: return@before
 
                     val progress = try {
-                        view.current().method { name = "getProgress" }.invoke<Int>()
-                            ?: return@before
-                    } catch (e: Throwable) {
+                        XposedHelpers.callMethod(view, "getProgress") as? Int ?: return@before
+                    } catch (_: Throwable) {
                         return@before
                     }
                     val max = try {
-                        view.current().method { name = "getMax" }.invoke<Int>()
-                            ?: return@before
-                    } catch (e: Throwable) {
+                        XposedHelpers.callMethod(view, "getMax") as? Int ?: return@before
+                    } catch (_: Throwable) {
                         return@before
                     }
                     if (max <= 0) return@before
@@ -51,7 +46,7 @@ object VolumeBarPercent : YukiBaseHooker() {
 
                     val density = try {
                         view.resources.displayMetrics.density
-                    } catch (e: Throwable) {
+                    } catch (_: Throwable) {
                         1f
                     }
 
@@ -59,7 +54,7 @@ object VolumeBarPercent : YukiBaseHooker() {
                         isAntiAlias = true
                         try {
                             this.color = Color.parseColor(color)
-                        } catch (e: Throwable) {
+                        } catch (_: Throwable) {
                             this.color = Color.WHITE
                         }
                         textSize = density * 12f
@@ -74,6 +69,5 @@ object VolumeBarPercent : YukiBaseHooker() {
                     canvas.drawText("${percentage}%", x, y, paint)
                 }
             }
-        }
     }
 }

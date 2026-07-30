@@ -30,7 +30,10 @@ object StatusBarIcon : YukiBaseHooker() {
         if (prefs(ModulePrefs).getBoolean("remove_green_dot_privacy_prompt", false)) {
             loadHooker(RemoveGreenDotPrivacyPrompt)
         }
-        if (prefs(ModulePrefs).getBoolean("remove_green_capsule_prompt", false)) {
+
+        if (prefs(ModulePrefs).getBoolean("remove_green_capsule_prompt", false) ||
+            prefs(ModulePrefs).getBoolean("remove_system_prompt_icon", false)
+        ) {
             loadHooker(RemoveGreenCapsulePrompt)
         }
         if (prefs(ModulePrefs).getBoolean("status_bar_icon_vertical_center", false)) {

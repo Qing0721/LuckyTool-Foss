@@ -1,30 +1,28 @@
 package com.fosstool.app.hook.scope.systemui
 
+import com.highcapable.yukihookapi.hook.bean.VariousClass
 import com.highcapable.yukihookapi.hook.entity.YukiBaseHooker
 import com.highcapable.yukihookapi.hook.factory.method
-import com.fosstool.app.utils.A14
-import com.fosstool.app.utils.SDK
+import com.highcapable.yukihookapi.hook.factory.toClassOrNull
+import com.highcapable.yukihookapi.hook.log.YLog
 
 object RemoveGreenDotPrivacyPrompt : YukiBaseHooker() {
     override fun onHook() {
-        "com.android.systemui.statusbar.events.PrivacyDotViewController".toClass().apply {
-            hookMethod()
-        }
-        "com.oplusos.systemui.statusbar.events.OplusPrivacyDotViewController".toClassOrNull()
-            ?.hookMethod()
+        var hit = false
 
-        if (SDK < A14) return
-        "com.oplus.systemui.privacy.OplusPrivacyDotViewController".toClass().apply {
-            hookMethod()
+        VariousClass(
+            "com.oplusos.systemui.statusbar.events.ViewState",
+            "com.oplus.systemui.privacy.ViewState"
+        ).toClassOrNull(appClassLoader)?.let {
+            hit = true
+            it.method { name = "shouldShowDot" }.ignored().hook { replaceToFalse() }
         }
-    }
 
-    private fun Class<*>.hookMethod() {
-        method { name = "showDotView";paramCount = 2 }.hook {
-            intercept()
+        "com.android.systemui.statusbar.events.ViewState".toClassOrNull(appClassLoader)?.let {
+            hit = true
+            it.method { name = "shouldShowDot" }.ignored().hook { replaceToFalse() }
         }
-        method { name = "updateDesignatedCorner";paramCount = 2 }.hook {
-            intercept()
-        }
+
+        if (!hit) YLog.error("RemoveGreenDotPrivacyPrompt: no ViewState class found")
     }
 }

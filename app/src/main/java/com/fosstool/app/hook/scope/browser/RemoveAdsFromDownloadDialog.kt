@@ -1,43 +1,40 @@
 package com.fosstool.app.hook.scope.browser
 
 import com.highcapable.yukihookapi.hook.entity.YukiBaseHooker
-import com.highcapable.yukihookapi.hook.factory.method
 import com.highcapable.yukihookapi.hook.type.android.ContextClass
 import com.highcapable.yukihookapi.hook.type.java.IntType
 import com.highcapable.yukihookapi.hook.type.java.StringClass
 import com.highcapable.yukihookapi.hook.type.java.UnitType
 import com.fosstool.app.utils.DexkitUtils
 import com.fosstool.app.utils.DexkitUtils.checkDataList
+import com.fosstool.app.utils.DexkitUtils.firstOrNullSafe
+import com.highcapable.yukihookapi.hook.factory.method
+import com.highcapable.yukihookapi.hook.factory.toClassOrNull
 
 object RemoveAdsFromDownloadDialog : YukiBaseHooker() {
     override fun onHook() {
         DexkitUtils.create(appInfo.sourceDir) { dexKitBridge ->
-            dexKitBridge.findClass {
+
+            dexKitBridge.findMethod {
                 matcher {
-                    fields {
-                        addForType(ContextClass.name)
-                        addForType(StringClass.name)
-                        addForType("com.opos.feed.api.FeedAdNative")
-                        addForType("com.opos.feed.api.RecyclerAdHelper")
-                        addForType("com.opos.feed.api.params.AdInteractionListener")
-                    }
-                    methods {
-                        add {
+                    declaredClass {
+                        addFieldForType(ContextClass.name)
+                        addFieldForType(StringClass.name)
+                        addMethod {
                             paramTypes(ContextClass.name, IntType.name)
                             returnType(UnitType.name)
                         }
-                        add { returnType("com.opos.feed.api.params.AdRequest") }
-                        add { returnType("com.opos.feed.api.RecyclerAdHelper") }
+                        usingStrings("DownloadCardAdProvider")
                     }
-                    usingStrings("DownloadCardAdProvider")
+                    usingStrings("DownloadCardAdProvider", "createAdRequest", "appName", "posIds")
                 }
             }.apply {
                 checkDataList("RemoveAdsFromDownloadDialog")
-                first().name.toClass().apply {
-                    method {
-                        paramCount(1)
-                        returnType("com.opos.feed.api.params.AdRequest")
-                    }.hook { replaceTo(null) }
+                firstOrNullSafe()?.apply {
+                    className.toClassOrNull(appClassLoader)
+                        ?.method { name = methodName }
+                        ?.ignored()
+                        ?.hook { intercept() }
                 }
             }
         }

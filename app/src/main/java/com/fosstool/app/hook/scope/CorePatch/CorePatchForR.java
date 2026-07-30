@@ -42,52 +42,36 @@ public class CorePatchForR extends XposedHelper implements IXposedHookLoadPackag
     public void handleLoadPackage(XC_LoadPackage.LoadPackageParam loadPackageParam) throws IllegalAccessException, InvocationTargetException, InstantiationException {
         ClassLoader classLoader = loadPackageParam.classLoader;
 
-        // === PackageManagerService ===
         hookPackageManagerService(classLoader);
 
-        // === PackageManagerServiceUtils ===
         hookPackageManagerServiceUtils(classLoader);
 
-        // === ApkSignatureVerifier ===
         hookApkSignatureVerifier(classLoader);
 
-        // === ApkSigningBlockUtils ===
         hookApkSigningBlockUtils(classLoader);
 
-        // === StrictJarVerifier ===
         hookStrictJarVerifier(classLoader);
 
-        // === MessageDigest ===
         hookMessageDigest(classLoader);
 
-        // === AssetManager ===
         hookAssetManager(classLoader);
 
-        // === SigningDetails ===
         hookSigningDetails(classLoader);
 
-        // === ApplicationInfo ===
         hookApplicationInfo(classLoader);
 
-        // === KeySetManagerService ===
         hookKeySetManagerService(classLoader);
 
-        // === NtConfigListServiceImpl (bypass block for Nothing Phone) ===
         hookNtConfigListServiceImpl(classLoader);
 
-        // === SharedUserSetting (bypass shared user) ===
         hookSharedUserSetting(classLoader);
 
-        // === ReconcilePackageUtils ===
         hookReconcilePackageUtils(classLoader);
 
-        // === VerificationParams (SDK33) / VerifyingSession (SDK34+) ===
         hookVerificationAgent(classLoader);
 
-        // === InstallPackageHelper (SDK33+) ===
         hookInstallPackageHelper(classLoader);
 
-        // === ScanPackageUtils (SDK33+) ===
         hookScanPackageUtils(classLoader);
     }
 
@@ -95,8 +79,6 @@ public class CorePatchForR extends XposedHelper implements IXposedHookLoadPackag
         Class<?> pmsClass = findClass("com.android.server.pm.PackageManagerService", classLoader);
         if (pmsClass == null) return;
 
-        // checkDowngrade - allow downgrade install
-        // SDK 30-32: in PackageManagerService, SDK 33+: in PackageManagerServiceUtils
         if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.S_V2) {
             try {
                 Method checkDowngrade = Arrays.stream(pmsClass.getDeclaredMethods())
@@ -110,7 +92,6 @@ public class CorePatchForR extends XposedHelper implements IXposedHookLoadPackag
             }
         }
 
-        // isVerificationEnabled - disable verification agent
         try {
             Method isVerificationEnabled = Arrays.stream(pmsClass.getDeclaredMethods())
                     .filter(m -> m.getName().equals("isVerificationEnabled") && m.getReturnType() == Boolean.TYPE)
@@ -130,7 +111,6 @@ public class CorePatchForR extends XposedHelper implements IXposedHookLoadPackag
             if (DEBUG) Log.e(TAG, "CorePatch: isVerificationEnabled hook failed", e);
         }
 
-        // doesSignatureMatchForPermissions (SDK 31+)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             try {
                 Method doesSigMatch = Arrays.stream(pmsClass.getDeclaredMethods())
@@ -162,7 +142,6 @@ public class CorePatchForR extends XposedHelper implements IXposedHookLoadPackag
         Class<?> utilsClass = findClass("com.android.server.pm.PackageManagerServiceUtils", classLoader);
         if (utilsClass == null) return;
 
-        // verifySignatures - deoptimize and bypass
         try {
             Method verifySignatures = Arrays.stream(utilsClass.getDeclaredMethods())
                     .filter(m -> m.getName().equals("verifySignatures") && m.getReturnType() == Boolean.TYPE)
@@ -183,7 +162,6 @@ public class CorePatchForR extends XposedHelper implements IXposedHookLoadPackag
             if (DEBUG) Log.e(TAG, "CorePatch: verifySignatures hook failed", e);
         }
 
-        // checkDowngrade (SDK 33+ - moved from PMS to Utils)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             try {
                 Arrays.stream(utilsClass.getDeclaredMethods())
@@ -210,7 +188,6 @@ public class CorePatchForR extends XposedHelper implements IXposedHookLoadPackag
             }
         }
 
-        // canJoinSharedUserId (SDK 33+) - deoptimize to ensure verifySignatures success
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             try {
                 Method canJoinSharedUserId = Arrays.stream(utilsClass.getDeclaredMethods())
@@ -229,18 +206,16 @@ public class CorePatchForR extends XposedHelper implements IXposedHookLoadPackag
         Class<?> asvClass = findClass("android.util.apk.ApkSignatureVerifier", classLoader);
         if (asvClass == null) return;
 
-        // getMinimumSignatureSchemeVersionForTargetSdk (SDK 30+)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             findAndHookMethod("android.util.apk.ApkSignatureVerifier", classLoader,
                     "getMinimumSignatureSchemeVersionForTargetSdk", int.class,
                     new ReturnConstant(prefs, "authcreak", 0, false));
         }
 
-        // verifyV1Signature (SDK <= 32)
-        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.R) {
+        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.S_V2) {
             hookVerifyV1SignaturePreT(asvClass, classLoader);
         }
-        // verifyV1Signature (SDK 33+)
+
         else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             hookVerifyV1SignatureTPlus(asvClass, classLoader);
         }
@@ -489,7 +464,6 @@ public class CorePatchForR extends XposedHelper implements IXposedHookLoadPackag
         Class<?> asbuClass = findClass("android.util.apk.ApkSigningBlockUtils", classLoader);
         if (asbuClass == null) return;
 
-        // parseVerityDigestAndVerifySourceLength
         try {
             Method parseVerity = Arrays.stream(asbuClass.getDeclaredMethods())
                     .filter(m -> m.getName().equals("parseVerityDigestAndVerifySourceLength"))
@@ -511,7 +485,6 @@ public class CorePatchForR extends XposedHelper implements IXposedHookLoadPackag
             if (DEBUG) Log.e(TAG, "CorePatch: parseVerityDigestAndVerifySourceLength hook failed", e);
         }
 
-        // verifyIntegrityForVerityBasedAlgorithm
         try {
             Method verifyIntegrity = Arrays.stream(asbuClass.getDeclaredMethods())
                     .filter(m -> m.getName().equals("verifyIntegrityForVerityBasedAlgorithm"))
@@ -536,11 +509,9 @@ public class CorePatchForR extends XposedHelper implements IXposedHookLoadPackag
         Class<?> sjvClass = findClass("android.util.jar.StrictJarVerifier", classLoader);
         if (sjvClass == null) return;
 
-        // verifyMessageDigest
         hookAllMethods("android.util.jar.StrictJarVerifier", classLoader, "verifyMessageDigest",
                 new ReturnConstant(prefs, "authcreak", true, false));
 
-        // verify
         try {
             Arrays.stream(sjvClass.getDeclaredMethods())
                     .filter(m -> m.getName().equals("verify") && m.getReturnType() == Boolean.TYPE)
@@ -561,7 +532,6 @@ public class CorePatchForR extends XposedHelper implements IXposedHookLoadPackag
         } catch (Throwable ignored) {
         }
 
-        // constructor - signatureSchemeRollbackProtectionsEnforced
         try {
             Field rollbackField = sjvClass.getDeclaredField("signatureSchemeRollbackProtectionsEnforced");
             rollbackField.setAccessible(true);
@@ -580,7 +550,6 @@ public class CorePatchForR extends XposedHelper implements IXposedHookLoadPackag
         } catch (Throwable ignored) {
         }
 
-        // verifyBytes - extract real signature when digest creak enabled
         try {
             Class<?> pkcs7Class = findClass("sun.security.pkcs.PKCS7", classLoader);
             Class<?> signerInfoClass = findClass("sun.security.pkcs.SignerInfo", classLoader);
@@ -636,7 +605,6 @@ public class CorePatchForR extends XposedHelper implements IXposedHookLoadPackag
         Class<?> signingDetailsClazz = getSigningDetails(classLoader);
         if (signingDetailsClazz == null) return;
 
-        // checkCapability
         try {
             Method checkCapability = Arrays.stream(signingDetailsClazz.getDeclaredMethods())
                     .filter(m -> m.getName().equals("checkCapability"))
@@ -660,7 +628,6 @@ public class CorePatchForR extends XposedHelper implements IXposedHookLoadPackag
             if (DEBUG) Log.e(TAG, "CorePatch: checkCapability hook failed", e);
         }
 
-        // checkCapabilityRecover
         try {
             Method checkCapabilityRecover = Arrays.stream(signingDetailsClazz.getDeclaredMethods())
                     .filter(m -> m.getName().equals("checkCapabilityRecover"))
@@ -684,7 +651,6 @@ public class CorePatchForR extends XposedHelper implements IXposedHookLoadPackag
             if (DEBUG) Log.e(TAG, "CorePatch: checkCapabilityRecover hook failed", e);
         }
 
-        // hasCommonAncestor (SDK 30+) - for shared user
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             try {
                 Method hasCommonAncestor = Arrays.stream(signingDetailsClazz.getDeclaredMethods())
@@ -710,7 +676,6 @@ public class CorePatchForR extends XposedHelper implements IXposedHookLoadPackag
             }
         }
 
-        // signaturesMatchExactly - exact sig check
         try {
             Method signaturesMatchExactly = Arrays.stream(signingDetailsClazz.getDeclaredMethods())
                     .filter(m -> m.getName().equals("signaturesMatchExactly"))
@@ -858,7 +823,6 @@ public class CorePatchForR extends XposedHelper implements IXposedHookLoadPackag
 
             final Method finalMergeLineageWithMethod = mergeLineageWithMethod;
 
-            // removePackage hook
             Method removePackageMethod = Arrays.stream(sharedUserSettingClass.getDeclaredMethods())
                     .filter(m -> m.getName().equals("removePackage")).findFirst().orElse(null);
             if (removePackageMethod != null) {
@@ -903,7 +867,6 @@ public class CorePatchForR extends XposedHelper implements IXposedHookLoadPackag
                 });
             }
 
-            // addPackage hook
             Method addPackageMethod = Arrays.stream(sharedUserSettingClass.getDeclaredMethods())
                     .filter(m -> m.getName().equals("addPackage")).findFirst().orElse(null);
             if (addPackageMethod != null) {
@@ -1018,7 +981,6 @@ public class CorePatchForR extends XposedHelper implements IXposedHookLoadPackag
             if (DEBUG) Log.e(TAG, "CorePatch: reconcilePackages deoptimize failed", e);
         }
 
-        // ALLOW_NON_PRELOADS_SYSTEM_SHAREDUIDS
         try {
             Field allowField = Arrays.stream(reconcileClass.getDeclaredFields())
                     .filter(f -> f.getName().equals("ALLOW_NON_PRELOADS_SYSTEM_SHAREDUIDS"))
@@ -1035,7 +997,7 @@ public class CorePatchForR extends XposedHelper implements IXposedHookLoadPackag
     }
 
     private void hookVerificationAgent(ClassLoader classLoader) {
-        // VerificationParams (SDK33)
+
         if (Build.VERSION.SDK_INT == Build.VERSION_CODES.TIRAMISU) {
             Class<?> vpClass = findClass("com.android.server.pm.VerificationParams", classLoader);
             if (vpClass != null) {
@@ -1058,7 +1020,6 @@ public class CorePatchForR extends XposedHelper implements IXposedHookLoadPackag
             }
         }
 
-        // VerifyingSession (SDK34+)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
             Class<?> vsClass = findClass("com.android.server.pm.VerifyingSession", classLoader);
             if (vsClass != null) {
@@ -1136,12 +1097,12 @@ public class CorePatchForR extends XposedHelper implements IXposedHookLoadPackag
     }
 
     Class<?> getSigningDetails(ClassLoader classLoader) {
-        return XposedHelpers.findClass("android.content.pm.PackageParser.SigningDetails", classLoader);
+        return XposedHelpers.findClass("android.content.pm.PackageParser$SigningDetails", classLoader);
     }
 
     @Override
     public void initZygote(StartupParam startupParam) {
-        // PackageParser.getApkSigningVersion (legacy)
+
         hookAllMethods("android.content.pm.PackageParser", null, "getApkSigningVersion",
                 XC_MethodReplacement.returnConstant(1));
     }

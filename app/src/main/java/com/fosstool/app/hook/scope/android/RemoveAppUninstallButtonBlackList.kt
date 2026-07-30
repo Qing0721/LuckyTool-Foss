@@ -1,30 +1,34 @@
-package com.fosstool.app.hook.scope.android
+﻿package com.fosstool.app.hook.scope.android
 
 import android.util.ArraySet
 import com.highcapable.yukihookapi.hook.entity.YukiBaseHooker
-import com.highcapable.yukihookapi.hook.factory.current
 import com.highcapable.yukihookapi.hook.factory.field
 import com.highcapable.yukihookapi.hook.factory.method
-import com.fosstool.app.utils.A13
+import com.highcapable.yukihookapi.hook.factory.toClassOrNull
 import com.fosstool.app.utils.ModulePrefs
-import com.fosstool.app.utils.SDK
+import de.robv.android.xposed.XposedHelpers
 
 object RemoveAppUninstallButtonBlackList : YukiBaseHooker() {
     override fun onHook() {
-        val isEnable = prefs(ModulePrefs).getBoolean("remove_app_uninstall_button_blacklist", false)
-        if (SDK < A13) return
 
-        "com.android.server.pm.OplusUninstallableConfigManager".toClass().apply {
-            method { name = "loadUninstallableConfig" }.hook {
-                after {
-                    if (!isEnable) return@after
-                    val mHideUninstallIcon =
-                        field { name = "mHideUninstallIcon" }.get(instance).any()
-                    mHideUninstallIcon?.current()?.field { name = "mList" }?.set(ArraySet<String>())
-                    val mHideUninstallIconSoft =
-                        field { name = "mHideUninstallIconSoft" }.get(instance).any()
-                    mHideUninstallIconSoft?.current()?.field { name = "mList" }
-                        ?.set(ArraySet<String>())
+        val isEnable = prefs(ModulePrefs).getBoolean("remove_app_uninstall_button_blacklist", false)
+        if (!isEnable) return
+
+        val cls = "com.android.server.pm.OplusUninstallableConfigManager".toClassOrNull(appClassLoader) ?: return
+        cls.method { name = "loadUninstallableConfig" }.ignored().hook {
+            after {
+                listOf("mHideUninstallIcon", "mHideUninstallIconSoft").forEach { fieldName ->
+                    val holder = runCatching {
+                        cls.field { name = fieldName }.ignored().get(instance).any()
+                    }.getOrNull()
+                        ?: runCatching {
+                            XposedHelpers.getObjectField(instance, fieldName)
+                        }.getOrNull()
+                    if (holder != null) {
+                        runCatching {
+                            XposedHelpers.setObjectField(holder, "mList", ArraySet<String>())
+                        }
+                    }
                 }
             }
         }

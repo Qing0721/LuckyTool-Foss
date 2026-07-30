@@ -2,9 +2,11 @@ package com.fosstool.app.hook.scope.android
 
 import com.highcapable.yukihookapi.hook.entity.YukiBaseHooker
 import com.highcapable.yukihookapi.hook.factory.field
-import com.highcapable.yukihookapi.hook.factory.hasMethod
 import com.highcapable.yukihookapi.hook.factory.method
+import com.highcapable.yukihookapi.hook.factory.toClassOrNull
+import com.highcapable.yukihookapi.hook.log.YLog
 import com.fosstool.app.utils.ModulePrefs
+import de.robv.android.xposed.XposedHelpers
 
 object BatteryOptimizationWhitelist : YukiBaseHooker() {
     override fun onHook() {
@@ -13,24 +15,43 @@ object BatteryOptimizationWhitelist : YukiBaseHooker() {
         val disableCustom = false
         if (!isEnable) return
 
-        "com.android.server.OplusDeviceIdleHelper".toClass().apply {
-            method {
-                name = if (hasMethod { name = "getNewWhiteList" }) "getNewWhiteList"
-                else if (hasMethod { name = "getNewWhiteListLocked" }) "getNewWhiteListLocked"
-                else return
-                paramCount = 1
-            }.hook {
-                replaceUnit {
-                    val whiteListAll = args().first().cast<java.util.ArrayList<String>>()
-                    whiteListAll?.clear()
-                    val mDefaultWhitelist =
-                        field { name = "mDefaultWhitelist" }.get().list<String>()
-                    whiteListAll?.addAll(mDefaultWhitelist)
+        val cls = "com.android.server.OplusDeviceIdleHelper".toClassOrNull(appClassLoader)
+        if (cls == null) {
+            YLog.error("BatteryOptimizationWhitelist: OplusDeviceIdleHelper not found")
+            return
+        }
 
-                    if (!disableCustom) method { name = "getCustomizeWhiteList" }.get(instance)
-                        .call(whiteListAll)
-                    method { name = "addNfcJapanFelica" }.get(instance).call(whiteListAll)
+        val hasNewWhiteList = cls.method {
+            name = "getNewWhiteList"
+            superClass()
+        }.ignored().give() != null
+
+        val targetName = if (hasNewWhiteList) "getNewWhiteList" else "getNewWhiteListLocked"
+
+        cls.method {
+            name = targetName
+            superClass()
+        }.ignored().hook {
+            before {
+                @Suppress("UNCHECKED_CAST")
+                val whiteListAll = args(0).any() as? java.util.ArrayList<String> ?: return@before
+                whiteListAll.clear()
+                @Suppress("UNCHECKED_CAST")
+                val mDefaultWhitelist = runCatching {
+                    cls.field { name = "mDefaultWhitelist"; superClass() }
+                        .ignored().get(instance).any() as? List<String>
+                }.getOrNull()
+                if (mDefaultWhitelist != null) whiteListAll.addAll(mDefaultWhitelist)
+
+                if (!disableCustom) {
+                    runCatching {
+                        XposedHelpers.callMethod(instance, "getCustomizeWhiteList", whiteListAll)
+                    }
                 }
+                runCatching {
+                    XposedHelpers.callMethod(instance, "addNfcJapanFelica", whiteListAll)
+                }
+                resultNull()
             }
         }
     }

@@ -157,7 +157,6 @@
     <string name="remove_do_not_disturb_mode_notification">Xóa thông báo chế độ không làm phiền</string>
     <string name="remove_hotspot_power_consumption_notification">Xóa cảnh báo tiêu thụ năng lượng của điểm truy cập cá nhân</string>
     <string name="remove_hotspot_power_consumption_notification_summary">Lưu ý: Bật điểm truy cập cá nhân trong thời gian dài sẽ làm tăng mức tiêu thụ điện năng gây nóng máy</string>
-    <string name="remove_smart_rapid_charging_notification">Xóa thông báo “Sạc nhanh thông minh”</string>
     <string name="remove_notifications_for_mute_notifications">Xóa thông báo không làm phiền</string>
     <string name="remove_virus_risk_notification_in_phone_manager">Xóa thông báo nguy cơ vi-rút trong Trình quản lý điện thoại</string>
     <string name="remove_gt_mode_notification">Xóa thông báo chế độ GT</string>
@@ -326,7 +325,6 @@
 
     <string name="Desktop">Màn hình chính</string>
     <string name="AppBadgeRelated">Liên quan đến huy hiệu ứng dụng</string>
-    <string name="remove_the_dot_after_app_update">Xóa dấu chấm sau khi cập nhật APP</string>
     <string name="remove_app_shortcut_badge">Xóa huy hiệu lối tắt ứng dụng</string>
     <string name="remove_app_work_badge">Xóa huy hiệu không gian làm việc của ứng dụng</string>
     <string name="remove_app_clone_badge">Xóa huy hiệu lối tắt ứng dụng</string>
@@ -339,9 +337,6 @@
     <string name="long_press_app_icon_open_app_details">Nhấn và giữ biểu tượng ứng dụng để mở chi tiết ứng dụng</string>
     <string name="remove_recent_task_list_clear_button">Xóa nút xóa danh sách tác vụ gần đây</string>
     <string name="remove_bottom_app_icon_of_recent_task_list">Xóa biểu tượng APP ở cuối danh sách tác vụ gần đây</string>
-    <string name="enable_stacked_task_layout">Bật bố cục tác vụ xếp chồng lên nhau</string>
-    <string name="set_task_stacking_level">Đặt mức xếp chồng nhiệm vụ</string>
-    <string name="fix_current_task_to_the_top">Cố định nhiệm vụ hiện tại lên đầu</string>
     <string name="PaginationComponentRelated">Thành phần phân trang liên quan</string>
     <string name="remove_pagination_component">Xóa thành phần phân trang</string>
     <string name="remove_folder_pagination_component">Xóa thành phần phân trang thư mục</string>
@@ -379,10 +374,6 @@
     <string name="remove_install_ads_summary">Đóng Cài đặt - Đề xuất ứng dụng bảo mật</string>
     <string name="auto_click_install_button">Tự động nhấp vào nút cài đặt</string>
     <string name="auto_click_uninstall_button">Tự động nhấp vào nút gỡ cài đặt</string>
-    <string name="replase_aosp_installer">Thay thế trình cài đặt AOSP</string>
-    <string name="replase_aosp_installer_summary">Thay thế bằng trình cài đặt Google</string>
-    <string name="show_packagename_and_versioncode">Hiển thị tên gói và mã phiên bản</string>
-    <string name="show_packagename_and_versioncode_summary">Hiển thị tên gói và mã phiên bản ở đầu trang cài đặt</string>
 
     <string name="ApplyOtherRestrictions">Giới hạn khác</string>
     <string name="remove_adb_install_confirm">Xóa xác nhận cài đặt ADB</string>
@@ -409,7 +400,6 @@
     <string name="remove_secure_pay_found_virus_dialog">Đã xóa hộp thoại vi-rút tìm thấy thanh toán an toàn</string>
     <string name="remove_access_device_log_dialog">Xóa hộp thoại nhật ký thiết bị truy cập</string>
     <string name="custom_volume_dialog_background_transparency">Tùy chỉnh độ trong suốt của nền hộp thoại âm lượng</string>
-    <string name="reduce_power_menu_display_delay">Giảm độ trễ hiển thị menu nguồn</string>
 
     <string name="FingerPrintRelated">Vân tay</string>
     <string name="remove_fingerprint_icon_mode">Xóa biểu tượng dấu vân tay</string>
@@ -438,8 +428,6 @@
     <string name="performance_mode_and_standby_optimization">Chế độ hiệu suất và Tối ưu hóa chế độ chờ</string>
     <string name="performance_mode_and_standby_optimization_summary">Cài đặt - Pin - Cài đặt khác</string>
     <string name="allow_untrusted_touch">Cho phép chạm không đáng tin cậy</string>
-    <string name="disable_dynamic_refresh_rate">Tắt tốc độ làm mới động</string>
-    <string name="disable_dynamic_refresh_rate_summary">Mainly solve the frame drop problem when the screen is not touched</string>
     <string name="set_volume_bar_display_position">Đặt vị trí hiển thị thanh âm lượng</string>
     <string name="force_enable_systemui_blur_feature">Buộc kích hoạt tính năng làm mờ giao diện hệ thống</string>
     <string name="force_enable_systemui_blur_feature_tips">Điều kiện tiên quyết: Bạn cần bật tùy chọn \"Buộc kích hoạt các tính năng mờ của hệ thống\"\nVị trí chức năng: Khác</string>
@@ -450,9 +438,6 @@
     <string name="restore_default_battery_optimization_whitelist">Ngăn chặn sự khôi phục của danh sách trắng tối ưu hoá pin</string>
     <string name="disable_customize_battery_optimization_whiteList">Ngăn chặn sự khôi phục của danh sách trắng tối ưu hoá pin</string>
     <string name="disable_customize_battery_optimization_whiteList_summary">Nếu người dùng cấp quyền `bỏ qua tối ưu hóa pin` cho ứng dụng theo cách thủ công, thì sau khi bật chức năng này, ứng dụng sẽ không tự động được thêm vào danh sách cho phép tối ưu hóa pin</string>
-    <string name="fix_battery_health_data_display">Sửa lỗi hiển thị dữ liệu tình trạng pin</string>
-    <string name="fix_battery_health_data_display_summary">Không sử dụng tính năng này khi hệ thống hỗ trợ Tình trạng pin\nKhông thể đảm bảo độ chính xác của dữ liệu</string>
-    <string name="fix_battery_health_data_display_tips">Hãy thử khởi động lại hệ thống</string>
 
     <string name="settings_status_bar">Thanh trạng thái</string>
     <string name="enable_statusbar_clock_format">Bật định dạng đồng hồ trên thanh trạng thái</string>
@@ -461,13 +446,10 @@
     <string name="enable_show_never_timeout">Bật màn hình để không bao giờ hết thời gian chờ</string>
     <string name="enable_show_never_timeout_summary">Sau khi bật, bạn có thể thấy nhiều tùy chọn hơn trong cài đặt</string>
     <string name="settings_display">Hiển thị</string>
-    <string name="force_display_dc_backlight_mode">Buộc phải hiển thị độ sáng thấp và không nhấp nháy để bảo vệ mắt</string>
     <string name="force_display_dc_backlight_mode_summary">Không đảm bảo rằng nó sẽ hoạt động, nó chỉ được sử dụng để hiển thị các tùy chọn chức năng</string>
     <string name="force_display_video_memc_frame_insertion">Buộc hiển thị khung nội suy MEMC video</string>
     <string name="video_frame_insertion_support_2K120">Chèn khung video hỗ trợ 2K 120</string>
     <string name="video_frame_insertion_support_2K120_summary">Nếu thiết bị của bạn không hỗ trợ MEMC, vui lòng không sử dụng chức năng này</string>
-    <string name="enable_screen_color_temperature_rgb_palette">Bật bảng màu RGB nhiệt độ màu màn hình</string>
-    <string name="enable_screen_color_temperature_rgb_palette_summary">Có thể bị ghi đè bởi chức năng DC</string>
     <string name="settings_application">Ứng dụng</string>
     <string name="force_display_process_management">Buộc hiển thị quản lý quy trình</string>
     <string name="force_display_disabled_apps_manager">Buộc hiển thị trình quản lý ứng dụng bị vô hiệu hóa</string>
@@ -538,10 +520,6 @@
     <string name="unlock_themestore_vip_summary">Mở khóa một phần của tính năng và tự mình dùng thử</string>
 
     <string name="Screenshot">Ảnh chụp màn hình</string>
-    <string name="remove_system_screenshot_delay">Xóa độ trễ ảnh chụp màn hình hệ thống</string>
-    <string name="remove_system_screenshot_delay_summary">Ảnh chụp màn hình đầu tiên có thể không có hiệu lực</string>
-    <string name="remove_screenshot_privacy_limit">Xóa giới hạn quyền riêng tư của ảnh chụp màn hình</string>
-    <string name="remove_screenshot_privacy_limit_summary">Xóa các hạn chế về quyền riêng tư không thể bị chặn. Vô hiệu hóa FLAG_SECURE nếu điều này không có hiệu lực</string>
     <string name="disable_flag_secure">Vô hiệu hóa FLAG_SECURE</string>
     <string name="disable_flag_secure_summary">Giải quyết hầu hết các ứng dụng không thể chụp, chia sẻ màn hình hoặc giới hạn ghi, thêm các trường ứng dụng tương ứng+</string>
     <string name="remove_page_limit_for_long_screenshots">Xóa giới hạn số trang cho ảnh chụp màn hình dài</string>
@@ -551,7 +529,10 @@
     <string name="unlock_local_upgrade">Mở khóa nâng cấp cục bộ</string>
     <string name="unlock_local_upgrade_summary">Sau khi nhấp vào, các thao tác liên quan sẽ được thực hiện tự động, hãy kiên nhẫn chờ trong vài giây</string>
     <string name="restore_ota_update_verity">Khôi phục xác minh cập nhật OTA</string>
-    <string name="restore_ota_update_verity_summary">Trạng thái hiện tại: %1$s\nNếu bản cập nhật OTA nhắc rằng xác minh không thành công hoặc nhắc dm-verity, bạn có thể thử sử dụng chức năng này\nĐừng hỏi tại sao chức năng này chuyển sang màu xám, vì hệ thống cho phép xác minh cập nhật bằng cách mặc định\nKhi tắt xác minh, Sẽ khiến cập nhật OTA không thành công nên chức năng này sẽ bị khóa khi bật chức năng này</string>
+    <string name="restore_ota_update_verity_summary">Trạng thái hiện tại: %1$s
+Nếu bản cập nhật OTA nhắc rằng xác minh không thành công hoặc nhắc dm-verity, bạn có thể thử sử dụng chức năng này
+Đừng hỏi tại sao chức năng này chuyển sang màu xám, vì hệ thống cho phép xác minh cập nhật bằng cách mặc định
+Khi tắt xác minh, Sẽ khiến cập nhật OTA không thành công nên chức năng này sẽ bị khóa khi bật chức năng này</string>
 
     <string name="extract_ota_information">Trích xuất thông tin OTA</string>
     <string name="extract_ota_information_summary">Khi có phiên bản mới bạn có thể nhấn vào để trích xuất thông tin OTA</string>
@@ -567,7 +548,6 @@
     <string name="force_enable_aon_gestures">Buộc kích hoạt cử chỉ không chạm</string>
     <string name="force_enable_aon_gestures_summary">Lưu ý: Cần phải cài đặt AONService (com.aiunit.aon) và cấp quyền cho máy ảnh!</string>
     <string name="custom_aon_gesture_scroll_page_whitelist">Danh sách trắng trang trượt tùy chỉnh</string>
-    <string name="custom_aon_gesture_video_whitelist">Danh sách trắng cử chỉ video tùy chỉnh</string>
     <string name="custom_aon_gesture_whitelist_tips">Điền tên gói cần thêm vào danh sách trắng, mỗi dòng chỉ được điền một tên gói</string>
     <string name="enable_volume_key_control_flashlight">Bật phím âm lượng để điều khiển đèn pin</string>
 
@@ -583,8 +563,6 @@
 
     <string name="remove_verification_code_floating_window">Xóa cửa sổ nổi mã xác minh</string>
 
-    <string name="remove_ads_from_weather_page">Remove weather page bottom information flow ads</string>
-    <string name="remove_ads_from_weather_page_summary">By injecting JS into the page m.weathercn.com to achieve the effect of blocking ads, it is suitable for functions that require a browser, such as the weather of the past 15 days that you jump to through the weather app</string>
     <string name="remove_ads_from_download_dialog">Remove ads from download dialog</string>
     <string name="remove_ads_at_download_page_bottom">Remove ads at the bottom of download page</string>
 

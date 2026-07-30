@@ -1,16 +1,32 @@
 package com.fosstool.app.hook.scope.notificationmanager
 
+import com.highcapable.yukihookapi.hook.bean.VariousClass
 import com.highcapable.yukihookapi.hook.entity.YukiBaseHooker
+import com.highcapable.yukihookapi.hook.factory.current
 import com.highcapable.yukihookapi.hook.factory.method
+import com.highcapable.yukihookapi.hook.factory.toClassOrNull
+import com.highcapable.yukihookapi.hook.type.java.AnyClass
 import com.highcapable.yukihookapi.hook.type.java.BooleanType
-import com.fosstool.app.utils.ModulePrefs
 
 object RemoveNotificationPinNumberLimit : YukiBaseHooker() {
     override fun onHook() {
-        if (!prefs(ModulePrefs).getBoolean("remove_notification_pin_number_limit", false)) return
-        runCatching {
-            "com.oplus.notificationmanager.property.uicontroller.AppNotificationTopController".toClass().apply {
-                method { returnType = BooleanType }.hookAll { before { resultTrue() } }
+        val clazz = VariousClass(
+            "com.oplus.notificationmanager.property.uicontroller.AppNotificationTopController",
+            "com.coloros.notificationmanager.property.uicontroller.AppNotificationTopController",
+        ).toClassOrNull(appClassLoader) ?: return
+        val preference = "androidx.preference.Preference".toClassOrNull(appClassLoader) ?: return
+
+        clazz.method {
+            param(clazz, preference, AnyClass)
+            returnType = BooleanType
+        }.ignored().hookAll {
+            before {
+                val controller = args.getOrNull(0) ?: return@before
+                val newValue = args.lastOrNull() as? Boolean ?: false
+                runCatching {
+                    controller.current().method { name = "onChange" }.call(newValue)
+                }
+                resultTrue()
             }
         }
     }

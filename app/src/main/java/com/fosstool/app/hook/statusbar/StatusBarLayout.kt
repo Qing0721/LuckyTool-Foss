@@ -10,9 +10,7 @@ import com.highcapable.yukihookapi.hook.bean.VariousClass
 import com.highcapable.yukihookapi.hook.entity.YukiBaseHooker
 import com.highcapable.yukihookapi.hook.factory.field
 import com.highcapable.yukihookapi.hook.factory.method
-import com.fosstool.app.utils.A13
 import com.fosstool.app.utils.ModulePrefs
-import com.fosstool.app.utils.SDK
 import com.fosstool.app.utils.getOSVersionCode
 import com.fosstool.app.utils.getScreenOrientation
 
@@ -24,7 +22,7 @@ object StatusBarLayout : YukiBaseHooker() {
     private var statusBarBottomMargin: Int = 0
 
     override fun onHook() {
-        if (SDK != A13) return
+
         var mLeftLayout: LinearLayout? = null
         var mRightLayout: LinearLayout? = null
         var mCenterLayout: LinearLayout?
@@ -71,17 +69,20 @@ object StatusBarLayout : YukiBaseHooker() {
             if (rightMargin != 0) statusBarRightMargin = rightMargin
         }
 
-        "com.android.systemui.ScreenDecorations\$DisplayCutoutView".toClass().apply {
-            method {
-                name = "boundsFromDirection"
-                paramCount = 3
-            }.hook {
-                before {
-                    if (isCompatibleMode) args(1).set(0)
+        runCatching {
+            "com.android.systemui.ScreenDecorations\$DisplayCutoutView".toClass().apply {
+                method {
+                    name = "boundsFromDirection"
+                    paramCount = 3
+                }.hook {
+                    before {
+                        if (isCompatibleMode) args(1).set(0)
+                    }
                 }
             }
         }
 
+        runCatching {
         VariousClass(
             "com.android.systemui.statusbar.phone.CollapsedStatusBarFragment",
             "com.android.systemui.statusbar.phone.fragment.CollapsedStatusBarFragment"
@@ -201,15 +202,19 @@ object StatusBarLayout : YukiBaseHooker() {
                 if (layoutMode != "0" && getOSVersionCode == 26) intercept()
             }
         }
+        }
 
+        runCatching {
         "com.android.systemui.statusbar.phone.PhoneStatusBarView".toClass().apply {
-            method { name = "updateLayoutForCutout" }.hook {
+            method { name = "updateLayoutForCutout" }.ignored().hook {
                 after {
                     if (isCompatibleMode) updateCustomLayout(instance<ViewGroup>().context)
                 }
             }
         }
+        }
 
+        runCatching {
         "com.oplus.systemui.statusbar.phone.KeyguardStatusBarViewExImpl".toClass().apply {
             method { name = "onFinishInflate" }.hook {
                 after {
@@ -221,6 +226,7 @@ object StatusBarLayout : YukiBaseHooker() {
                     }.get(instance).cast<ViewGroup>()?.setPadding(leftMargin, 0, 0, 0)
                 }
             }
+        }
         }
     }
 }

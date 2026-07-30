@@ -8,15 +8,17 @@ import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
 import com.highcapable.yukihookapi.hook.bean.VariousClass
 import com.highcapable.yukihookapi.hook.entity.YukiBaseHooker
-import com.highcapable.yukihookapi.hook.factory.current
-import com.highcapable.yukihookapi.hook.factory.field
-import com.highcapable.yukihookapi.hook.factory.hasMethod
 import com.highcapable.yukihookapi.hook.factory.method
+import com.highcapable.yukihookapi.hook.factory.toClassOrNull
 import com.fosstool.app.hook.utils.sysui.LunarHelperUtils
 import com.fosstool.app.utils.A13
 import com.fosstool.app.utils.ModulePrefs
 import com.fosstool.app.utils.SDK
 import com.fosstool.app.utils.getScreenOrientation
+import de.robv.android.xposed.XposedHelpers
+import java.lang.reflect.Field
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import java.util.Locale
 import kotlin.math.abs
 
@@ -49,17 +51,62 @@ object ControlCenterDateStyle : YukiBaseHooker() {
         }
 
         VariousClass(
+            "com.oplusos.systemui.qs.widget.OplusQSDateView",
+            "com.oplus.systemui.qs.widget.OplusQSDateView"
+        ).toClassOrNull(appClassLoader)?.let { c ->
+            c.method { name = "updateClock"; emptyParam() }.ignored().hook {
+                before {
+                    if (!removeComma && !showLunar) return@before
+                    val textView = instance as? TextView ?: return@before
+                    val lastText = c.findField("mLastText")?.get(instance) as? String
+
+                    val timeInfo = getLocalTimeInfo(textView.context)
+                    if (timeInfo != null) {
+                        val dateInfo = runCatching {
+                            XposedHelpers.callMethod(timeInfo, "getDateInfo") as? String
+                        }.getOrNull().orEmpty()
+                        if (dateInfo != lastText && dateInfo.isNotBlank()) textView.text = dateInfo
+                    } else {
+                        val formatterField = c.findFieldOfType(DateTimeFormatter::class.java)
+                        var formatter = formatterField?.get(instance) as? DateTimeFormatter
+                        if (formatter == null) {
+                            val pattern = c.findField("mDatePattern")?.get(instance) as? String
+                            formatter = runCatching {
+                                DateTimeFormatter.ofPattern(pattern, Locale.getDefault())
+                            }.getOrNull()
+                            runCatching { formatterField?.set(instance, formatter) }
+                        }
+                        val now = formatter?.let {
+                            runCatching { LocalDateTime.now().format(it) }.getOrNull()
+                        }
+                        if (now != null && now != lastText) textView.text = now
+                    }
+
+                    val current = textView.text?.toString().orEmpty()
+                    if (current.isNotBlank()) {
+                        var text = current
+                        if (removeComma) text = text.replace("，", " ")
+                        if (showLunar) {
+                            val lunar = getLunarSuffix(textView.context)
+                            if (lunar.isNotBlank()) text = "$text $lunar"
+                        }
+                        textView.text = text
+                        runCatching { c.findField("mLastText")?.set(instance, text) }
+                    }
+                    resultNull()
+                }
+            }
+        }
+
+        VariousClass(
             "com.oplusos.systemui.keyguard.clock.WeatherInfoParseHelper",
             "com.oplus.systemui.keyguard.clock.WeatherInfoParseHelper"
-        ).toClass().apply {
-            method {
-                name = "getChineseDateInfo"
-                paramCount = 2
-            }.hook {
+        ).toClassOrNull(appClassLoader)
+            ?.method { name = "getChineseDateInfo"; paramCount = 2 }?.ignored()?.hook {
                 after {
-                    if (removeComma) result = result<String>()?.replace("，", " ")
+                    if (removeComma) result = (result as? String)?.replace("，", " ")
                     if (showLunar) {
-                        val context = args().last().cast<Context>() ?: return@after
+                        val context = args.getOrNull(1) as? Context ?: return@after
                         val lunarInstance = LunarHelperUtils(appClassLoader).buildInstance(context)
                         val lunarDate = LunarHelperUtils(appClassLoader).getDateToString(
                             lunarInstance, System.currentTimeMillis()
@@ -67,37 +114,44 @@ object ControlCenterDateStyle : YukiBaseHooker() {
                             if ((it.isNullOrBlank()) || (it.length < 8)) ""
                             else " " + it.substring(4, it.length)
                         }
-                        result = result<String>() + lunarDate
+                        result = (result as? String).orEmpty() + lunarDate
                     }
                 }
             }
-        }
 
         if (SDK < A13) return
         var translationX = 0
         VariousClass(
             "com.oplusos.systemui.qs.OplusQSFooterImpl",
             "com.oplus.systemui.qs.OplusQSFooterImpl"
-        ).toClass().apply {
-            if (hasMethod { name = "updateQsDateView" }.not()) return@apply
-            method { name = "updateQsDateView" }.hook {
+        ).toClassOrNull(appClassLoader)?.let { c ->
+            if (runCatching { c.getDeclaredMethod("updateQsDateView") }.isFailure) return@let
+            c.method { name = "updateQsDateView" }.ignored().hook {
                 after {
                     val mTmpConstraintSet =
-                        field { name = "mTmpConstraintSet" }.get(instance).any()
+                        c.findField("mTmpConstraintSet")?.get(instance) ?: return@after
+                    val mClockView =
+                        c.findField("mClockView")?.get(instance) as? TextView
                             ?: return@after
-                    val mClockView = field { name = "mClockView" }.get(instance).cast<TextView>()
-                        ?: return@after
-                    val mQsDateView = field { name = "mQsDateView" }.get(instance).cast<TextView>()
-                        ?: return@after
+                    val mQsDateView =
+                        c.findField("mQsDateView")?.get(instance) as? TextView
+                            ?: return@after
 
-                    if (fixWidth || disableTextScroll) mTmpConstraintSet.current().method {
-                        name = "constrainWidth"
-                    }.call(mQsDateView.id, ConstraintLayout.LayoutParams.WRAP_CONTENT)
+                    if (fixWidth || disableTextScroll) {
+                        runCatching {
+                            XposedHelpers.callMethod(
+                                mTmpConstraintSet,
+                                "constrainWidth",
+                                mQsDateView.id,
+                                ConstraintLayout.LayoutParams.WRAP_CONTENT
+                            )
+                        }
+                    }
 
                     val horizontalMode =
                         if (fixLunar != "0") fixLunar else setDisplayModeHorizontal
                     if (showLunar && (horizontalMode != "0")) {
-                        val res = instance<ViewGroup>().resources
+                        val res = (instance as? ViewGroup)?.resources ?: return@after
                         val qs_footer_date_width = res.getDimensionPixelSize(
                             res.getIdentifier(
                                 "qs_footer_date_width", "dimen",
@@ -128,17 +182,32 @@ object ControlCenterDateStyle : YukiBaseHooker() {
                             if (translationX == 0 || translationY == 0) return@getScreenOrientation
 
                             when (horizontalMode) {
-                                "1" -> mTmpConstraintSet.current().method {
-                                    name = "constrainWidth"
-                                }.call(mQsDateView.id, qs_footer_date_width * 2)
+                                "1" -> runCatching {
+                                    XposedHelpers.callMethod(
+                                        mTmpConstraintSet,
+                                        "constrainWidth",
+                                        mQsDateView.id,
+                                        qs_footer_date_width * 2
+                                    )
+                                }
 
                                 "2" -> {
-                                    mTmpConstraintSet.current().method {
-                                        name = "setTranslationX"
-                                    }.call(mQsDateView.id, translationX.toFloat())
-                                    mTmpConstraintSet.current().method {
-                                        name = "setTranslationY"
-                                    }.call(mQsDateView.id, translationY.toFloat())
+                                    runCatching {
+                                        XposedHelpers.callMethod(
+                                            mTmpConstraintSet,
+                                            "setTranslationX",
+                                            mQsDateView.id,
+                                            translationX.toFloat()
+                                        )
+                                    }
+                                    runCatching {
+                                        XposedHelpers.callMethod(
+                                            mTmpConstraintSet,
+                                            "setTranslationY",
+                                            mQsDateView.id,
+                                            translationY.toFloat()
+                                        )
+                                    }
                                 }
                             }
                         }
@@ -146,5 +215,46 @@ object ControlCenterDateStyle : YukiBaseHooker() {
                 }
             }
         }
+    }
+
+    private fun getLocalTimeInfo(context: Context): Any? = runCatching {
+        val helper = VariousClass(
+            "com.oplusos.systemui.keyguard.clock.WeatherInfoParseHelper",
+            "com.oplus.systemui.keyguard.clock.WeatherInfoParseHelper"
+        ).toClassOrNull(appClassLoader) ?: return null
+        val holder = "${helper.name}\$HolderInnerClass".toClassOrNull(appClassLoader) ?: return null
+        val single = holder.declaredFields.firstOrNull { it.type == helper }
+            ?.also { it.isAccessible = true }?.get(null) ?: return null
+        helper.getDeclaredMethod("getLocalTimeInfo", Context::class.java)
+            .also { it.isAccessible = true }.invoke(single, context)
+    }.getOrNull()
+
+    private var lunarInstance: Any? = null
+
+    private fun getLunarSuffix(context: Context): String = runCatching {
+        val helper = LunarHelperUtils(appClassLoader)
+        if (lunarInstance == null) lunarInstance = helper.buildInstance(context)
+        helper.getDateToString(lunarInstance, System.currentTimeMillis()).let {
+            if (it.isNullOrBlank() || it.length < 8) "" else it.substring(4)
+        }
+    }.getOrDefault("")
+
+    private fun Class<*>.findField(name: String): Field? {
+        var cls: Class<*>? = this
+        while (cls != null) {
+            runCatching { return cls.getDeclaredField(name).also { it.isAccessible = true } }
+            cls = cls.superclass
+        }
+        return null
+    }
+
+    private fun Class<*>.findFieldOfType(type: Class<*>): Field? {
+        var cls: Class<*>? = this
+        while (cls != null) {
+            cls.declaredFields.firstOrNull { it.type == type }
+                ?.let { return it.also { f -> f.isAccessible = true } }
+            cls = cls.superclass
+        }
+        return null
     }
 }

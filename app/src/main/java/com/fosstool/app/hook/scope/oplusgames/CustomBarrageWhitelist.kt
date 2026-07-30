@@ -1,13 +1,13 @@
 package com.fosstool.app.hook.scope.oplusgames
 
+import com.fosstool.app.utils.ModulePrefs
 import com.highcapable.yukihookapi.hook.entity.YukiBaseHooker
 import com.highcapable.yukihookapi.hook.factory.method
-import com.highcapable.yukihookapi.hook.type.java.BooleanType
-import com.highcapable.yukihookapi.hook.type.java.StringClass
-import com.fosstool.app.utils.ModulePrefs
+import com.highcapable.yukihookapi.hook.factory.toClassOrNull
 
 object CustomBarrageWhitelist : YukiBaseHooker() {
     private const val ENABLED = "1"
+    private const val TARGET_CLASS = "com.coloros.gamespaceui.module.barrage.GameBarrageUtil"
 
     override fun onHook() {
         val whitelist = prefs(ModulePrefs)
@@ -17,68 +17,35 @@ object CustomBarrageWhitelist : YukiBaseHooker() {
             .orEmpty()
         if (whitelist.isEmpty()) return
 
-        val classNames = listOf(
-            "com.coloros.gamespaceui.module.barrage.GameBarrageUtil",
-            "com.oplus.games.business.barrage.utils.GameBarrageUtil",
-            "com.oplus.games.barrage.GameBarrageUtil",
-        )
+        val clazz = TARGET_CLASS.toClassOrNull(appClassLoader) ?: return
 
-        for (clsName in classNames) {
-            runCatching {
-                clsName.toClass().apply {
-                    method {
-                        name { n ->
-                            n == "getGameBarrageApplicationState" ||
-                                n == "getGameBarrageAppSwitchMap"
-                        }
-                    }.hookAll {
-                        after {
-                            val raw = result ?: return@after
-                            @Suppress("UNCHECKED_CAST")
-                            when (raw) {
-                                is MutableMap<*, *> -> {
-                                    val map = raw as MutableMap<String, Any?>
-                                    for (pkg in whitelist) map[pkg] = ENABLED
-                                }
-                                is Map<*, *> -> {
-                                    val map = HashMap<String, Any?>()
-                                    for ((k, v) in raw) {
-                                        if (k is String) map[k] = v
-                                    }
-                                    for (pkg in whitelist) map[pkg] = ENABLED
-                                    result = map
-                                }
-                            }
-                        }
-                    }
-                    method {
-                        name = "setGameBarrageApplicationState"
-                    }.hookAll {
-                        before {
-                            @Suppress("UNCHECKED_CAST")
-                            val map = runCatching {
-                                args().first().cast<MutableMap<String, Any?>>()
-                            }.getOrNull() ?: return@before
-                            for (pkg in whitelist) map[pkg] = ENABLED
-                        }
-                    }
-                    method {
-                        name = "initAppState"
-                    }.hookAll {
-                        after {
-                        }
-                    }
-                    method {
-                        param(StringClass)
-                        returnType = BooleanType
-                    }.hookAll {
-                        after {
-                            val pkg = runCatching { args().first().string() }.getOrNull()
-                            if (pkg != null && pkg in whitelist) result = true
-                        }
+        clazz.method { name = "initAppState" }.ignored().hook {
+            before {
+                val map = applicationState(clazz) ?: return@before
+                if (map.isEmpty() || map.size != whitelist.size) {
+                    whitelist.forEach { pkg -> if (!map.containsKey(pkg)) map[pkg] = ENABLED }
+                    runCatching {
+                        clazz.method { name = "setGameBarrageApplicationState" }
+                            .ignored().get().call(map)
                     }
                 }
+                result = map
+            }
+        }
+
+        clazz.method { name = "getGameBarrageAppSwitchMap" }.ignored().hook {
+            before {
+                val state = applicationState(clazz) ?: return@before
+                val map = HashMap<String, Any?>()
+                whitelist.forEach { pkg -> map[pkg] = state[pkg] ?: ENABLED }
+                result = map
             }
         }
     }
+
+    @Suppress("UNCHECKED_CAST")
+    private fun applicationState(clazz: Class<*>): HashMap<String, Any?>? = runCatching {
+        clazz.method { name = "getGameBarrageApplicationState" }
+            .ignored().get().invoke<Any>() as? HashMap<String, Any?>
+    }.getOrNull()
 }

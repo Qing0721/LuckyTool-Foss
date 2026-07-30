@@ -2,8 +2,8 @@ package com.fosstool.app.hook.scope.systemui
 
 import com.highcapable.yukihookapi.hook.bean.VariousClass
 import com.highcapable.yukihookapi.hook.entity.YukiBaseHooker
-import com.highcapable.yukihookapi.hook.factory.hasMethod
 import com.highcapable.yukihookapi.hook.factory.method
+import com.highcapable.yukihookapi.hook.factory.toClassOrNull
 import com.fosstool.app.utils.ModulePrefs
 
 object RemoveStatusBarBottomNetworkWarn : YukiBaseHooker() {
@@ -14,24 +14,31 @@ object RemoveStatusBarBottomNetworkWarn : YukiBaseHooker() {
         VariousClass(
             "com.oplusos.systemui.qs.widget.OplusQSSecurityText",
             "com.oplus.systemui.qs.widget.OplusQSSecurityText"
-        ).toClass().apply {
-            method { name = "handleClick" }.hook {
-                if (removeMode == "1" || removeMode == "2") intercept()
+        ).toClassOrNull(appClassLoader)?.let { textCls ->
+            textCls.method { name = "handleClick" }.ignored().hook {
+                before {
+                    if (removeMode == "1" || removeMode == "2") result = null
+                }
             }
-            method { name = "handleRefreshState" }.hook {
-                if (removeMode == "2") intercept()
+            textCls.method { name = "handleRefreshState" }.ignored().hook {
+                before {
+                    if (removeMode == "2") result = null
+                }
             }
         }
 
-        "com.oplus.systemui.qs.policy.OplusQSSecurityController".toClass().apply {
-            if (hasMethod { name = "showDeviceMonitoringDialog" }) {
-                method { name = "showDeviceMonitoringDialog" }.hook {
-                    if (removeMode == "1" || removeMode == "2") intercept()
+        VariousClass(
+            "com.oplus.systemui.qs.policy.OplusQSSecurityController",
+            "com.oplusos.systemui.qs.policy.OplusQSSecurityController"
+        ).toClassOrNull(appClassLoader)?.let { ctrl ->
+            ctrl.method { name = "showDeviceMonitoringDialog" }.ignored().hook {
+                before {
+                    if (removeMode == "1" || removeMode == "2") result = null
                 }
             }
-            if (hasMethod { name = "handleRefreshState" }) {
-                method { name = "handleRefreshState" }.hook {
-                    if (removeMode == "2") intercept()
+            ctrl.method { name = "handleRefreshState" }.ignored().hook {
+                before {
+                    if (removeMode == "2") result = null
                 }
             }
         }

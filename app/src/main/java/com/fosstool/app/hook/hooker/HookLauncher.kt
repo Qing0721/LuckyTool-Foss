@@ -19,30 +19,23 @@ import com.fosstool.app.hook.scope.launcher.LauncherLayoutRowColume
 import com.fosstool.app.hook.scope.launcher.LongPressAppIconOpenAppDetails
 import com.fosstool.app.hook.scope.launcher.PageIndicator
 import com.fosstool.app.hook.scope.launcher.RecentTaskListClearButton
-import com.fosstool.app.hook.scope.launcher.RemoveAppUpdateDot
 import com.fosstool.app.hook.scope.launcher.SetAppUpdateDotDisplayMode
 import com.fosstool.app.hook.scope.launcher.RemoveBottomAppIconOfRecentTaskList
 import com.fosstool.app.hook.scope.launcher.RemoveDockerMaxNumberLimit
 import com.fosstool.app.hook.scope.launcher.RemoveFolderNameInputLimit
 import com.fosstool.app.hook.scope.launcher.RemoveFolderPreviewBackground
 import com.fosstool.app.hook.scope.launcher.RemoveLauncherCardName
-import com.fosstool.app.hook.scope.launcher.RemoveLauncherHighTempreatureProtection
 import com.fosstool.app.hook.scope.launcher.RemoveWidgetsAddRequestWhitelist
-import com.fosstool.app.hook.scope.launcher.StackedTaskLayout
 import com.fosstool.app.hook.scope.launcher.UnlockTaskLocks
 import com.fosstool.app.utils.A13
 import com.fosstool.app.utils.ModulePrefs
 import com.fosstool.app.utils.SDK
 
-object HookLauncher : YukiBaseHooker() {
+class HookLauncher : YukiBaseHooker() {
     override fun onHook() {
         loadHooker(LauncherIconNameDisplay)
         loadHooker(PageIndicator)
-        loadHooker(StackedTaskLayout)
         if (SDK >= A13) loadHooker(HookAppBadge)
-        if (prefs(ModulePrefs).getBoolean("remove_the_dot_after_app_update", false)) {
-            loadHooker(RemoveAppUpdateDot)
-        }
         if (prefs(ModulePrefs).getBoolean("enable_display_app_update_dot", false)) {
             loadHooker(EnableAppUpdateDot)
         }
@@ -70,9 +63,6 @@ object HookLauncher : YukiBaseHooker() {
         }
         if (prefs(ModulePrefs).getBoolean("unlock_task_locks", false)) {
             loadHooker(UnlockTaskLocks)
-        }
-        if (prefs(ModulePrefs).getBoolean("remove_launcher_high_tempreature_protection", false)) {
-            loadHooker(RemoveLauncherHighTempreatureProtection)
         }
         if (prefs(ModulePrefs).getBoolean("allow_locking_unlocking_of_excluded_activity", false)) {
             loadHooker(AllowLockingUnLockingOfExcludedActivity)
@@ -112,10 +102,6 @@ object HookLauncher : YukiBaseHooker() {
             loadHooker(DisableAutoSwitchLastTask)
         }
         loadHooker(CustomDesktopDefaultHomePage)
-
-
-
-
 
     }
 }
