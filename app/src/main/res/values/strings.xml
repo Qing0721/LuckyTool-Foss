@@ -227,6 +227,7 @@
     <string name="set_auto_brightness_button_mode">Set auto-brightness button mode</string>
     <string name="remove_control_center_user_switcher">Remove control center user switcher</string>
     <string name="remove_control_center_mydevice">Remove control center my device</string>
+    <string name="remove_control_center_carriers">Remove control center carriers</string>
     <string name="restore_page_layout_row_count_for_edit_tiles">Restore page layout row count for edit tiles</string>
     <string name="set_control_center_search_button_mode">Set control center search button mode</string>
     <string name="remove_control_center_networkwarn">Remove the security warning message at the bottom of the control center</string>
@@ -685,6 +686,7 @@ When validation is turned off the OTA update fails, so when the feature is turne
     <string name="remove_pro_license">Remove license detection</string>
 
     <string name="adm_unlock_pro">Unlock Pro</string>
+    <string name="unlock_pro">Unlock Pro</string>
     <string name="adm_unlock_more_threads">Unlock more download threads</string>
     <string name="adm_unlock_more_threads_summary">Set max concurrent download threads (0=default)</string>
 

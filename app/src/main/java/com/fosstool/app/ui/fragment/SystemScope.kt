@@ -970,12 +970,6 @@ class StatusBarNotifyRemoval : BaseScopePreferenceFeagment() {
                 isIconSpaceReserved = false
             })
             add(SwitchPreference(ctx).apply {
-                title = ctx.getString(R.string.remove_virus_risk_notification_in_phone_manager)
-                key = "remove_virus_risk_notification_in_phone_manager"
-                setDefaultValue(false)
-                isIconSpaceReserved = false
-            })
-            add(SwitchPreference(ctx).apply {
                 title = ctx.getString(R.string.remove_gt_mode_notification)
                 key = "remove_gt_mode_notification"
                 setDefaultValue(false)
@@ -1445,6 +1439,12 @@ class StatusBarControlCenter : BaseScopePreferenceFeagment() {
                 key = "remove_control_center_mydevice"
                 setDefaultValue(false)
                 isVisible = SDK >= A13
+                isIconSpaceReserved = false
+            })
+            add(SwitchPreference(ctx).apply {
+                title = ctx.getString(R.string.remove_control_center_carriers)
+                key = "remove_control_center_carriers"
+                setDefaultValue(false)
                 isIconSpaceReserved = false
             })
             add(DropDownPreference(ctx).apply {
@@ -3258,12 +3258,6 @@ class DialogRelated : BaseScopePreferenceFeagment() {
                 isIconSpaceReserved = false
             })
             add(SwitchPreference(ctx).apply {
-                title = ctx.getString(R.string.remove_secure_pay_found_virus_dialog)
-                key = "remove_secure_pay_found_virus_dialog"
-                setDefaultValue(false)
-                isIconSpaceReserved = false
-            })
-            add(SwitchPreference(ctx).apply {
                 title = ctx.getString(R.string.remove_access_device_log_dialog)
                 key = "remove_access_device_log_dialog"
                 setDefaultValue(false)
@@ -3293,31 +3287,6 @@ class DialogRelated : BaseScopePreferenceFeagment() {
                 key = "disable_accessibility_warning_dialog"
                 setDefaultValue(false)
                 isIconSpaceReserved = false
-            })
-            add(DropDownPreference(ctx).apply {
-                title = ctx.getString(R.string.set_volume_bar_display_position)
-                summary = ctx.getString(R.string.common_words_current_mode) + ": %s"
-                key = "set_volume_bar_display_position"
-                entries = ctx.resources.getStringArray(R.array.set_volume_bar_display_position_entries)
-                entryValues = arrayOf("0", "1", "2")
-                setDefaultValue("0")
-                isVisible = SDK >= A13
-                isIconSpaceReserved = false
-            })
-            add(SeekBarPreference(ctx).apply {
-                title = ctx.getString(R.string.custom_volume_dialog_background_transparency)
-                summary = ctx.getString(R.string.force_enable_systemui_blur_feature_tips)
-                key = "custom_volume_dialog_background_transparency"
-                setDefaultValue(-1)
-                max = 10
-                min = -1
-                showSeekBarValue = true
-                updatesContinuously = false
-                isIconSpaceReserved = false
-                setOnPreferenceChangeListener { _, newValue ->
-                    ctx.dataChannel("com.android.systemui").put(key, newValue)
-                    true
-                }
             })
         }
     }
@@ -3443,6 +3412,7 @@ class Miscellaneous : BaseScopePreferenceFeagment() {
                 summary = ctx.getString(R.string.disable_otg_auto_off_summary)
                 key = "disable_otg_auto_off"
                 setDefaultValue(false)
+                isVisible = getOSVersionCode < 30
                 isIconSpaceReserved = false
             })
             add(SwitchPreference(ctx).apply {
@@ -3732,7 +3702,7 @@ class Settings : BaseScopePreferenceFeagment() {
                 summary = ctx.getString(R.string.disable_otg_auto_off_summary)
                 key = "disable_otg_auto_off"
                 setDefaultValue(false)
-                isVisible = SDK >= A14
+                isVisible = getOSVersionCode >= 30
                 isIconSpaceReserved = false
             })
             add(SwitchPreference(ctx).apply {

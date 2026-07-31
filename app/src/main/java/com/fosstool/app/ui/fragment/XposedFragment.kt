@@ -829,6 +829,20 @@ class XposedFragment : ModulePreferenceFragment(), MenuProvider {
                     navigatePage(R.id.action_nav_function_to_ADM, title)
                     true
                 }
+            },
+            Preference(context).apply {
+                key = "com.theappninjas.fakegpsjoystick"
+                setPrefsIconRes(key) { resource, show ->
+                    icon = resource
+                    isIconSpaceReserved = show
+                }
+                title = context.getAppLabel(key)
+                summary = arraySummaryDot(getString(R.string.unlock_pro))
+                isVisible = context.checkPackName(key)
+                setOnPreferenceClickListener {
+                    navigatePage(R.id.action_nav_function_to_gpsJoyStick, title)
+                    true
+                }
             }
         )
     }
@@ -929,7 +943,8 @@ class XposedFragment : ModulePreferenceFragment(), MenuProvider {
             "com.heytap.mcs" to OplusMcs::class.java,
             "com.ruet_cse_1503050.ragib.appbackup.pro" to AlphaBackupPro::class.java,
             "ru.kslabs.ksweb" to KsWeb::class.java,
-            "com.dv.adm" to ADM::class.java
+            "com.dv.adm" to ADM::class.java,
+            "com.theappninjas.fakegpsjoystick" to GpsJoyStick::class.java
         )
     }
 

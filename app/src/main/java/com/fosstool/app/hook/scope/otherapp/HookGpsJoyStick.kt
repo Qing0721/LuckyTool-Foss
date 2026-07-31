@@ -3,6 +3,7 @@ package com.fosstool.app.hook.scope.otherapp
 import com.fosstool.app.utils.DexkitUtils
 import com.fosstool.app.utils.DexkitUtils.checkDataList
 import com.fosstool.app.utils.DexkitUtils.firstOrNullSafe
+import com.fosstool.app.utils.ModulePrefs
 import com.highcapable.yukihookapi.hook.entity.YukiBaseHooker
 import com.highcapable.yukihookapi.hook.factory.method
 import com.highcapable.yukihookapi.hook.factory.toClassOrNull
@@ -10,6 +11,7 @@ import com.highcapable.yukihookapi.hook.type.java.BooleanType
 
 object HookGpsJoyStick : YukiBaseHooker() {
     override fun onHook() {
+        if (!prefs(ModulePrefs).getBoolean("gps_joystick_unlock_pro", false)) return
 
         DexkitUtils.create(appInfo.sourceDir) { dexKitBridge ->
             dexKitBridge.findMethod {

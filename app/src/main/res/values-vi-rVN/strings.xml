@@ -210,6 +210,7 @@
     <string name="set_auto_brightness_button_mode">Đặt chế độ nút điều chỉnh độ sáng tự động</string>
     <string name="remove_control_center_user_switcher">Xóa trình chuyển đổi người dùng trung tâm điều khiển</string>
     <string name="remove_control_center_mydevice">Xóa trung tâm điều khiển thiết bị của tôi</string>
+    <string name="remove_control_center_carriers">Xóa nhà mạng ở trung tâm điều khiển</string>
     <string name="restore_page_layout_row_count_for_edit_tiles">Khôi phục số hàng bố cục trang chỉnh sửa ô</string>
     <string name="set_control_center_search_button_mode">Đặt chế độ nút tìm kiếm của Trung tâm điều khiển</string>
     <string name="remove_control_center_networkwarn">Xóa thông báo cảnh báo bảo mật ở cuối Trung tâm điều khiển</string>
@@ -579,6 +580,7 @@ Khi tắt xác minh, Sẽ khiến cập nhật OTA không thành công nên ch�
     <string name="remove_pro_license">Xóa phát hiện giấy phép</string>
 
     <string name="adm_unlock_pro">Mở khóa phiên bản Pro</string>
+    <string name="unlock_pro">Mở khóa phiên bản Pro</string>
 
     <string name="fps_title">KHÓA TỐC ĐỘ LÀM TƯƠI</string>
     <string name="fps_summary">Xung đột với các quy trình tốc độ làm mới động khác, chẳng hạn như “dpfs”</string>

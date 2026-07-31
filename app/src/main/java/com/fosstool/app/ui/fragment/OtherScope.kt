@@ -30,6 +30,27 @@ class AlphaBackupPro : BaseScopePreferenceFeagment() {
     override fun callOpenMenu() = requireActivity().openApp(scopes)
 }
 
+class GpsJoyStick : BaseScopePreferenceFeagment() {
+    override val navAction = R.id.action_nav_function_to_gpsJoyStick
+    override val scopes = arrayOf("com.theappninjas.fakegpsjoystick")
+    override fun h0(ctx: Context): ArrayList<Preference> {
+        return ArrayList<Preference>().apply {
+            add(
+                SwitchPreference(ctx).apply {
+                    title = ctx.getString(R.string.unlock_pro)
+                    key = "gps_joystick_unlock_pro"
+                    setDefaultValue(false)
+                    isIconSpaceReserved = false
+                }
+            )
+        }
+    }
+
+    override fun isEnableRestartMenu(): Boolean = true
+    override fun isEnableOpenMenu(): Boolean = true
+    override fun callOpenMenu() = requireActivity().openApp(scopes)
+}
+
 class KsWeb : BaseScopePreferenceFeagment() {
     override val navAction = R.id.action_nav_function_to_ksWeb
     override val scopes = arrayOf("ru.kslabs.ksweb")

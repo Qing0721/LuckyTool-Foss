@@ -88,7 +88,9 @@ class RefreshRateControllerService : RootService() {
                         val height = it.current().field { name = "height" }.cast<Int>()
                         val xDpi = it.current().field { name = "xDpi" }.cast<Float>()
                         val yDpi = it.current().field { name = "yDpi" }.cast<Float>()
-                        val refreshRate = it.current().field { name = "refreshRate" }.cast<Float>()
+                        val refreshRate = it.current().field {
+                            name { fieldName -> fieldName.contains("refreshRate", true) }
+                        }.cast<Float>()
                             ?: readFloatFieldReflect(it, "refreshRate")
                         val appVsyncOffsetNanos = it.current().field {
                             name = "appVsyncOffsetNanos"
@@ -152,7 +154,7 @@ class RefreshRateControllerService : RootService() {
                 }
             } catch (_: NoSuchFieldException) {
                 val matched = cls.declaredFields.firstOrNull {
-                    it.name.equals(fieldName, ignoreCase = true) &&
+                    it.name.contains(fieldName, ignoreCase = true) &&
                         (it.type == Float::class.javaPrimitiveType || it.type == Float::class.javaObjectType)
                 }
                 if (matched != null) {

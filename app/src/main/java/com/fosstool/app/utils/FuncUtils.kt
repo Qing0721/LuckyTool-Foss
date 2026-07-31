@@ -166,41 +166,6 @@ fun Context.toast(msg: String, long: Boolean? = false) = if (long == true) {
     Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
 }
 
-fun getFpsMode1(): ArrayList<Any?> {
-    return ArrayList<Any?>().apply {
-        add(0, DisplayMode(0, null, null, null, null, 30.0F))
-        add(1, DisplayMode(1, null, null, null, null, 60.0F))
-        add(2, DisplayMode(2, null, null, null, null, 90.0F))
-        add(3, DisplayMode(3, null, null, null, null, 120.0F))
-        add(4, DisplayMode(4, null, null, null, null, 144.0F))
-    }
-}
-
-fun getFpsMode2(): ArrayList<ArrayList<*>> = safeOf(ArrayList()) {
-    val command =
-        "dumpsys display | grep -A 24 'mSfDisplayModes=' | grep ' DisplayMode{id=' | cut -f2 -d '{' | while read row; do\n" + "  if [[ -n \$row ]]; then\n" + "    echo \$row | tr ',' '\\n' | while read col; do\n" + "      case \$col in\n" + "        'id='*)\n" + "          echo -n \$(echo \${col:3}'|')\n" + "        ;;\n" + "      'width='*)\n" + "        echo -n \$(echo \${col:6})\n" + "        ;;\n" + "      'height='*)\n" + "        echo -n x\$(echo \${col:7})\n" + "        ;;\n" + "      'refreshRate='*)\n" + "        echo ' '\$(echo \${col:12} | cut -f1 -d '.')Hz\n" + "        ;;\n" + "      esac\n" + "    done\n" + "    echo -e '\\\\n'\n" + "  fi\n" + "done"
-    var dataArr: ArrayList<String>
-    val idArr = ArrayList<Int>()
-    val fpsArr = ArrayList<String>()
-    ShellUtils.execCommand(command, true, true).apply {
-        if (result == 1) return@safeOf ArrayList()
-        else dataArr =
-            successMsg.takeIf { e -> e.isNotBlank() }?.split("\\n")?.toMutableList()?.apply {
-                removeIf { e -> e.isBlank() }
-            } as ArrayList<String>
-    }
-    dataArr.forEach {
-        val id = it.split("|").takeIf { e -> e.size >= 2 }?.get(0) ?: return@forEach
-        val fps = it.split("|").takeIf { e -> e.size >= 2 }?.get(1) ?: return@forEach
-        idArr.add(id.toInt())
-        fpsArr.add(fps)
-    }
-    return ArrayList<ArrayList<*>>().apply {
-        idArr.takeIf { e -> e.isNotEmpty() }?.let { add(it) }
-        fpsArr.takeIf { e -> e.isNotEmpty() }?.let { add(it) }
-    }
-}
-
 fun setRefresh(context: Context, name: String, refresh: String?) {
     setParameter(context, name, "min_refresh_rate", refresh)
     setParameter(context, name, "peak_refresh_rate", refresh)

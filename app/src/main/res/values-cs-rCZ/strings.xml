@@ -210,6 +210,7 @@
     <string name="set_auto_brightness_button_mode">Nastavit režim tlačítka automatického jasu</string>
     <string name="remove_control_center_user_switcher">Odstranit přepínač uživatelů v ovládacím centru</string>
     <string name="remove_control_center_mydevice">Odebrat moje zařízení z ovládacího centra</string>
+    <string name="remove_control_center_carriers">Odstranit název operátora z ovládacího centra</string>
     <string name="restore_page_layout_row_count_for_edit_tiles">Obnovit počet řádků pro úpravy dlaždic</string>
     <string name="set_control_center_search_button_mode">Nastavit režim tlačítka hledání v ovládacím centru</string>
     <string name="remove_control_center_networkwarn">Odstranění varovné zprávy o zabezpečení v dolní části ovládacího centra</string>
@@ -579,6 +580,7 @@ Pokud je ověření vypnuto, OTA aktualizace selže, takže když je funkce zapn
     <string name="remove_pro_license">Odstranit detekci licence</string>
 
     <string name="adm_unlock_pro">Odemknout Pro verzi</string>
+    <string name="unlock_pro">Odemknout Pro verzi</string>
 
     <string name="fps_title">Vynutit obnovovací frekvenci</string>
     <string name="fps_summary">Konflikt s ostatními procesy dynamické obnovovací frekvence, například „dpfs“</string>
